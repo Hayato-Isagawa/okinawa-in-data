@@ -14,12 +14,50 @@ import path from "node:path";
 import { test } from "node:test";
 import { readDatasets } from "../datasets";
 
-const REPO = path.resolve(import.meta.dirname, "../../..");
-const SAMPLE = path.join(REPO, "data/datasets/gakko-hoken-keinen/meta.json");
+// スキーマを通る最小の meta.json。実在のデータセットを写すと、その取り下げや改名で
+// このテストが無関係に落ちるので、ここに置く
+const meta = {
+  id: "sample",
+  title: "サンプル",
+  description: "ローダーのテスト用",
+  themes: ["education"],
+  sources: [
+    {
+      publisher: "テスト",
+      title: "テスト資料",
+      url: "https://example.com/source.pdf",
+      retrievedAt: "2026-01-01",
+      format: "pdf",
+    },
+  ],
+  license: {
+    name: "テスト用",
+    url: "https://example.com/terms",
+    confirmedAt: "2026-01-01",
+  },
+  conversion: {
+    method: "テスト",
+    script: "scripts/convert/sample.ts",
+    verification: "テスト",
+    convertedAt: "2026-01-01",
+  },
+  temporal: { coverageStart: "2025", coverageEnd: "2025", granularity: "年" },
+  spatial: { level: "都道府県" },
+  updateFrequency: "年1回",
+  files: [
+    {
+      path: "data.csv",
+      format: "csv",
+      rowCount: 1,
+      columns: [{ name: "値", type: "number", description: "テスト" }],
+    },
+  ],
+  changelog: [{ date: "2026-01-01", description: "初版" }],
+  status: "published",
+};
 
 test("meta.json の無いデータセットディレクトリは読まない", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "datasets-loader-"));
-  const meta = JSON.parse(fs.readFileSync(SAMPLE, "utf-8"));
 
   fs.mkdirSync(path.join(dir, "published"), { recursive: true });
   fs.writeFileSync(
