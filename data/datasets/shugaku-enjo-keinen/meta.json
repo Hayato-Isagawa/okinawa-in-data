@@ -1,0 +1,110 @@
+{
+  "id": "shugaku-enjo-keinen",
+  "title": "就学援助率の推移 沖縄県・全国(平成30年度〜令和4年度)",
+  "description": "文部科学省「就学援助実施状況等調査」の各年度結果から、沖縄県と全国(合計)の就学援助率(公立小中学校計)の推移を収録したデータセットです。沖縄県の水準が全国とどう推移してきたかを比較できます。",
+  "themes": ["education", "poverty"],
+  "tags": ["就学援助", "経年"],
+  "sources": [
+    {
+      "publisher": "文部科学省",
+      "title": "令和2年度に実施した就学援助実施状況等調査の結果(平成30年度率の再掲を含む)",
+      "url": "https://www.mext.go.jp/content/20210323-mxt_shuugaku-000013453_1.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260713000131/https://www.mext.go.jp/content/20210323-mxt_shuugaku-000013453_1.pdf",
+      "retrievedAt": "2026-07-06",
+      "format": "pdf",
+      "permalinkNote": "URL は公表時のディレクトリ構成に依存します。失効時は文科省「就学援助の実施状況」索引ページ(https://www.mext.go.jp/a_menu/shotou/career/05010502/1412177_00003.htm)から辿ってください。"
+    },
+    {
+      "publisher": "文部科学省",
+      "title": "令和3年度に実施した就学援助実施状況等調査の結果(令和元年度率の修正値を含む)",
+      "url": "https://www.mext.go.jp/content/20211216-mxt_shuukyo03-000018788_01.PDF",
+      "archiveUrl": "https://web.archive.org/web/20260713000423/https://www.mext.go.jp/content/20211216-mxt_shuukyo03-000018788_01.PDF",
+      "retrievedAt": "2026-07-06",
+      "format": "pdf",
+      "permalinkNote": "URL は公表時のディレクトリ構成に依存します(拡張子が大文字 .PDF)。失効時は索引ページから辿ってください。"
+    },
+    {
+      "publisher": "文部科学省",
+      "title": "令和4年度に実施した就学援助実施状況等調査の結果(令和2年度率の再掲を含む)",
+      "url": "https://www.mext.go.jp/content/20221222-mxt_shuugaku-000018788_001.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260713001623/https://www.mext.go.jp/content/20221222-mxt_shuugaku-000018788_001.pdf",
+      "retrievedAt": "2026-07-06",
+      "format": "pdf",
+      "permalinkNote": "URL は公表時のディレクトリ構成に依存します。失効時は索引ページから辿ってください。"
+    },
+    {
+      "publisher": "文部科学省",
+      "title": "令和5年度に実施した就学援助実施状況等調査の結果(令和4年度要保護及び準要保護児童生徒数について〔学用品費等〕)",
+      "url": "https://www.mext.go.jp/content/20231221-mxt_shuugaku-000018788_001.pdf",
+      "archiveUrl": "https://web.archive.org/web/20250216172825/https://www.mext.go.jp/content/20231221-mxt_shuugaku-000018788_001.pdf",
+      "retrievedAt": "2026-07-05",
+      "format": "pdf",
+      "permalinkNote": "shugaku-enjo-r4-todofuken と同一資料です。失効時は索引ページから辿ってください。"
+    }
+  ],
+  "license": {
+    "name": "政府標準利用規約(第2.0版)",
+    "url": "https://www.mext.go.jp/b_menu/1351168.htm",
+    "confirmedAt": "2026-07-06",
+    "note": "文部科学省ウェブサイト利用規約(政府標準利用規約2.0準拠・CC BY 互換)。"
+  },
+  "conversion": {
+    "method": "各年度結果 PDF の「<年度>要保護及び準要保護児童生徒数について(学用品費等)」小中学校計の表から、沖縄県・合計の就学援助率(認定者計÷公立小中学校児童生徒総数)を原文表記のまま抽出。令和元年度・令和2年度は後年公表の修正・再掲値(最終改定値)を採用",
+    "script": "scripts/convert/shugaku-enjo-keinen.ts",
+    "verification": "対象行すべてで 要保護+準要保護=認定者計 を機械検証。令和4年度の値は既存データセット shugaku-enjo-r4-todofuken と一致することを変換時 assert。全5年度×2系列の値は取得時の独立読取(逐語引用)と一致(2026-07-06)",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2018年度",
+    "coverageEnd": "2022年度",
+    "granularity": "年度"
+  },
+  "spatial": {
+    "level": "都道府県",
+    "area": "沖縄県・全国"
+  },
+  "updateFrequency": "年1回(就学援助実施状況等調査)",
+  "readingGuide": "率は公立小中学校の児童生徒総数に占める就学援助認定者(要保護+準要保護)の割合です。沖縄県は全国より約10ポイント高い水準が続いていますが、県・全国とも低下傾向にあります。認定率の変化には制度運用(認定基準・申請周知)の影響も含まれるため、困窮世帯の増減そのものとして読まないでください。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 5,
+      "columns": [
+        {
+          "name": "年度",
+          "type": "string",
+          "description": "率の対象年度(和暦)。調査の実施はいずれも翌年度"
+        },
+        {
+          "name": "沖縄県",
+          "type": "number",
+          "unit": "%",
+          "description": "沖縄県の就学援助率(公立小中学校計)"
+        },
+        {
+          "name": "全国",
+          "type": "number",
+          "unit": "%",
+          "description": "全国の就学援助率(公立小中学校計)。一次資料の行ラベルは「合計」"
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "令和5年度率(令和6年度実施調査)は、公表 PDF のフォント埋め込みの技術的問題によりテキスト抽出・逐語照合ができないため未収録です。照合可能な形式で入手でき次第追加します。",
+    "令和元年度は令和3年度実施調査で公表された修正値(令和3年12月23日修正)、令和2年度は令和4年度実施調査の再掲値を採用しています(いずれも入手可能な最終の改定値)。当初公表値とは小数第2位で異なる場合があります。",
+    "平成30年度は令和2年度実施調査の再掲値です。",
+    "率は被災児童生徒援助費補助金対象者を除く認定者計に基づく値(C/F)です。",
+    "PDF の URL は公表時のディレクトリ構成に依存し、失効することがあります(各 source の permalinkNote 参照)。"
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-06",
+      "description": "初版(平成30年度〜令和4年度の5年分)"
+    }
+  ],
+  "relatedDatasets": ["shugaku-enjo-r4-todofuken", "shugaku-enjo-r5-okinawa-shichoson"],
+  "status": "published"
+}

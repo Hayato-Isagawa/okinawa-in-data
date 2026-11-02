@@ -1,0 +1,45 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="このサイトについて | データでみる沖縄"
+  description="データでみる沖縄の目的と運営方針。沖縄の公的データを、元の資料(一次出典)までたどれる形で公開しています。"
+>
+  <h1 class="text-3xl font-bold">このサイトについて</h1>
+  <p class="mt-4 max-w-2xl">
+    データでみる沖縄は、官公庁ごとの PDF に分かれている沖縄の公的データを、地図や表で読める形に整えて公開している個人運営のサイトです。どの数字にも、元の資料へのリンク・取得日・変換方法を添えています。まずは教育と子どもの貧困のデータから整備を始めています。
+  </p>
+  <p class="mt-3 max-w-2xl text-sm" style="color: var(--color-sub);">
+    お問い合わせ・誤りのご指摘は <a href="mailto:contact@okinawa-in-data.org" class="link-underline" style="color: var(--color-accent);">contact@okinawa-in-data.org</a> へお寄せください。
+  </p>
+
+  <h2 class="mt-10 text-xl font-bold">運営者</h2>
+  <p class="mt-4 max-w-2xl">
+    <span class="font-bold">Isagawa Hayato</span>(企画・運営)
+  </p>
+  <p class="mt-2 max-w-2xl text-sm" style="color: var(--color-sub);">
+    元小学校教諭として、約10年の現場経験があります。現在はフリーランスのウェブエンジニアで、沖縄に住んでいます。
+  </p>
+  <p class="mt-3 max-w-2xl">
+    沖縄には本土との格差が数字に表れている分野がありますが、その多くは官公庁ごとの PDF に散らばっており、データを俯瞰して見ることが難しい状況です。地元の課題を、誰もが一次資料までたどって確かめられる形にすることが、沖縄をより良くする一歩になると考え、このサイトを立ち上げました。
+  </p>
+
+  <h2 class="mt-10 text-xl font-bold">大切にしていること</h2>
+  <ul class="mt-4 max-w-2xl list-disc space-y-2 pl-6">
+    <li>数値は元の資料と突き合わせて確認できたものだけを載せる(<a href="/methodology/" class="link-underline" style="color: var(--color-accent);">データの作り方</a>)</li>
+    <li>出典は必ず発行元の一次資料へリンクし、取得日と URL 変更リスクを明記する</li>
+    <li>グラフには必ず同じ内容の表を併設し、読み上げソフトや遅い回線でも同じ情報にたどり着けるようにする</li>
+    <li>誤りの指摘を歓迎し、修正履歴を公開する</li>
+  </ul>
+
+  <h2 class="mt-10 text-xl font-bold">公式オープンデータカタログとの関係</h2>
+  <p class="mt-3 max-w-2xl">
+    沖縄県には公式のオープンデータ基盤として <a href="https://odcs.bodik.jp/okinawa-dpf/" class="link-underline" style="color: var(--color-accent);" rel="noopener noreferrer" target="_blank">OKINAWA DPF(沖縄データプラットフォーム)</a>があり、施設一覧・公共交通・気象など幅広い生データをプログラムから扱いやすい形式で配布しています。本サイトは同じものをもう一度作るのではなく、そこに足りない読み方を補うものです。カタログに収録されていない統計(就学援助率・学力調査など、省庁の PDF・Excel に散らばる「率・実績値」)を元の資料と突き合わせたうえで、地図・表・解説付きで読める形にすることに絞っています。多分野の生データを網羅的に探す場合は、OKINAWA DPF や <a href="https://www.e-stat.go.jp/" class="link-underline" style="color: var(--color-accent);" rel="noopener noreferrer" target="_blank">e-Stat(政府統計の総合窓口)</a>をご利用ください。
+  </p>
+
+  <h2 class="mt-10 text-xl font-bold">免責</h2>
+  <p class="mt-3 max-w-2xl text-sm">
+    本サイトは各データの発行元とは無関係の私的プロジェクトです。データの利用にあたっては、必ず各データセットに記載された一次資料とライセンスをご確認ください。
+  </p>
+</BaseLayout>

@@ -1,0 +1,106 @@
+name: E2E Tests
+
+# tests/ の Playwright スイート全体を回す(a11y + 機能テスト)。
+#
+# もともと a11y だけを回すワークフローだった。tests/a11y.spec.ts と
+# playwright.config.ts は前から存在したが、実行するワークフローが無く、
+# ローカルでしか回っていなかった。全ページの axe 検査は手で回すには重く、
+# 実際に放置されていた。
+#
+# external-links.spec.ts は dist/ のファイルを直接読み、それ以外は preview が配る dist/ をブラウザで開くので、
+# build を先に済ませる必要がある。
+# a11y.spec.ts と search.spec.ts は読み込み時に dist/ を走査し、dist/ が無ければどちらも ENOENT で落ちる。
+# dist/ が空なら search は dist/area の走査が ENOENT で落ち、a11y は 0 件になる(単独で回すと
+# "No tests found" で落ちる)。external-links.spec.ts はテストの中で dist/ を走査し、HTML が無ければ
+# 落ちる。datasets.spec.ts は data/ から対象を作り、公開範囲のテストは dist/datasets/・dist/data/・sitemap も走査する
+# (dist/ が無ければ ENOENT で落ちる)。
+
+# **main への push では回さない。** マージ後の再検証は PR で見たものと同じ内容で、
+# 実測でも push[main] だけが捕まえた失敗は全期間 0 件だった。2026-08-21 に月の
+# Actions 枠が尽きて private 全リポの CI が 10 日間止まり、姉妹リポの
+# アクセス解析が 4 日ぶん回収不能になったのを受けて外した(このリポの E2E は
+# 8/1〜8/20 で push 分だけ 131 課金分を使っていた。18 run を job 単位で切り上げた値)。
+#
+# **代わりに週 1 で main を回す。これはキャッシュの供給源。** PR が作ったキャッシュは
+# 他の PR から見えず、`refs/heads/main` の run が作ったものだけが全 PR から引ける
+# (GitHub のキャッシュスコープ)。ここを落とすと全 PR がブラウザ DL から始まる。
+# Playwright のキャッシュを持つのはこのリポでは e2e.yml だけ。
+#
+# 月曜の枠は audit と link-check が両方 00:00 に重なっているので、1 時間空けて置く。
+# キャッシュの eviction は「7 日アクセスが無ければ」なので、週 1 は境界ちょうど。
+# schedule が遅延・ドロップすると 1 週間空く。
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "37 1 * * 1"
+  # **schedule と並んで、既定ブランチのキャッシュを書けるトリガー。**
+  # マージ直後に温め直す口が無いと、次の月曜まで全 PR が cache-miss で走る
+  # (この変更を入れた時点で Playwright のキャッシュは実際に 0 件だった)。
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    # 律速はテストではなく Playwright / apt のインストール。平常時は 20〜30 秒だが、
+    # 2026-08-19 の実測ではファミリー横断で遅延し、別の姉妹リポの同じステップが
+    # 28.45 分動いてなお完了しなかった(concurrency で cancel)。成功実行でも
+    # その姉妹リポ 15.35 分 / edu-evidence 13.6 分。テストの実行時間から決めない。
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ".tool-versions"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers (cache miss)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium --with-deps
+
+      - name: Install Playwright system deps (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      # a11y.spec.ts と search.spec.ts は読み込み時に dist/ を走査する。
+      # 古い dist が残ったまま build を飛ばすと、どの spec も古い dist を検査する。
+      - name: Build site
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npx playwright test
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

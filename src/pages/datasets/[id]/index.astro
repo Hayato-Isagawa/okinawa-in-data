@@ -1,0 +1,411 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ChartFigure from "../../../components/ChartFigure.astro";
+import DataTable from "../../../components/DataTable.astro";
+import DownloadCard from "../../../components/DownloadCard.astro";
+import SourceCard from "../../../components/SourceCard.astro";
+import { THEME_LABELS } from "../../../../data/schema/dataset-meta";
+import { THEME_PAGES } from "../../../lib/themes";
+import {
+  getAllDatasets,
+  getDatasetRows,
+  getDistributionFilenames,
+  formatDatasetUpdatedAt,
+} from "../../../lib/datasets";
+import {
+  renderLineChartSvg,
+  renderBarRankingSvg,
+  competitionRank,
+  isTied,
+} from "../../../lib/chart";
+import {
+  renderPrefectureMapSvg,
+  renderOkinawaMunicipalityMapSvg,
+} from "../../../lib/map";
+import { PREFECTURES } from "../../../../scripts/lib/prefectures";
+import { findReferenceRow, generateLead, refLabel } from "../../../lib/lead";
+import { areaHrefByName } from "../../../lib/areas";
+import { municipalTooltipBaseInfo } from "../../../lib/profile";
+
+export function getStaticPaths() {
+  return getAllDatasets().map((meta) => ({
+    params: { id: meta.id },
+    props: { meta },
+  }));
+}
+
+const { meta } = Astro.props;
+
+// schema.org/Dataset(検索エンジンのデータセット検索・被参照用)。
+// 逐語照合が完了した published のみ出す(draft を引用可能データとして
+// 露出させない。DownloadCard の「引用非推奨」注記と同じ方針)
+const siteUrlValid =
+  Astro.site && !Astro.site.hostname.endsWith(".example");
+const datasetJsonLd =
+  meta.status === "published" && siteUrlValid
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        name: meta.title,
+        description: meta.description,
+        url: new URL(`/datasets/${meta.id}/`, Astro.site).href,
+        inLanguage: "ja",
+        isAccessibleForFree: true,
+        license: meta.license.url,
+        keywords: [...meta.themes.map((t) => THEME_LABELS[t]), ...meta.tags],
+        creator: {
+          "@type": "Organization",
+          name: "データでみる沖縄",
+          url: Astro.site!.href,
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "データでみる沖縄",
+          url: Astro.site!.href,
+        },
+        variableMeasured: (
+          meta.files.find((f) => f.format === "csv") ?? meta.files[0]
+        ).columns.map((c) => ({
+          "@type": "PropertyValue",
+          name: c.name,
+          ...(c.unit && { unitText: c.unit }),
+          description: c.description,
+        })),
+        spatialCoverage: { "@type": "Place", name: meta.spatial.area },
+        datePublished: [...meta.changelog].map((c) => c.date).sort()[0],
+        dateModified: [...meta.changelog].map((c) => c.date).sort().at(-1),
+        ...(meta.temporal.iso8601 && {
+          temporalCoverage: meta.temporal.iso8601,
+        }),
+        citation: meta.sources.map(
+          (s) => `${s.publisher}「${s.title}」 ${s.url}`,
+        ),
+        distribution: meta.files.map((f) => ({
+          "@type": "DataDownload",
+          encodingFormat: f.format === "csv" ? "text/csv" : "application/json",
+          contentUrl: new URL(
+            `/data/${meta.id}/${f.path.split("/").pop()}`,
+            Astro.site,
+          ).href,
+        })),
+      }
+    : undefined;
+
+const { header, rows } = getDatasetRows(meta.id);
+const csvFile = meta.files.find((f) => f.format === "csv")!;
+
+// 汎用チャート: 先頭列を x、数値列(先頭列以外)を系列に。
+// 単位が混在すると軸が壊れるため、最初の数値列と同じ単位の列だけを描く。
+// 系列がない場合と行数が多すぎて折れ線が読めない場合(>12行)は省略し、
+// 表とダウンロードに委ねる(データセット個別のチャートは今後テーマページで提供)
+const numericCandidates = csvFile.columns
+  .slice(1)
+  .filter((c) => c.type === "number" || c.type === "integer");
+const chartUnit = numericCandidates[0]?.unit;
+const numericColumns = numericCandidates
+  .filter((c) => c.unit === chartUnit)
+  .map((c) => c.name);
+const chartSvg =
+  numericColumns.length > 0 && rows.length >= 2 && rows.length <= 12
+    ? renderLineChartSvg({
+        header,
+        rows,
+        xColumn: csvFile.columns[0].name,
+        yColumns: numericColumns,
+        yLabel: csvFile.columns.find((c) => c.unit)?.unit,
+      })
+    : null;
+
+// 都道府県コロプレス地図(meta.map で列を明示指定したデータセットのみ)
+const GEO_ATTRIBUTION =
+  "地図は「国土数値情報(行政区域データ)」(国土交通省)を加工して作成(加工: スマートニュース メディア研究所・当サイト)。";
+let mapSvg: string | null = null;
+let mapCaption = "";
+let rankingSvg: string | null = null;
+let rankingCaption = "";
+if (meta.map) {
+  const mapCol = meta.map.column;
+  const colIdx = header.indexOf(mapCol);
+  const unit = csvFile.columns.find((c) => c.name === mapCol)?.unit;
+  const mapLabel = unit ? `${mapCol}(${unit})` : mapCol;
+  if (meta.spatial.level === "市町村") {
+    const mapColDef = csvFile.columns.find((c) => c.name === mapCol)!;
+    const hrefByName = areaHrefByName();
+    const baseInfoByName = municipalTooltipBaseInfo();
+    // 全国・県の基準行を含むデータセットがあるため、塗り分け(と等分ビンの
+    // 範囲)は 41 市町村の行だけから作る
+    const municipalRows = rows.filter((row) => hrefByName.has(row[0]));
+    if (mapColDef.type === "string") {
+      const classes = new Map<string, string>();
+      for (const row of municipalRows) {
+        if (row[colIdx] !== "") classes.set(row[0], row[colIdx]);
+      }
+      mapSvg = renderOkinawaMunicipalityMapSvg({ classes, label: mapLabel, hrefByName, baseInfoByName });
+    } else {
+      const values = new Map<string, number>();
+      for (const row of municipalRows) {
+        if (row[colIdx] !== "") values.set(row[0], Number(row[colIdx]));
+      }
+      mapSvg = renderOkinawaMunicipalityMapSvg({ values, label: mapLabel, hrefByName, baseInfoByName });
+    }
+  } else {
+    const values = new Map<string, number>();
+    for (const row of rows) {
+      if (row[colIdx] !== "") values.set(row[0], Number(row[colIdx]));
+    }
+    mapSvg = renderPrefectureMapSvg({ values, label: mapLabel });
+
+    // 47都道府県ランキング(沖縄ハイライト+全国基準線)
+    const prefSet = new Set<string>(PREFECTURES);
+    const entries = rows
+      .filter((r) => prefSet.has(r[0]) && r[colIdx] !== "")
+      .map((r) => ({ name: r[0], value: Number(r[colIdx]), display: r[colIdx] }));
+    const referenceRow = findReferenceRow(rows);
+    rankingSvg = renderBarRankingSvg({
+      entries,
+      highlight: "沖縄県",
+      valueLabel: mapLabel,
+      topN: 10,
+      reference: referenceRow
+        ? {
+            label: referenceRow[0],
+            value: Number(referenceRow[colIdx]),
+          }
+        : undefined,
+    });
+    // 表示されるのは値の降順で上位10本。順位の表記は競技方式(同値は同順位)で、
+    // グラフの棒ラベル・FV の読み取り行と揃える
+    const okinawa = entries.find((e) => e.name === "沖縄県");
+    const okinawaShown =
+      [...entries].sort((a, b) => b.value - a.value).findIndex((e) => e.name === "沖縄県") < 10;
+    rankingCaption = `${mapCol}のランキング(${
+      okinawa && okinawaShown
+        ? `上位10都道府県のみ表示、沖縄県は${competitionRank(entries, okinawa.value)}位${
+            isTied(entries, okinawa.value) ? "タイ" : ""
+          }`
+        : "上位10都道府県+沖縄県のみ表示"
+    }、値の大きい順${referenceRow ? `、破線は${refLabel(referenceRow[0])}の値` : ""})。全47都道府県の値は下の表を参照してください。`;
+  }
+  mapCaption = [
+    meta.spatial.level === "市町村"
+      ? csvFile.columns.find((c) => c.name === mapCol)?.type === "string"
+        ? `${mapCol}の市町村別の塗り分け(一次資料の回答階級のまま)。`
+        : `${mapCol}の市町村別の値(値の範囲を5等分した色分け)。`
+      : `${mapCol}の都道府県別の値(値の範囲を5等分した色分け。沖縄県を枠線で強調)。`,
+    meta.map.note,
+    GEO_ATTRIBUTION,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+const fileSizes = Object.fromEntries(
+  getDistributionFilenames(meta).map((name) => [
+    name,
+    fs.statSync(
+      path.resolve(process.cwd(), "data/datasets", meta.id, name),
+    ).size,
+  ]),
+);
+
+const updatedAt = formatDatasetUpdatedAt(meta);
+const lead = generateLead(meta, header, rows);
+const temporalText =
+  meta.temporal.coverageStart === meta.temporal.coverageEnd
+    ? meta.temporal.coverageStart
+    : `${meta.temporal.coverageStart}〜${meta.temporal.coverageEnd}`;
+---
+
+<BaseLayout title={`${meta.title} | データでみる沖縄`} description={meta.description} jsonLd={datasetJsonLd}>
+  <nav aria-label="パンくず" class="text-sm">
+    <ol role="list" class="flex flex-wrap gap-x-2 gap-y-0.5" style="color: var(--color-sub);">
+      <li><a href="/" class="link-underline">トップ</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/datasets/" class="link-underline">データセット</a></li>
+      <li aria-hidden="true">/</li>
+      <li aria-current="page">{meta.title}</li>
+    </ol>
+  </nav>
+
+  <div class="mt-4 flex flex-wrap items-center gap-2">
+    {
+      meta.themes.map((theme) =>
+        THEME_PAGES[theme] ? (
+          <a
+            href={THEME_PAGES[theme]}
+            class="rounded-full px-2.5 py-0.5 text-xs font-bold text-white no-underline"
+            style="background: var(--color-ocean-deep);"
+          >
+            {THEME_LABELS[theme]}
+          </a>
+        ) : (
+          <span
+            class="rounded-full px-2.5 py-0.5 text-xs font-bold text-white"
+            style="background: var(--color-ocean-deep);"
+          >
+            {THEME_LABELS[theme]}
+          </span>
+        ),
+      )
+    }
+    <span class="text-sm num" style="color: var(--color-sub);">最終更新 {updatedAt}</span>
+  </div>
+  <h1 class="mt-2 text-3xl font-bold">{meta.title}</h1>
+
+  {
+    meta.status === "draft" && (
+      <p
+        class="mt-4 rounded-lg border px-4 py-3 text-sm"
+        style="border-color: #d97706; background: #fffbeb;"
+      >
+        <strong>検証中:</strong>
+        このデータセットは公開前の確認(一次資料との照合、または出典元への利用確認)が完了していません。数値の引用は、確認が完了するまでお控えください(<a href="/methodology/" class="link-underline">検証の流れ</a>)。
+      </p>
+    )
+  }
+
+  <p class="mt-4 max-w-2xl">{meta.description}</p>
+
+  {
+    lead && (
+      <p
+        class="mt-4 max-w-2xl border-l-4 py-1 pl-4 text-lg"
+        style="border-color: var(--color-accent);"
+      >
+        {lead}
+      </p>
+    )
+  }
+
+  {
+    meta.readingGuide && (
+      <aside
+        aria-label="この数字の読み方"
+        class="mt-4 max-w-2xl rounded-lg border p-4"
+        style="border-color: var(--color-line); background: var(--color-accent-soft);"
+      >
+        <p class="font-semibold">この数字の読み方</p>
+        <p class="mt-1 text-sm">{meta.readingGuide}</p>
+        <p class="mt-2 text-xs">
+          統計・制度の用語は<a href="/glossary/" class="link-underline" style="color: var(--color-accent);">用語集</a>で平易に説明しています。
+        </p>
+      </aside>
+    )
+  }
+
+  {
+    mapSvg && (
+      <ChartFigure
+        svg={mapSvg}
+        title={`${meta.title} — ${meta.map!.column}のマップ`}
+        caption={mapCaption}
+        interactive={meta.spatial.level === "市町村"}
+      />
+    )
+  }
+
+  {
+    rankingSvg && (
+      <ChartFigure svg={rankingSvg} title={`${meta.title} — ランキング`} caption={rankingCaption} />
+    )
+  }
+
+  {
+    chartSvg && (
+      <ChartFigure
+        svg={chartSvg}
+        title={meta.title}
+        caption={`${meta.title}(${temporalText})。出典は下記「一次出典」参照。`}
+      />
+    )
+  }
+
+  <DataTable
+    caption={`${meta.title}(${meta.spatial.level}単位)`}
+    columns={csvFile.columns}
+    rows={rows}
+  />
+
+  <DownloadCard meta={meta} fileSizes={fileSizes} />
+
+  <SourceCard sources={meta.sources} />
+
+  <section aria-labelledby="meta-heading" class="my-8">
+    <h2 id="meta-heading" class="text-xl font-bold">メタデータ</h2>
+    <dl
+      class="mt-4 grid gap-x-8 gap-y-3 rounded-lg border p-4 sm:grid-cols-[auto_1fr]"
+      style="border-color: var(--color-line); background: var(--color-card);"
+    >
+      <dt class="font-semibold">ライセンス</dt>
+      <dd>
+        <a href={meta.license.url} rel="noopener noreferrer" target="_blank" class="link-underline" style="color: var(--color-accent);">
+          {meta.license.name}
+        </a>
+        <span class="num text-sm" style="color: var(--color-sub);">({meta.license.confirmedAt} 確認)</span>
+        {meta.license.note && <span class="block text-sm" style="color: var(--color-sub);">{meta.license.note}</span>}
+      </dd>
+      <dt class="font-semibold">対象期間</dt>
+      <dd class="num">{temporalText}({meta.temporal.granularity})</dd>
+      <dt class="font-semibold">地域粒度</dt>
+      <dd>{meta.spatial.area} / {meta.spatial.level}単位</dd>
+      <dt class="font-semibold">更新周期</dt>
+      <dd>
+        {meta.updateFrequency}
+        {meta.nextExpectedUpdate && <span class="text-sm" style="color: var(--color-sub);">(次回目安: {meta.nextExpectedUpdate})</span>}
+      </dd>
+      <dt class="font-semibold">変換方法</dt>
+      <dd>
+        {meta.conversion.method}
+        <span class="block text-sm" style="color: var(--color-sub);">
+          変換スクリプト: <code>{meta.conversion.script}</code> /
+          {meta.conversion.verification}(<a href="/methodology/" class="link-underline" style="color: var(--color-accent);">データの作り方</a>)
+        </span>
+      </dd>
+    </dl>
+  </section>
+
+  {
+    meta.caveats.length > 0 && (
+      <section aria-labelledby="caveats-heading" class="my-8">
+        <h2 id="caveats-heading" class="text-xl font-bold">利用上の注意</h2>
+        <ul class="mt-3 list-disc space-y-1 pl-6">
+          {meta.caveats.map((c) => (
+            <li>{c}</li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section aria-labelledby="changelog-heading" class="my-8">
+    <h2 id="changelog-heading" class="text-xl font-bold">このデータセットの更新履歴</h2>
+    <ul class="mt-3 space-y-1">
+      {
+        meta.changelog.map((entry) => (
+          <li class="text-sm">
+            <span class="num font-semibold">{entry.date}</span> — {entry.description}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {
+    meta.relatedDatasets.length > 0 && (
+      <section aria-labelledby="related-heading" class="my-8">
+        <h2 id="related-heading" class="text-xl font-bold">関連データセット</h2>
+        <ul class="mt-3 list-disc pl-6">
+          {meta.relatedDatasets.map((relId) => (
+            <li>
+              <a href={`/datasets/${relId}/`} class="link-underline" style="color: var(--color-accent);">
+                {getAllDatasets().find((d) => d.id === relId)?.title ?? relId}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</BaseLayout>

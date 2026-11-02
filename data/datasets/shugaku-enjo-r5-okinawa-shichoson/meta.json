@@ -1,0 +1,67 @@
+{
+  "id": "shugaku-enjo-r5-okinawa-shichoson",
+  "title": "就学援助率 沖縄県内市町村別(令和5年度・階級値)",
+  "description": "沖縄県内41市町村の就学援助率(令和5年度)を、文部科学省「就学援助の実施状況(市町村別実施状況)」の回答階級(「20%未満」など5%刻み)のまま収録したデータセットです。市町村別の実数は公表されていないため、階級値での比較になります。県単位の数値では見えない県内(本島・離島間)の違いを確認できます。",
+  "themes": ["education", "poverty"],
+  "tags": ["就学援助", "市町村別", "沖縄県内", "子どもの貧困", "離島"],
+  "sources": [
+    {
+      "publisher": "文部科学省",
+      "title": "令和6年度就学援助の実施状況(市町村別実施状況)(令和6年7月時点)沖縄県",
+      "url": "https://www.mext.go.jp/content/20250115-mxt_shuugaku-000039572_047.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260713002501/https://www.mext.go.jp/content/20250115-mxt_shuugaku-000039572_047.pdf",
+      "retrievedAt": "2026-07-05",
+      "format": "pdf",
+      "permalinkNote": "索引ページは https://www.mext.go.jp/a_menu/shotou/career/05010502/1414943_00007.htm。年度別に別 URL です。"
+    }
+  ],
+  "license": {
+    "name": "政府標準利用規約(第2.0版)",
+    "url": "https://www.mext.go.jp/b_menu/1351168.htm",
+    "confirmedAt": "2026-07-05"
+  },
+  "conversion": {
+    "method": "pdftotext -layout で生テキスト化し、変換スクリプトで「４．就学援助率」欄の階級値を機械抽出(表記のまま、実数化しない)",
+    "script": "scripts/convert/shugaku-enjo-r5-okinawa-shichoson.ts",
+    "verification": "raw/ の生テキストと CSV を那覇市・沖縄市・多良間村・座間味村・渡名喜村で逐語照合済み(2026-07-05)。市町村名の集合は境界データ(41市町村)との完全一致を変換時に機械検証",
+    "convertedAt": "2026-07-05"
+  },
+  "temporal": {
+    "coverageStart": "2023年度",
+    "coverageEnd": "2023年度",
+    "granularity": "年度(単年)"
+  },
+  "spatial": {
+    "level": "市町村",
+    "area": "沖縄県"
+  },
+  "updateFrequency": "年1回(就学援助実施状況等調査)",
+  "nextExpectedUpdate": "文部科学省の次回市町村別公表後",
+  "readingGuide": "値は市町村が調査に回答した「階級」(5%刻み)で、実際の率そのものではありません。例えば「25%未満」の市町村と「20%未満」の市町村の実際の差は最大でも10ポイント未満です。小規模な離島村では児童生徒数が少ないため、わずかな人数の変化で階級が大きく動くことにも注意してください。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "rowCount": 41,
+      "columns": [
+        { "name": "市町村", "type": "string", "description": "沖縄県内の41市町村" },
+        { "name": "就学援助率階級", "type": "string", "description": "令和5年度の就学援助率の回答階級(5%刻み、一次資料の表記のまま)" }
+      ]
+    }
+  ],
+  "map": {
+    "column": "就学援助率階級",
+    "note": "地図は本島周辺・宮古/八重山・大東の3パネルで、離島を省略せず表示しています。"
+  },
+  "caveats": [
+    "率は5%刻みの階級での回答であり、実数は公表されていません。階級の下限は一次資料に明示されていないため、表記のまま収録しています。",
+    "座間味村・渡名喜村は一次資料の表記どおり「0%未満」を収録しています。渡名喜村は同資料の同じ行の補足欄に「現時点準要保護認定を行っていない」との記載があります。",
+    "調査時点は令和6年7月、率の対象年度は令和5年度です。",
+    "小規模町村では児童生徒数が少なく、少数の認定変動で階級が変わり得ます。"
+  ],
+  "changelog": [
+    { "date": "2026-07-05", "description": "初版作成(令和5年度分・階級値)" }
+  ],
+  "relatedDatasets": ["shugaku-enjo-r4-todofuken", "shugaku-enjo-keinen", "kodomo-chosa-konkyu-keinen"],
+  "status": "published"
+}

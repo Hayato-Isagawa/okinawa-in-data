@@ -1,0 +1,86 @@
+{
+  "id": "ses-gakuryoku-hogosha-chosa",
+  "title": "社会経済的背景(SES)別の平均正答率 全国(令和3年度 保護者調査)",
+  "description": "全国学力・学習状況調査(令和3年度)の保護者調査を用いた文部科学省委託分析(お茶の水女子大学)から、家庭の社会経済的背景(SES)を四分位に分けた層別の平均正答率(小6・中3、全国)を収録したデータセットです。家庭環境と学力の関係(教育格差)の全国的な構造を示す基礎データで、就学援助率や困窮世帯割合など沖縄県の関連データを読む際の背景になります。",
+  "themes": ["education", "poverty"],
+  "tags": ["全国学力・学習状況調査", "保護者調査", "SES", "教育格差"],
+  "sources": [
+    {
+      "publisher": "文部科学省(委託先: お茶の水女子大学)",
+      "title": "令和4年度「学力調査を活用した専門的な課題分析に関する調査研究」保護者に対する調査の結果を活用した専門的な分析(本編その1、令和5年3月)",
+      "url": "https://www.mext.go.jp/content/20230601-mxt_chousa02-000029720-3.pdf",
+      "archiveUrl": "https://web.archive.org/web/20230601061235/https://www.mext.go.jp/content/20230601-mxt_chousa02-000029720-3.pdf",
+      "retrievedAt": "2026-07-06",
+      "format": "pdf",
+      "permalinkNote": "掲載ページ: https://www.mext.go.jp/a_menu/shotou/gakuryoku-chousa/1416304_00008.html(令和4年度 追加分析報告書)。収録値は第2章 図表2-1(p.26)・図表2-3(p.28)。"
+    },
+    {
+      "publisher": "文部科学省(委託先: 福岡教育大学)",
+      "title": "同調査研究 報告書(SES 指標の作成方法: 第2章)",
+      "url": "https://www.mext.go.jp/content/20230601-mxt_chousa02-000029720-1.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260309194525/https://www.mext.go.jp/content/20230601-mxt_chousa02-000029720-1.pdf",
+      "retrievedAt": "2026-07-06",
+      "format": "pdf",
+      "permalinkNote": "SES 指標の構成変数と計算方法(標準化・主成分分析)の一次記述。"
+    }
+  ],
+  "license": {
+    "name": "文部科学省ウェブサイト利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.mext.go.jp/b_menu/1351168.htm",
+    "confirmedAt": "2026-07-06",
+    "note": "報告書 PDF 内に個別の転載制限の記載がないことを確認済み。"
+  },
+  "conversion": {
+    "method": "報告書 PDF を pdftotext -layout で生テキスト化し、第2章 図表2-1(小6)・図表2-3(中3)のデータラベル行(正答率_国語/算数/数学・平均正答率 × SES 四分位)を変換スクリプトで機械抽出。値は報告書の表記のまま(丸めなし)",
+    "script": "scripts/convert/ses-gakuryoku-hogosha-chosa.ts",
+    "verification": "raw/ の生テキストと CSV の全24セルを逐語照合済み(2026-07-06)。恒等式「平均正答率=(国語+算数/数学)÷2 の小数第1位への四捨五入」を全8列で機械検証。本文の記述(Highest と Lowest の差はおよそ20%)とも整合",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2021年度",
+    "coverageEnd": "2021年度",
+    "granularity": "年度(単年。調査は令和3年5月実施)"
+  },
+  "spatial": {
+    "level": "全国",
+    "area": "全国"
+  },
+  "updateFrequency": "不定期(保護者調査の実施年のみ。直近の実施は平成29年度→令和3年度)",
+  "readingGuide": "SES(社会経済的背景)は、世帯年収と保護者の学歴などを合成した指標で、回答世帯を低い方から25%ずつ4つの層(Lowest→Highest)に分けています。どの教科でも SES が高い層ほど正答率が高く、最上位層と最下位層の差は約20ポイントです。これは全国の値で、都道府県別の SES 別集計は公表されていません。また報告書自身が注意しているとおり、この表は相関関係を示すもので、家庭環境が学力を決めるという因果関係を直接証明するものではありません。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 4,
+      "columns": [
+        {
+          "name": "SES区分",
+          "type": "string",
+          "description": "SES 指標の四分位。Lowest SES=第1四分位(下位25%)〜 Highest SES=第4四分位(上位25%)。名称は報告書の表記"
+        },
+        { "name": "小6 国語", "type": "number", "unit": "%", "description": "小学6年生の国語の平均正答率(原表記: 正答率_国語、図表2-1)" },
+        { "name": "小6 算数", "type": "number", "unit": "%", "description": "小学6年生の算数の平均正答率(原表記: 正答率_算数、図表2-1)" },
+        { "name": "小6 平均", "type": "number", "unit": "%", "description": "小学6年生の2教科の平均正答率(原表記: 平均正答率、図表2-1)" },
+        { "name": "中3 国語", "type": "number", "unit": "%", "description": "中学3年生の国語の平均正答率(原表記: 正答率_国語、図表2-3)" },
+        { "name": "中3 数学", "type": "number", "unit": "%", "description": "中学3年生の数学の平均正答率(原表記: 正答率_数学、図表2-3)" },
+        { "name": "中3 平均", "type": "number", "unit": "%", "description": "中学3年生の2教科の平均正答率(原表記: 平均正答率、図表2-3)" }
+      ]
+    }
+  ],
+  "caveats": [
+    "全国の値です。都道府県別・市町村別の SES 別集計は公表されていません。",
+    "SES と正答率の関係は相関であり、因果関係を示すものではありません(報告書第2章の注意書きより)。",
+    "調査対象は文部科学省が調査対象として抽出した国・公・私立学校(本体調査を実施する学校)の児童生徒の保護者(小6 有効回答 30,325・中3 66,837)で、有効回収データにウェイトをつけて全国レベルを推定した値です(対象校の範囲は令和3年度調査の実施要領Ⅴ・Ⅵによる)。",
+    "同じ調査の別分析(福岡教育大学報告書 第3章)には、SES 指標の変種(SESI/SESII)やウェイトの扱いの差によるとみられる、近いが一致しない値が掲載されています。本データセットはお茶の水女子大学報告書 第2章 図表2-1・図表2-3 の値です。",
+    "SES 指標の構成変数(世帯年収・保護者の学歴・職業など)と計算方法の詳細は福岡教育大学報告書 第2章を参照してください。"
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-06",
+      "description": "初版(令和3年度調査の委託分析報告書より)"
+    }
+  ],
+  "relatedDatasets": ["gakuryoku-chosa-r7-todofuken", "kodomo-chosa-konkyu-keinen", "shugaku-enjo-r4-todofuken"],
+  "status": "published"
+}

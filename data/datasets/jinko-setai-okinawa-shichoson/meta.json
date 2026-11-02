@@ -1,0 +1,68 @@
+{
+  "id": "jinko-setai-okinawa-shichoson",
+  "title": "人口・世帯数・出生死亡 沖縄県内市町村別(令和7年1月1日現在)",
+  "description": "沖縄県内41市町村の人口(男女別)・世帯数と、令和6年中の出生者数・死亡者数。総務省「住民基本台帳に基づく人口、人口動態及び世帯数調査」の市区町村別表(総計)から構造化しました。市町村プロファイルの基礎データです。",
+  "themes": ["population"],
+  "tags": ["人口", "世帯数", "出生", "死亡", "住民基本台帳", "市町村別"],
+  "sources": [
+    {
+      "publisher": "総務省",
+      "title": "住民基本台帳に基づく人口、人口動態及び世帯数調査 表25-03【総計】市区町村別(令和7年1月1日現在)",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040306653&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260712234445/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040306653&fileKind=0",
+      "retrievedAt": "2026-07-05",
+      "format": "xlsx",
+      "permalinkNote": "statInfId は年次更新で変わります。調査ページ: https://www.e-stat.go.jp/stat-search/files?toukei=00200241&tstat=000001039591"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-05"
+  },
+  "conversion": {
+    "method": "公表 Excel(単一シート・フラット表)から SheetJS で機械抽出。市町村同定は団体コード先頭5桁で境界データと突合(名称マッチ不使用)",
+    "script": "scripts/convert/jinko-setai-okinawa-shichoson.ts",
+    "verification": "那覇市・沖縄市・北大東村を元 Excel と逐語照合済み(2026-07-05)。当初「死亡者数」に転出者数(計)を誤マッピングしていたのを照合で検出・修正(notes.md 参照)。41市町村の完全一致を変換時に機械検証",
+    "convertedAt": "2026-07-05"
+  },
+  "temporal": {
+    "coverageStart": "2025年1月1日現在",
+    "coverageEnd": "2025年1月1日現在",
+    "granularity": "年次(出生・死亡は令和6年1〜12月)"
+  },
+  "spatial": {
+    "level": "市町村",
+    "area": "沖縄県"
+  },
+  "updateFrequency": "年1回(例年夏頃公表)",
+  "nextExpectedUpdate": "令和8年1月1日現在分の公表後",
+  "readingGuide": "住民基本台帳(住民票)に基づく人口です。国勢調査の人口(実際に住んでいる人を調べる統計)とは定義が異なるため、両者の数値は一致しません。この表は外国人住民を含む「総計」です。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "rowCount": 41,
+      "columns": [
+        { "name": "市町村", "type": "string", "description": "沖縄県内の41市町村" },
+        { "name": "団体コード", "type": "string", "description": "全国地方公共団体コード(先頭5桁)" },
+        { "name": "人口", "type": "integer", "unit": "人", "description": "住民基本台帳人口(総計)" },
+        { "name": "男", "type": "integer", "unit": "人", "description": "男性人口" },
+        { "name": "女", "type": "integer", "unit": "人", "description": "女性人口" },
+        { "name": "世帯数", "type": "integer", "unit": "世帯", "description": "世帯数" },
+        { "name": "出生者数", "type": "integer", "unit": "人", "description": "令和6年中の出生者数" },
+        { "name": "死亡者数", "type": "integer", "unit": "人", "description": "令和6年中の死亡者数" }
+      ]
+    }
+  ],
+  "caveats": [
+    "外国人住民を含む【総計】の値です(日本人住民のみの表とは異なります)。",
+    "人口・世帯数は令和7年1月1日現在、出生者数・死亡者数は令和6年(1〜12月)の年間値です。",
+    "住民基本台帳人口であり、国勢調査人口とは定義が異なります。"
+  ],
+  "changelog": [
+    { "date": "2026-07-05", "description": "初版作成(令和7年1月1日現在分)" }
+  ],
+  "relatedDatasets": ["nenshojinko-okinawa-shichoson", "shugaku-enjo-r5-okinawa-shichoson"],
+  "status": "published"
+}

@@ -1,0 +1,76 @@
+{
+  "id": "shingaku-ritsu-keinen",
+  "title": "高校・大学等進学率の推移 沖縄県・全国(令和3〜7年3月卒)",
+  "description": "学校基本調査(各年度確報)の状況別卒業者数から、高等学校等進学率と大学等進学率を、沖縄県と全国について令和3年3月卒から令和7年3月卒まで収録した経年データセットです。高校進学は全国と同水準まで達している一方、大学等進学率には大きな差が続いていることの推移を確認できます。",
+  "themes": ["education"],
+  "tags": ["学校基本調査", "進学率", "経年"],
+  "sources": [
+    {
+      "publisher": "文部科学省",
+      "title": "学校基本調査(各年度確報) 中学校 卒業後の状況調査 状況別卒業者数(高等学校等進学率)",
+      "url": "https://www.e-stat.go.jp/stat-search/files?toukei=00400001&tstat=000001011528",
+      "archiveUrl": "https://web.archive.org/web/20260712235804/https://www.e-stat.go.jp/stat-search/files?toukei=00400001&tstat=000001011528",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "各年の表番号: 令和3〜5年=表257 / 令和6〜7年=表259(男女計 (3-1) シート)。直リンクは https://www.e-stat.go.jp/stat-search/file-download?statInfId=<ID>&fileKind=0 形式で、<ID>は令和3年=000032156109 / 令和4年=000032264942 / 令和5年=000040128428 / 令和6年=000040230693 / 令和7年=000040393912(2026-07-12 に raw と md5 一致で確定)。statInfId は集計更新で変わることがあります。"
+    },
+    {
+      "publisher": "文部科学省",
+      "title": "学校基本調査(各年度確報) 高等学校(全日制・定時制) 卒業後の状況調査 状況別卒業者数(大学等進学率)",
+      "url": "https://www.e-stat.go.jp/stat-search/files?toukei=00400001&tstat=000001011528",
+      "archiveUrl": "https://web.archive.org/web/20260712235804/https://www.e-stat.go.jp/stat-search/files?toukei=00400001&tstat=000001011528",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "各年の表番号: 令和3〜5年=表281 / 令和6〜7年=表283(男女計 (3-1) シート)。直リンクは https://www.e-stat.go.jp/stat-search/file-download?statInfId=<ID>&fileKind=0 形式で、<ID>は令和3年=000032156133 / 令和4年=000032264966 / 令和5年=000040128452 / 令和6年=000040230717 / 令和7年=000040393936(2026-07-12 に raw と md5 一致で確定)。令和7年3月卒の値は単年データセット shingaku-ritsu-todofuken(statInfId 000040393912/000040393936)と一致することを変換時に検証済み。statInfId は集計更新で変わることがあります。"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-06"
+  },
+  "conversion": {
+    "method": "各年の状況別卒業者数(男女計 (3-1) シート)から、最深ヘッダが「高等学校等進学率」「大学等進学率」に一致する列を同定し、沖縄県と全国「計」の当年3月卒の率を抽出。セルは丸め前の生値のため公表 Excel の表示形式(小数第1位)に四捨五入",
+    "script": "scripts/convert/shingaku-ritsu-keinen.ts",
+    "verification": "令和7年3月卒の4値(沖縄97.2/48.8・全国98.6/62.6)が、独立に照合済みの単年データセット shingaku-ritsu-todofuken の値と一致することを変換時に assert(系列の接続確認)。各年の率を0〜100の範囲・行の一意性で機械検証",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2021年3月卒",
+    "coverageEnd": "2025年3月卒",
+    "granularity": "年度(単年の積み重ね)"
+  },
+  "spatial": {
+    "level": "都道府県・全国",
+    "area": "沖縄県・全国"
+  },
+  "updateFrequency": "年1回(学校基本調査)",
+  "readingGuide": "高等学校等進学率は中学校卒業者に対する割合、大学等進学率は高等学校(全日制・定時制)卒業者に対する割合です。沖縄県の高校進学率は全国と1〜2ポイント差まで近づいていますが、大学等進学率は全国と13〜17ポイントの差が続いています(令和3年3月卒の差16.6ポイント→令和7年3月卒13.8ポイント)。大学等進学率の差は、進学の意欲だけでなく家庭の経済状況(SES)や県内の大学収容力など複数の要因が関わります。関連データセットの県民所得や就学援助率と併せて読んでください。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 5,
+      "columns": [
+        { "name": "卒業年", "type": "string", "description": "卒業時点(和暦・3月卒)。行順に令和3→7年" },
+        { "name": "高校等進学率_沖縄", "type": "number", "unit": "%", "description": "沖縄県の高等学校等進学率(中学校卒業者に対する割合)" },
+        { "name": "高校等進学率_全国", "type": "number", "unit": "%", "description": "全国の高等学校等進学率(原表の「計」)" },
+        { "name": "大学等進学率_沖縄", "type": "number", "unit": "%", "description": "沖縄県の大学等進学率(高等学校卒業者に対する割合)" },
+        { "name": "大学等進学率_全国", "type": "number", "unit": "%", "description": "全国の大学等進学率(原表の「計」)" }
+      ]
+    }
+  ],
+  "caveats": [
+    "収録範囲を令和3〜7年3月卒に限定しています。平成28〜令和2年の同表は年ラベル書式・大学等進学率のヘッダ構造が年ごとに異なり、逐語照合を要するため本版では対象外としました(将来の拡張)。",
+    "高等学校等進学率の分母は中学校卒業者、大学等進学率の分母は高等学校(全日制・定時制)卒業者です。通信制課程の卒業者は分母に含まれません。",
+    "「大学等」には大学・短期大学・通信教育部などへの進学を含みます(原表に通信制を除く率も併記されていますが、本データは主系列を収録)。",
+    "率は公表 Excel のセル値(丸め前の生値)を小数第1位に四捨五入した値です。",
+    "e-Stat の statInfId(直リンク)は集計の更新で変わることがあります。リンク切れの場合は出典の掲載ページから各年度の表番号(中学=表257/259、高校=表281/283)で検索してください。"
+  ],
+  "changelog": [
+    { "date": "2026-07-06", "description": "初版(令和3〜7年3月卒の5年分)" }
+  ],
+  "relatedDatasets": ["shingaku-ritsu-todofuken", "kenmin-shotoku-todofuken", "ses-gakuryoku-hogosha-chosa"],
+  "status": "published"
+}

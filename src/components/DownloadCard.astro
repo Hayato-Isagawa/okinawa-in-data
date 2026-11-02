@@ -1,0 +1,115 @@
+---
+import type { DatasetMeta } from "../../data/schema/dataset-meta";
+
+interface Props {
+  meta: DatasetMeta;
+  /** ファイル名 → バイトサイズ(ビルド時に fs.statSync で計測して渡す) */
+  fileSizes: Record<string, number>;
+}
+
+const { meta, fileSizes } = Astro.props;
+
+const csvFile = meta.files.find((f) => f.format === "csv");
+
+const formatSize = (bytes: number): string =>
+  bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
+
+const downloads = Object.entries(fileSizes).map(([name, size]) => ({
+  name,
+  href: `/data/${meta.id}/${name}`,
+  label: name === "meta.json" ? "メタデータ" : name.endsWith(".csv") ? "CSV" : "JSON",
+  // 保存ファイル名にはデータセット ID を含める(全データセットが data.csv のままだと
+  // 複数持ち帰ったときに取り違える)
+  downloadName:
+    name === "meta.json"
+      ? `${meta.id}.meta.json`
+      : `${meta.id}${name.slice(name.lastIndexOf("."))}`,
+  size,
+}));
+
+const citation = meta.sources
+  .map((s) => `${s.publisher}「${s.title}」(${s.retrievedAt}取得)`)
+  .join("、");
+const temporalText =
+  meta.temporal.coverageStart === meta.temporal.coverageEnd
+    ? meta.temporal.coverageStart
+    : `${meta.temporal.coverageStart}〜${meta.temporal.coverageEnd}`;
+// 引用から当該データセットに戻れるよう URL を含める。ドメイン確定前の
+// プレースホルダ(.example)は引用例に載せない
+const datasetUrl =
+  Astro.site && !Astro.site.hostname.endsWith(".example")
+    ? new URL(`/datasets/${meta.id}/`, Astro.site).href
+    : null;
+// 検証中データの出典をコピーすると警告が抜け落ちるため、文字列自体に注記を同梱する
+const draftNote =
+  meta.status === "draft" ? "。※検証中(元の資料との確認が未完了)のため引用はお控えください" : "";
+const citationText = `出典: ${citation}をもとに「データでみる沖縄」が作成(対象: ${temporalText})${datasetUrl ? `。${datasetUrl}` : ""}${draftNote}`;
+---
+
+<section aria-labelledby="download-heading" class="my-8">
+  <h2 id="download-heading" class="text-xl font-bold">ダウンロード</h2>
+  <div
+    class="card mt-4 p-4"
+  >
+    <ul class="flex flex-wrap gap-3">
+      {
+        downloads.map((d) => (
+          <li>
+            <a
+              href={d.href}
+              download={d.downloadName}
+              class={d.label === "CSV" ? "btn-ocean" : "btn-ghost"}
+            >
+              {d.label} をダウンロード
+              <span
+                class="num text-sm font-normal"
+                style={d.label === "CSV" ? "color: rgba(255,255,255,0.85);" : "color: var(--color-sub);"}
+              >
+                ({formatSize(d.size)}
+                {d.label !== "メタデータ" && csvFile ? ` / ${csvFile.rowCount}行` : ""})
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-3 text-xs" style="color: var(--color-sub);">
+      JSON は出典・注意書きを同梱した単一オブジェクトです。表データは records
+      キーの配列にあります(Python 例:
+      <code>pd.json_normalize(obj, record_path="records")</code>)。
+    </p>
+    <p class="mt-4 text-sm font-semibold">利用時の出典表記例</p>
+    <p
+      class="mt-1 rounded border px-3 py-2 text-sm select-all"
+      style="border-color: var(--color-line); background: var(--color-bg);"
+      id="citation-text"
+    >
+      {citationText}
+    </p>
+    <button
+      type="button"
+      id="citation-copy"
+      class="mt-2 hidden rounded border px-3 py-1 text-sm"
+      style="border-color: var(--color-line); color: var(--color-accent);"
+    >
+      出典表記をコピー
+    </button>
+  </div>
+</section>
+
+<script>
+  // CSP: Astro が外部ファイルにバンドルするため script-src 'self' のまま動く。
+  // JS 無効環境では select-all の段落をそのまま手動コピーできる(漸進的強化)。
+  const button = document.getElementById("citation-copy");
+  const text = document.getElementById("citation-text");
+  if (button && text && navigator.clipboard) {
+    button.classList.remove("hidden");
+    button.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(text.textContent?.trim() ?? "");
+      button.textContent = "コピーしました ✓";
+      setTimeout(() => {
+        button.textContent = "出典表記をコピー";
+      }, 2000);
+    });
+  }
+</script>

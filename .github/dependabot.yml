@@ -1,0 +1,91 @@
+# 依存更新の提案を受け取る。姉妹リポ(edu-evidence / edu-watch / edu-law)と
+# 同じ形に揃えている。
+#
+# xlsx は CDN の tarball を直接参照しているため(package.json 参照)、
+# Dependabot の対象外。更新は手動で行う必要がある。
+# 週次の `npm audit`(.github/workflows/audit.yml)は lockfile 全体を見るので、
+# xlsx に high 以上の advisory が出れば検出はされる。
+
+version: 2
+updates:
+  # npm packages
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    labels:
+      - "dependencies"
+    ignore:
+      # vite は overrides 専用で直接依存ではない。次期メジャー(vite 9)は
+      # `@tailwindcss/vite` が対応を公表するまで見送る(edu-law と同方針)。
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      # typescript の major 更新は `@astrojs/check` の peer dependency
+      # (typescript@^5.0.0 || ^6.0.0) と衝突し、npm ci が失敗する。
+      # 実際 TypeScript 7.0.2 の PR (#68) はインストール段階で落ちた。
+      # `@astrojs/check` が TypeScript 7 に対応した時点で、この ignore を削除する
+      # (姉妹リポ edu-evidence / edu-watch / edu-law と同じ方針)。
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+    groups:
+      astro-ecosystem:
+        patterns:
+          - "astro"
+          - "@astrojs/*"
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+      # このリポジトリ固有。データ整形と可視化に使う一群で、
+      # 個別に PR が来ても一緒に検証することになる。
+      data-tools:
+        patterns:
+          - "@observablehq/plot"
+          - "topojson-client"
+          - "@types/topojson-client"
+          - "linkedom"
+      dev-tools:
+        patterns:
+          - "typescript"
+          - "tsx"
+          - "@types/node"
+      playwright:
+        patterns:
+          - "@playwright/test"
+          - "@axe-core/playwright"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    cooldown:
+      default-days: 7
+    labels:
+      - "dependencies"
+    # minor / patch は 1 本の PR にまとめる。別々の PR で同じ日に来ると、先にマージされた
+    # 側がワークフローを書き換え、古い main を基にした残りの PR は GITHUB_TOKEN に
+    # workflows 権限が無いため GitHub にマージを拒否される(2026-10-12 に発生)。
+    # major は auto-merge の対象外なので、個別の PR のまま人が見る。
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["data/datasets/**", "src/data/geo/**"],
+  "rules": {
+    "no-irregular-whitespace": [
+      "warn",
+      {
+        "skipComments": true
+      }
+    ]
+  }
+}

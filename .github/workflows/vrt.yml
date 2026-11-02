@@ -1,0 +1,221 @@
+name: VRT
+
+# デザイントークンは姉妹リポの sync-family-tokens.yml がファミリー横断で
+# 同期しているのに、視覚回帰を見ていたのは evi / law / watch の 3 本だけだった。
+# トークンが動いてもこのリポでは誰も見ていない状態だったので、他 3 本と同じ
+# 方式(案A: CI 内で main と PR を両方ビルドして撮り比べる)を入れる。
+# ベースライン側は「main のコード x PR のコンテンツ」で撮る(ADR 0003。
+# 他ファイルのデータセット追加・修正が波及しただけの赤を消す)。
+#
+# 起動条件は描画に効く経路に限る。ルートの data/(データセット)の追加・更新では起動しない
+# (データセットが増えても代表ページの見た目は変わらない)。
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/layouts/**"
+      - "src/components/**"
+      - "src/styles/**"
+      - "src/pages/**"
+      - "src/lib/**"
+      # src/data/ は地図の境界データ(geo/ の topojson / geojson)で、描画の入力。
+      # 変更頻度が低くコンテンツ増加のノイズも無いので、運ぶのではなく監視する。
+      # 運ぶと差し替えの視覚変化が永久に見えなくなる。
+      - "src/data/**"
+      - "astro.config.*"
+      - "vrt/**"
+      - "playwright.vrt.config.ts"
+      # playwright.vrt.config.ts の webServer が起動する配信スクリプト
+      - "scripts/serve-dist.mjs"
+      - ".github/workflows/vrt.yml"
+      # 依存の更新も描画に効く。astro / tailwind の minor は生成される HTML と
+      # CSS を変えうるのに、ここに無かったため Dependabot PR では誰も見ていなかった。
+      # 2026-08-11 の astro 7.1.6 -> 7.2.0 は手元で撮り比べて dist がバイト単位で
+      # 同一だったが、それはこの minor がそうだっただけで、保証ではない。
+      - "package.json"
+      - "package-lock.json"
+      # 更新履歴は PR ごとに 1 行増える。その描画は撮っていない
+      # (vrt/pages.spec.ts の対象リストに /changelog/ は入れていない)ので、
+      # 変更で起動しても得るものが無い。paths の否定は後勝ちなので
+      # src/pages/** より後ろに置くこと。
+      - "!src/pages/changelog.astro"
+  workflow_dispatch:
+    inputs:
+      neutral:
+        description: "ベースラインに PR のコンテンツを持ち込む(既定)。false にすると main そのままで撮る"
+        type: boolean
+        default: true
+
+concurrency:
+  group: vrt-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  vrt:
+    name: Visual Regression
+    runs-on: ubuntu-latest
+    # 既定は 360 分。依存更新でも起動するようになった今、刺さったときの
+    # 影響範囲が広がる。auto-merge 側は 20 分で諦めて赤くなるので、
+    # それより少し長い上限を置いて run を放置しない。実測は 2m35s。
+    # 律速はテストではなく Playwright / apt のインストール。平常時は 20〜30 秒だが、
+    # 2026-08-19 の実測ではファミリー横断で遅延し、別の姉妹リポの同じステップが
+    # 28.45 分動いてなお完了しなかった(concurrency で cancel)。成功実行でも
+    # その姉妹リポ 15.35 分 / edu-evidence 13.6 分。テストの実行時間から決めない。
+    timeout-minutes: 45
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ".tool-versions"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+
+      - name: Build PR branch
+        run: npm run build
+
+      - name: Stash PR build
+        run: mv dist dist-pr
+
+      # ベースラインは「main のコード x PR のコンテンツ」で撮る。描画に入る素材の
+      # 側を PR に揃えると、比較に残る差分がコード由来だけになる(ADR 0003)。
+      # 揃えないと、他ファイルのデータセット追加・修正が波及しただけの赤が出続ける。
+      - name: Build baseline (main code x PR content)
+        id: baseline
+        env:
+          # pull_request では github.event.inputs が無いので 'true' に落ちる。
+          # `inputs.neutral == false` と書かないこと — GitHub の式は型が違うと
+          # 数値に寄せるので、null と false が等しくなって既定が反転する。
+          VRT_NEUTRAL: ${{ github.event.inputs.neutral || 'true' }}
+        run: |
+          set -euo pipefail
+          git worktree add /tmp/okinawa-main origin/main
+          npm --prefix /tmp/okinawa-main ci
+
+          if [ "$VRT_NEUTRAL" = "false" ]; then
+            echo "::notice title=VRT baseline raw::neutral=false: main そのままでベースラインを撮る。コンテンツ由来の差分も出る"
+            npm --prefix /tmp/okinawa-main run build
+            # 他の 2 経路と同じく mode を先に書く。mv が落ちたときだけ相が
+            # 空になる、という非対称を作らない。
+            echo "mode=raw" >> "$GITHUB_OUTPUT"
+            mv /tmp/okinawa-main/dist dist-main
+            exit 0
+          fi
+
+          # 運ぶ素材の allowlist。**ここに無いものは運ばない**:
+          #   - src/** / scripts/lib/** / astro.config.* — 検査対象そのもの
+          #     (src/data/geo は描画の入力なので運ばず paths で監視する)
+          #   - package.json / package-lock.json — 依存バンプの視覚影響は VRT が
+          #     見るべきもの。上の paths に両方載せているのはそのため
+          #   - public/ — ブランド資産と配信設定(_headers 等)で、いずれもコード側
+          #
+          # data/ はデータセット本体(data/datasets/、src/lib/datasets.ts が
+          # process.cwd() から fs で読む)とそのスキーマ(data/schema/)。スキーマは
+          # コンテンツと同伴させる — 別々にすると PR の meta.json を main の zod が
+          # 弾いてビルドが落ちる。data/schema/dataset-meta.ts の THEME_LABELS は
+          # 描画側が import するので、運ぶ以上その変更は VRT から見えない
+          # (ADR 0003 の受け入れた死角)。
+          #
+          # --delete は必須。PR が消したデータセットが main 側に残ると、消えたはずの
+          # カードがベースラインにだけ描かれて、それ自体が差分になる。
+          rsync -a --delete data/ /tmp/okinawa-main/data/
+
+          # **|| はビルドコマンドだけに掛ける。** 上の npm ci や rsync まで巻き込むと、
+          # ネットワーク断・disk full が「degraded で続行」に
+          # 落ちて、インフラ障害が緑で通る。
+          build_rc=0
+          npm --prefix /tmp/okinawa-main run build || build_rc=$?
+
+          if [ "$build_rc" -ne 0 ]; then
+            echo "::warning title=VRT baseline degraded::main のコードで PR のコンテンツをビルドできなかった。main 自身のコンテンツで撮り直す。この run の差分にはコンテンツ由来の差分が混ざる"
+            git -C /tmp/okinawa-main checkout -- .
+            git -C /tmp/okinawa-main clean -fd
+            # git clean は -x が無いと gitignore 済みを消さない。Astro の content
+            # layer キャッシュが残ると、撮り直しに PR のコンテンツが混入する。
+            rm -rf /tmp/okinawa-main/dist /tmp/okinawa-main/.astro \
+                   /tmp/okinawa-main/node_modules/.astro /tmp/okinawa-main/node_modules/.vite
+            # ここで落ちたら main 自体が壊れている。set -e で job を落とす。
+            npm --prefix /tmp/okinawa-main run build
+            echo "mode=degraded" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=neutral" >> "$GITHUB_OUTPUT"
+          fi
+
+          mv /tmp/okinawa-main/dist dist-main
+
+      # 比較の前に置く。後ろに置くと if: always() が要るうえ、比較ステップが
+      # クラッシュした回に書かれない。
+      - name: Report baseline mode
+        env:
+          MODE: ${{ steps.baseline.outputs.mode }}
+        run: |
+          set -euo pipefail
+          case "$MODE" in
+            neutral)
+              cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ### VRT ベースライン: neutral (main のコード x PR のコンテンツ)
+
+          差分はコード / CSS 由来。ただし `.astro` に直接書かれた散文・数値は、
+          実体がコンテンツでも中立化されない (ADR 0003)。
+          EOF
+              ;;
+            degraded)
+              cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ### VRT ベースライン: degraded (コンテンツ中立化に失敗)
+
+          main のコードで PR のコンテンツをビルドできなかった。PR が
+          `data/schema/` かデータセットの形を変えていて、main のページが
+          それを前提にしていない可能性が高い。
+
+          **この run の差分にはコンテンツ由来の差分が混ざる。赤を見た目の回帰として読まないこと。**
+          EOF
+              ;;
+            *)
+              cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ### VRT ベースライン: raw (main そのまま)
+
+          コンテンツ由来の差分も出る。手動実行で neutral=false を選んだとき用。
+          EOF
+              ;;
+          esac
+
+      - name: Capture baseline from main
+        env:
+          VRT_DIST: dist-main
+        run: npx playwright test --config playwright.vrt.config.ts --update-snapshots
+
+      - name: Compare PR against baseline
+        env:
+          VRT_DIST: dist-pr
+        run: npx playwright test --config playwright.vrt.config.ts
+
+      - name: Upload VRT report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          # 赤い run で人が実際にクリックするのは artifact であって summary では
+          # ないので、相を名前にも出す。
+          #
+          # **三項で「neutral のときだけ素の名前」にはできない。** GitHub の式は
+          # 空文字を falsy として扱うので、`X == 'neutral' && '' || format(...)` は
+          # 常に右辺を返す。常時サフィックスにして、ベースラインステップが mode を
+          # 書く前に落ちた run も名前で分かるようにする。
+          name: vrt-report-${{ steps.baseline.outputs.mode || 'nobaseline' }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

@@ -1,0 +1,343 @@
+---
+import "../styles/global.css";
+import Logo from "../components/Logo.astro";
+import { escapeLd } from "../lib/jsonld";
+
+interface Props {
+  title: string;
+  description: string;
+  /** ページ固有の構造化データ(データセット詳細の schema.org/Dataset など) */
+  jsonLd?: object;
+  /** false のページはサイト内検索(Pagefind)の索引に入れない */
+  searchable?: boolean;
+}
+
+const { title, description, jsonLd, searchable = true } = Astro.props;
+
+// プレースホルダ(.example)の URL は canonical / OG に載せない(DownloadCard と同じ規則)
+const canonicalUrl =
+  Astro.site && !Astro.site.hostname.endsWith(".example")
+    ? new URL(Astro.url.pathname, Astro.site).href
+    : undefined;
+
+const siteUrlValid = Astro.site && !Astro.site.hostname.endsWith(".example");
+const ogImageUrl = siteUrlValid
+  ? new URL("/og-default.png", Astro.site).href
+  : undefined;
+const websiteJsonLd = siteUrlValid
+  ? {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "データでみる沖縄",
+      url: Astro.site!.href,
+      description:
+        "沖縄の公的データを、元の資料(一次出典)までたどれる形で公開しているサイト",
+      inLanguage: "ja",
+    }
+  : undefined;
+const organizationJsonLd = siteUrlValid
+  ? {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "データでみる沖縄",
+      alternateName: "okinawa-in-data",
+      url: Astro.site!.href,
+      logo: new URL("/apple-touch-icon.png", Astro.site).href,
+      founder: {
+        "@type": "Person",
+        name: "Isagawa Hayato",
+        url: new URL("/about/", Astro.site).href,
+        sameAs: ["https://github.com/Hayato-Isagawa"],
+      },
+    }
+  : undefined;
+
+const nav = [
+  { href: "/datasets/", label: "データセット" },
+  { href: "/area/", label: "市町村から探す" },
+  { href: "/themes/education-poverty/", label: "教育×子どもの貧困" },
+  { href: "/methodology/", label: "データの作り方" },
+  { href: "/about/", label: "このサイトについて" },
+  { href: "/search/", label: "検索" },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0c4a6e" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="データでみる沖縄" />
+    <meta property="og:locale" content="ja_JP" />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {ogImageUrl && <meta property="og:image:width" content="1200" />}
+    {ogImageUrl && <meta property="og:image:height" content="630" />}
+    <meta name="twitter:card" content={ogImageUrl ? "summary_large_image" : "summary"} />
+    <title>{title}</title>
+
+    {websiteJsonLd && (
+      <script type="application/ld+json" set:html={escapeLd(websiteJsonLd)} />
+    )}
+    {organizationJsonLd && (
+      <script type="application/ld+json" set:html={escapeLd(organizationJsonLd)} />
+    )}
+    {jsonLd && <script type="application/ld+json" set:html={escapeLd(jsonLd)} />}
+
+    <!-- Cloudflare Web Analytics(手動スニペット方式、docs/decisions/0002) -->
+    <script
+      is:inline
+      type="module"
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "32ab56b51fe44e6c81aaf331a526dc6c"}'></script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">本文へスキップ</a>
+    <header class="sticky top-0 z-50" style="background: var(--color-card); box-shadow: 0 1px 0 var(--color-line);">
+      <div aria-hidden="true" style="height: 3px; background: var(--grad-ocean);"></div>
+      <div class="mx-auto flex max-w-5xl flex-wrap items-center gap-x-8 gap-y-2 px-4 py-3">
+        <a href="/" class="flex items-center gap-2 font-bold" style="color: var(--color-ink); letter-spacing: 0.02em;">
+          <Logo size={26} />
+          データでみる沖縄
+        </a>
+        <nav aria-label="メインナビゲーション" class="ml-auto hidden lg:block">
+          <ul class="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+            {
+              nav.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    class="link-underline font-semibold"
+                    style={
+                      currentPath.startsWith(item.href)
+                        ? "color: var(--color-accent);"
+                        : "color: var(--color-ink-accent);"
+                    }
+                    aria-current={currentPath.startsWith(item.href) ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+        <button
+          type="button"
+          id="menu-toggle"
+          class="ml-auto rounded-lg border p-2 lg:hidden"
+          style="border-color: var(--color-line);"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="sr-only">メニュー</span>
+          <svg aria-hidden="true" class="icon-menu" width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="5" x2="17" y2="5"></line>
+            <line x1="3" y1="10" x2="17" y2="10"></line>
+            <line x1="3" y1="15" x2="17" y2="15"></line>
+          </svg>
+          <svg aria-hidden="true" class="icon-close" width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="4" y1="4" x2="16" y2="16"></line>
+            <line x1="16" y1="4" x2="4" y2="16"></line>
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="mobile-menu border-t lg:hidden" style="border-color: var(--color-line); background: var(--color-card);" inert>
+        <nav aria-label="モバイルナビゲーション" class="mx-auto max-w-5xl px-4 py-3">
+          <ul class="space-y-1">
+            {
+              nav.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    class="block rounded-lg px-3 py-2.5 font-semibold"
+                    style={
+                      currentPath.startsWith(item.href)
+                        ? "color: var(--color-accent); background: var(--color-accent-soft);"
+                        : "color: var(--color-ink-accent);"
+                    }
+                    aria-current={currentPath.startsWith(item.href) ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="mx-auto max-w-5xl px-4 py-8" data-pagefind-body={searchable ? "" : undefined}>
+      <slot />
+    </main>
+    <footer class="mt-20" style="background: #0b1e3f;">
+      <div aria-hidden="true" style="height: 3px; background: var(--grad-ocean);"></div>
+      <div class="mx-auto grid max-w-5xl gap-x-12 gap-y-8 px-4 py-12 text-sm sm:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <p class="flex items-center gap-2 font-bold text-white">
+            <Logo size={24} />
+            データでみる沖縄
+          </p>
+          <p class="display-en mt-1 text-xs font-semibold tracking-[0.25em]" style="color: #67e8f9;">
+            OKINAWA IN DATA
+          </p>
+          <p class="mt-4 max-w-sm text-white/80">
+            沖縄の公的データを、元の資料までたどれる形で。
+          </p>
+        </div>
+        <nav aria-label="フッター: 探す">
+          <p class="text-xs font-bold tracking-widest text-white/60">探す</p>
+          <ul class="mt-3 space-y-2 font-semibold text-white">
+            <li><a href="/datasets/" class="link-underline">データセット</a></li>
+            <li><a href="/area/" class="link-underline">市町村から探す</a></li>
+            <li><a href="/themes/education-poverty/" class="link-underline">教育×子どもの貧困</a></li>
+            <li><a href="/search/" class="link-underline">検索</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="フッター: このサイト">
+          <p class="text-xs font-bold tracking-widest text-white/60">このサイト</p>
+          <ul class="mt-3 space-y-2 font-semibold text-white">
+            <li><a href="/methodology/" class="link-underline">データの作り方</a></li>
+            <li><a href="/glossary/" class="link-underline">用語集</a></li>
+            <li><a href="/changelog/" class="link-underline">更新履歴</a></li>
+            <li><a href="/about/" class="link-underline">このサイトについて</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="border-t" style="border-color: rgb(255 255 255 / 0.12);">
+        <p class="mx-auto max-w-5xl px-4 py-4 text-xs text-white/60">
+          各データセットのライセンスは個別ページに明記しています。引用の際は必ず一次資料をご確認ください。
+        </p>
+      </div>
+    </footer>
+    <script>
+      // 地図のカスタムツールチップ: SVG の <title>(ネイティブは表示に約1秒かかる)を
+      // 即時表示の吹き出しに置き換える。テキストは <title> から取得し、取得後は
+      // data 属性へ退避(ネイティブとの二重表示防止)。リンク名は <a> の aria-label が担う。
+      // ホバーに加えて focus(キーボード)とタップ(タッチ)でも同じ値に到達できるようにする。
+      const tip = document.createElement("div");
+      tip.className = "map-tip";
+      tip.hidden = true;
+      // 視覚専用の吹き出し。同じ値は <a> の aria-label が担うため SR には二重に読ませない
+      tip.setAttribute("aria-hidden", "true");
+      document.body.appendChild(tip);
+
+      const textFor = (path: SVGPathElement): string | null => {
+        if (path.dataset.tip) return path.dataset.tip;
+        const title = path.querySelector("title");
+        if (!title?.textContent) return null;
+        path.dataset.tip = title.textContent;
+        title.remove();
+        return path.dataset.tip;
+      };
+
+      const pathFrom = (target: EventTarget | null): SVGPathElement | null =>
+        target instanceof Element
+          ? target.closest<SVGPathElement>(".map-figure path")
+          : null;
+
+      const showTip = (text: string, x: number, y: number) => {
+        tip.textContent = text;
+        tip.hidden = false;
+        const pad = 14;
+        const rect = tip.getBoundingClientRect();
+        tip.style.left = `${Math.min(x + pad, window.innerWidth - rect.width - 8)}px`;
+        tip.style.top = `${Math.min(y + pad, window.innerHeight - rect.height - 8)}px`;
+      };
+
+      document.addEventListener("pointermove", (e) => {
+        const path = pathFrom(e.target);
+        const text = path ? textFor(path) : null;
+        if (!text) {
+          tip.hidden = true;
+          return;
+        }
+        showTip(text, e.clientX, e.clientY);
+      });
+      // タッチはホバーできないため、リンクでないポリゴン(全国地図)はタップで
+      // 表示・再タップで消す。リンクのポリゴンはタップ=ページ遷移なので出さない。
+      document.addEventListener("pointerdown", (e) => {
+        const path = pathFrom(e.target);
+        const text = path && !path.closest("a") ? textFor(path) : null;
+        if (!text || (!tip.hidden && tip.textContent === text)) {
+          tip.hidden = true;
+          return;
+        }
+        showTip(text, e.clientX, e.clientY);
+      });
+      // キーボード: 地図リンクへの focus で表示し、Esc で消せる(WCAG 1.4.13)。
+      // 値そのものは <a> の aria-label にも含まれる(map.ts)。
+      document.addEventListener("focusin", (e) => {
+        const link =
+          e.target instanceof Element
+            ? e.target.closest<SVGAElement>(".map-figure a")
+            : null;
+        const path = link?.querySelector<SVGPathElement>("path") ?? null;
+        const text = path ? textFor(path) : null;
+        if (!text) {
+          tip.hidden = true;
+          return;
+        }
+        const rect = (path ?? link)!.getBoundingClientRect();
+        showTip(text, rect.left + rect.width / 2, rect.top + rect.height / 2);
+      });
+      document.addEventListener("focusout", () => {
+        tip.hidden = true;
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") tip.hidden = true;
+      });
+
+      // モバイルメニュー(edu-evidence と同じ inert 方式)
+      const toggle = document.getElementById("menu-toggle");
+      const menu = document.getElementById("mobile-menu");
+      if (toggle && menu) {
+        const isOpen = () => toggle.getAttribute("aria-expanded") === "true";
+        const setOpen = (open: boolean) => {
+          toggle.setAttribute("aria-expanded", String(open));
+          if (open) {
+            menu.removeAttribute("inert");
+          } else {
+            menu.setAttribute("inert", "");
+          }
+        };
+        toggle.addEventListener("click", () => setOpen(!isOpen()));
+        // Esc で閉じてトグルへ focus を戻す(キーボード利用者の期待に合わせる)
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Escape" || !isOpen()) return;
+          setOpen(false);
+          toggle.focus();
+        });
+        // メニュー外のクリック/タップで閉じる(本文操作時に開きっぱなしにしない)
+        document.addEventListener("pointerdown", (e) => {
+          if (!isOpen()) return;
+          if (
+            e.target instanceof Node &&
+            (menu.contains(e.target) || toggle.contains(e.target))
+          ) {
+            return;
+          }
+          setOpen(false);
+        });
+        // デスクトップ幅(メニュー非表示)へ広げたら開いた状態を残さない
+        window
+          .matchMedia("(min-width: 1024px)")
+          .addEventListener("change", (e) => {
+            if (e.matches) setOpen(false);
+          });
+      }
+    </script>
+  </body>
+</html>

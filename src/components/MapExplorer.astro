@@ -1,0 +1,188 @@
+---
+import { INDICATORS, renderIndicatorSvg } from "../lib/indicators";
+import { getDataset } from "../lib/datasets";
+import { escapeLd } from "../lib/jsonld";
+
+const initial = INDICATORS[0];
+const initialSvg = renderIndicatorSvg(initial);
+
+const registry = INDICATORS.map((ind) => {
+  const meta = getDataset(ind.datasetId);
+  return {
+    key: ind.key,
+    label: ind.label,
+    tab: ind.tab,
+    datasetId: ind.datasetId,
+    publisher: meta.sources[0].publisher,
+    draft: meta.status === "draft",
+  };
+});
+const initialEntry = registry[0];
+
+// script 要素の中身なので、`<` を残すと値の中の `</script>` で要素を抜けられる。
+// JSON.stringify は `<` を素通しするため、JSON のエスケープ形へ落とす(JSON.parse は元に戻す)。
+const registryJson = escapeLd(registry);
+---
+
+<section aria-labelledby="explorer-heading" class="card p-5 sm:p-7">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <h2 id="explorer-heading" class="text-xl font-bold">
+      地図でみる沖縄のデータ
+    </h2>
+    <div data-explorer-controls hidden class="flex flex-wrap items-center gap-3">
+      <div role="group" aria-label="表示範囲" class="flex rounded-full border p-1" style="border-color: var(--color-line);">
+        <button
+          type="button"
+          data-tab="okinawa"
+          aria-pressed="true"
+          class="rounded-full px-4 py-1.5 text-sm font-bold"
+        >
+          県内で見る
+        </button>
+        <button
+          type="button"
+          data-tab="national"
+          aria-pressed="false"
+          class="rounded-full px-4 py-1.5 text-sm font-bold"
+        >
+          全国と比べる
+        </button>
+      </div>
+      <label class="text-sm font-semibold" for="indicator-select">指標</label>
+      <select
+        id="indicator-select"
+        class="rounded-lg border px-3 py-2 text-sm"
+        style="border-color: var(--color-line); background: var(--color-card); max-width: calc(100vw - 4.5rem);"
+      ></select>
+    </div>
+  </div>
+
+  <div
+    id="map-stage"
+    class="map-figure mt-5 min-h-[24rem]"
+    set:html={initialSvg}
+  />
+
+  <p
+    id="map-error"
+    role="alert"
+    hidden
+    class="mt-3 rounded border px-3 py-2 text-sm"
+    style="border-color: #f0b8b8; background: #fdf3f3; color: #9f1d1d;"
+  >
+    地図を読み込めませんでした。通信環境を確認して、もう一度指標を選び直してください。
+  </p>
+
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4" style="border-color: var(--color-line);">
+    <p id="map-source" class="text-sm" style="color: var(--color-sub);" aria-live="polite">
+      出典: {initialEntry.publisher}(一次資料)
+      {initialEntry.draft && <span class="ml-1 rounded border px-1.5 py-0.5 text-xs" style="border-color: var(--color-line);">検証中</span>}
+    </p>
+    <a
+      id="map-detail-link"
+      href={`/datasets/${initialEntry.datasetId}/`}
+      class="link-underline text-sm font-bold"
+      style="color: var(--color-accent);"
+    >
+      出典・表・ダウンロード →
+    </a>
+  </div>
+
+  <script is:inline type="application/json" id="indicator-registry" set:html={registryJson} />
+</section>
+
+<script>
+  const registry = JSON.parse(
+    document.getElementById("indicator-registry")?.textContent ?? "[]",
+  ) as Array<{
+    key: string;
+    label: string;
+    tab: string;
+    datasetId: string;
+    publisher: string;
+    draft: boolean;
+  }>;
+
+  const controls = document.querySelector<HTMLElement>("[data-explorer-controls]");
+  const select = document.getElementById("indicator-select") as HTMLSelectElement | null;
+  const stage = document.getElementById("map-stage");
+  const sourceLine = document.getElementById("map-source");
+  const detailLink = document.getElementById("map-detail-link") as HTMLAnchorElement | null;
+  const errorLine = document.getElementById("map-error");
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
+  if (controls && select && stage && sourceLine && detailLink && errorLine && registry.length) {
+    controls.hidden = false;
+    const cache = new Map<string, string>();
+    cache.set(registry[0].key, stage.innerHTML);
+    let currentTab = registry[0].tab;
+    // 表示中の指標。fetch 失敗時にここへ巻き戻し、select と地図の不一致を残さない
+    let current = registry[0];
+
+    const styleTabs = () => {
+      for (const tab of tabs) {
+        const active = tab.dataset.tab === currentTab;
+        tab.setAttribute("aria-pressed", String(active));
+        tab.style.background = active ? "var(--color-ocean-deep)" : "transparent";
+        tab.style.color = active ? "#ffffff" : "var(--color-ink-accent)";
+      }
+    };
+    const fillSelect = () => {
+      select.innerHTML = "";
+      for (const entry of registry.filter((r) => r.tab === currentTab)) {
+        const option = document.createElement("option");
+        option.value = entry.key;
+        option.textContent = entry.label;
+        select.appendChild(option);
+      }
+    };
+    const show = async (key: string) => {
+      const entry = registry.find((r) => r.key === key);
+      if (!entry) return;
+      if (!cache.has(key)) {
+        stage.setAttribute("aria-busy", "true");
+        try {
+          const res = await fetch(`/maps/${key}.svg`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          cache.set(key, await res.text());
+        } catch {
+          errorLine.hidden = false;
+          currentTab = current.tab;
+          styleTabs();
+          fillSelect();
+          select.value = current.key;
+          return;
+        } finally {
+          stage.removeAttribute("aria-busy");
+        }
+      }
+      errorLine.hidden = true;
+      // role="img"/aria-label は断片側(renderIndicatorSvg)で必要な図にだけ付与済み
+      stage.innerHTML = cache.get(key)!;
+      // publisher はリポ内のデータ由来だが、出所が変わったときに気づけないので
+      // HTML 文字列に埋めず DOM で組み立てる(初期表示の SSR 側と同じ形になる)
+      sourceLine.textContent = `出典: ${entry.publisher}(一次資料)`;
+      if (entry.draft) {
+        const badge = document.createElement("span");
+        badge.className = "ml-1 rounded border px-1.5 py-0.5 text-xs";
+        badge.style.borderColor = "var(--color-line)";
+        badge.textContent = "検証中";
+        sourceLine.append(" ", badge);
+      }
+      detailLink.href = `/datasets/${entry.datasetId}/`;
+      current = entry;
+    };
+
+    for (const tab of tabs) {
+      tab.addEventListener("click", () => {
+        if (tab.dataset.tab === currentTab) return;
+        currentTab = tab.dataset.tab!;
+        styleTabs();
+        fillSelect();
+        void show(select.value);
+      });
+    }
+    select.addEventListener("change", () => void show(select.value));
+    styleTabs();
+    fillSelect();
+  }
+</script>

@@ -1,0 +1,407 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/bricolage-grotesque-latin.woff2") format("woff2");
+  font-weight: 500 800;
+  font-display: swap;
+}
+
+:root {
+  /* 沖縄の海: 浅瀬のターコイズ → 深海の藍 */
+  --color-bg: #f7fbfc;
+  --color-ink: #102733;
+  --color-sub: #4a6572;
+  --color-line: #d7e5ea;
+  --color-card: #ffffff;
+  --color-accent: #0369a1; /* リンク・強調(白背景で AA) */
+  --color-ink-accent: #0c4a6e;
+  --color-accent-soft: #e0f4fb;
+  --color-lagoon: #22d3ee;
+  --grad-ocean: linear-gradient(135deg, #22d3ee 0%, #0284c7 45%, #1e3a8a 100%);
+  /* 白文字を載せる面用。--grad-ocean はシアン端が白文字と 4.5:1 を割るため、
+     テキストを持つ背景はこちらを使う(全域で 5.9:1 以上) */
+  --color-ocean-deep: #0c4a6e;
+  --shadow-card: 0 1px 2px rgb(16 39 51 / 0.05);
+  --shadow-lift: 0 10px 30px -12px rgb(2 132 199 / 0.35);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "BIZ UDGothic",
+    Meiryo, system-ui, sans-serif;
+  line-height: 1.85;
+  font-feature-settings: "palt";
+  /* 長い URL 等の折り返し不能文字列が 320px(WCAG 1.4.10 Reflow)で
+     横はみ出しを起こさないようにする。あふれる場合のみ改行が発動する */
+  overflow-wrap: anywhere;
+}
+
+/* Tailwind のサイズユーティリティは行間を 1.33〜1.56 に詰めるため、
+   本文系サイズは edu-evidence と同じ読み味(1.6〜1.8)へ引き上げる。
+   見出しの行間は下の h1-h3 で管理する */
+.text-xs {
+  line-height: 1.6;
+}
+.text-sm {
+  line-height: 1.7;
+}
+.text-base {
+  line-height: 1.8;
+}
+.text-lg {
+  line-height: 1.8;
+}
+
+/* 本文 p の字間をわずかに広げ、palt による詰まり感を緩和する */
+p {
+  letter-spacing: 0.01em;
+}
+
+h1, h2, h3 {
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+}
+
+/* 海グラデーションの見出し文字 */
+.text-ocean {
+  background: var(--grad-ocean);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--color-ink-accent);
+  color: #ffffff;
+  border-radius: 0.375rem;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* 暗色背景では既定のフォーカス色(#0369a1)が 3:1 を満たさないため明色に切り替える */
+footer :focus-visible,
+.hero-ocean :focus-visible,
+.on-ocean :focus-visible {
+  outline-color: #a5f3fc;
+}
+
+/* 用語集への定義リンク(点線下線=「意味の説明がある」印) */
+.term-link {
+  color: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--color-accent);
+  text-underline-offset: 3px;
+}
+.term-link:hover {
+  color: var(--color-accent);
+}
+
+.link-underline {
+  text-decoration: none;
+  background-image: linear-gradient(var(--color-accent), var(--color-accent));
+  background-size: 0% 1px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  transition: background-size 0.25s ease;
+  padding-bottom: 2px;
+}
+
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+/* プライマリボタン(海グラデ塗り) */
+.btn-ocean {
+  background: var(--grad-ocean);
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 0.65rem 1.5rem;
+  font-weight: 700;
+  display: inline-block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-ocean:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+.btn-ghost {
+  border: 1.5px solid var(--color-line);
+  color: var(--color-ink-accent);
+  border-radius: 9999px;
+  padding: 0.65rem 1.5rem;
+  font-weight: 700;
+  display: inline-block;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+/* カード共通 */
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-line));
+  box-shadow: var(--shadow-lift);
+}
+
+/* 地図のマイクロインタラクション */
+.map-figure svg path:hover {
+  fill-opacity: 0.75;
+  transition: fill-opacity 0.15s ease;
+}
+
+/* 地図 SVG は viewBox 基準でコンテナ幅に収める(モバイル対応) */
+.map-figure svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 市町村ページのロケーター(海色下地の SVG をミニマップとして枠で囲う) */
+.locator-map svg {
+  border: 1px solid var(--color-line);
+  border-radius: 0.5rem;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 列数の多い表は枠内で横スクロールする。隠れた列があることを端の影で示す。
+   カバー(local)は中身と一緒に動き、影(scroll)は枠に固定されるため、
+   スクロール余地がある側だけに影が残る。JS は使わない。
+   .card の background ショートハンドを上書きするため、必ずその後に置く。 */
+.table-scroll {
+  background-image:
+    linear-gradient(to right, var(--color-card) 55%, transparent),
+    linear-gradient(to left, var(--color-card) 55%, transparent),
+    linear-gradient(to right, rgb(16 39 51 / 0.16), transparent),
+    linear-gradient(to left, rgb(16 39 51 / 0.16), transparent);
+  background-position:
+    left center,
+    right center,
+    left center,
+    right center;
+  background-repeat: no-repeat;
+  background-size:
+    1.5rem 100%,
+    1.5rem 100%,
+    0.85rem 100%,
+    0.85rem 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* 47都道府県を並べた表で、沖縄県(主役)と全国・合計(比較基準)の行が
+   48行のスクロール領域に埋没しないようにする。状態は data 属性で持つ。 */
+tr[data-row-role] > * {
+  font-weight: 600;
+}
+
+tr[data-row-role="focus"] > * {
+  background: var(--color-accent-soft);
+}
+
+tr[data-row-role="total"] > * {
+  background: color-mix(in srgb, var(--color-line) 45%, var(--color-card));
+}
+
+.prose-lede {
+  font-size: 1.0625rem;
+  color: var(--color-sub);
+  text-wrap: pretty;
+}
+
+/* 欧文ディスプレイ(見出しの英字・大きな数字用。和文はシステムフォント) */
+.display-en {
+  font-family: "Bricolage Grotesque", "Hiragino Sans", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* 深海ヒーロー */
+.hero-ocean {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(60rem 24rem at 85% -20%, rgb(34 211 238 / 0.35), transparent 60%),
+    radial-gradient(40rem 20rem at -10% 110%, rgb(2 132 199 / 0.45), transparent 55%),
+    linear-gradient(160deg, #0b1e3f 0%, #0c3a5e 55%, #0e7490 100%);
+  color: #ffffff;
+}
+
+.hero-ocean .hero-lagoon {
+  background: linear-gradient(90deg, #67e8f9, #38bdf8 55%, #a5f3fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ヒーローのグラデーションを波のようにゆっくり漂わせる(動きを好まない設定では静止) */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-ocean {
+    background-size:
+      150% 150%,
+      150% 150%,
+      220% 220%;
+    background-position:
+      0% 0%,
+      100% 100%,
+      0% 0%;
+    animation: ocean-drift 28s ease-in-out infinite alternate;
+  }
+  @keyframes ocean-drift {
+    to {
+      background-position:
+        60% 40%,
+        40% 60%,
+        100% 100%;
+    }
+  }
+}
+
+/* 登場アニメーション(スタッガー) */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-d1 { animation-delay: 0.08s; }
+.anim-d2 { animation-delay: 0.18s; }
+.anim-d3 { animation-delay: 0.3s; }
+.anim-d4 { animation-delay: 0.45s; }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .btn-ocean, .btn-ghost, .card-lift, .link-underline,
+  .map-figure svg path {
+    transition: none;
+  }
+  .card-lift:hover, .btn-ocean:hover, .btn-ghost:hover {
+    transform: none;
+  }
+  .anim-rise {
+    animation: none;
+  }
+}
+
+/* 折れ線の描画アニメーション(chart.ts の draw-line マークのみ対象) */
+@media (prefers-reduced-motion: no-preference) {
+  .draw-line path {
+    stroke-dasharray: 1600;
+    stroke-dashoffset: 1600;
+    animation: drawline 1.5s ease-out 0.2s forwards;
+  }
+  @keyframes drawline {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+/* 地図のカスタムツールチップ(BaseLayout のスクリプトが生成) */
+.map-tip {
+  position: fixed;
+  z-index: 60;
+  max-width: 16rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  background: rgb(12 30 47 / 0.94);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  pointer-events: none;
+  white-space: pre-line;
+}
+
+/* モバイルメニュー: 通常フローだと開閉のたびに本文が上下へ動くため、
+   sticky ヘッダーを包含ブロックとして直下に被せる(本文は動かさない) */
+.mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: calc(100dvh - 5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 16px 24px -16px rgb(11 30 63 / 0.35);
+}
+.mobile-menu[inert] {
+  display: none;
+}
+
+/* 開閉に合わせてトグルのアイコンを ≡ / ✕ に切り替える */
+#menu-toggle .icon-close {
+  display: none;
+}
+#menu-toggle[aria-expanded="true"] .icon-menu {
+  display: none;
+}
+#menu-toggle[aria-expanded="true"] .icon-close {
+  display: block;
+}
+
+/* 開閉の短いフェード。display のアニメは allow-discrete 対応ブラウザのみで、
+   非対応ブラウザでは従来どおり即時切替のまま動く(漸進的強化) */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-menu {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.18s ease, transform 0.18s ease, display 0.18s allow-discrete;
+  }
+  @starting-style {
+    .mobile-menu {
+      opacity: 0;
+      transform: translateY(-0.4rem);
+    }
+  }
+  .mobile-menu[inert] {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+}

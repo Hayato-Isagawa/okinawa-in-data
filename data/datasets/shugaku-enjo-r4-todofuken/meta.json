@@ -1,0 +1,70 @@
+{
+  "id": "shugaku-enjo-r4-todofuken",
+  "title": "就学援助 都道府県別実施状況(令和4年度)",
+  "description": "令和4年度の要保護・準要保護児童生徒数と就学援助率(公立小中学校計)の47都道府県別+全国合計。経済的理由で就学が困難な児童生徒への援助制度の利用状況を示すデータで、文部科学省「就学援助実施状況等調査」の結果(PDF)から構造化しました。",
+  "themes": ["education", "poverty"],
+  "tags": ["就学援助", "要保護", "準要保護", "都道府県別", "子どもの貧困"],
+  "sources": [
+    {
+      "publisher": "文部科学省",
+      "title": "令和5年度に実施した就学援助実施状況等調査の結果(令和4年度要保護及び準要保護児童生徒数について〔学用品費等〕)",
+      "url": "https://www.mext.go.jp/content/20231221-mxt_shuugaku-000018788_001.pdf",
+      "archiveUrl": "https://web.archive.org/web/20250216172825/https://www.mext.go.jp/content/20231221-mxt_shuugaku-000018788_001.pdf",
+      "retrievedAt": "2026-07-05",
+      "format": "pdf",
+      "permalinkNote": "年度別の調査結果は索引ページ(https://www.mext.go.jp/a_menu/shotou/career/05010502/1412177_00003.htm)に集約されており、各年度の PDF は別 URL です。"
+    }
+  ],
+  "license": {
+    "name": "政府標準利用規約(第2.0版)",
+    "url": "https://www.mext.go.jp/b_menu/1351168.htm",
+    "confirmedAt": "2026-07-05"
+  },
+  "conversion": {
+    "method": "pdftotext -layout で生テキスト化し、変換スクリプトで小中学校計の都道府県表を機械抽出(人数のカンマ区切りは除去、率は原文表記のまま)",
+    "script": "scripts/convert/shugaku-enjo-r4-todofuken.ts",
+    "verification": "raw/ の生テキストと CSV を沖縄県・東京都・合計で逐語照合済み(2026-07-05)。全48行で「要保護+準要保護=認定者計」を機械検証。沖縄県の就学援助率 23.63% は沖縄県の子どもの貧困対策 中間評価資料の記載値とも一致(相互検証)",
+    "convertedAt": "2026-07-05"
+  },
+  "temporal": {
+    "coverageStart": "2022年度",
+    "coverageEnd": "2022年度",
+    "granularity": "年度(単年)"
+  },
+  "spatial": {
+    "level": "都道府県"
+  },
+  "updateFrequency": "年1回(就学援助実施状況等調査)",
+  "nextExpectedUpdate": "文部科学省の次回調査結果の公表後",
+  "readingGuide": "就学援助率は、生活保護を受ける「要保護」とそれに準ずる「準要保護」に認定された児童生徒が、公立小中学校の児童生徒全体に占める割合です。令和4年度の全国合計は13.90%、沖縄県は23.63%です。認定基準(特に準要保護)は市町村ごとに異なるため、都道府県間の差には制度運用の違いも含まれます。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "rowCount": 48,
+      "columns": [
+        { "name": "区分", "type": "string", "description": "47都道府県+合計(全国)" },
+        { "name": "要保護児童生徒数", "type": "integer", "unit": "人", "description": "生活保護法に規定する要保護者の児童生徒数" },
+        { "name": "準要保護児童生徒数", "type": "integer", "unit": "人", "description": "市町村教育委員会が要保護に準ずる程度に困窮していると認定した児童生徒数" },
+        { "name": "認定者計", "type": "integer", "unit": "人", "description": "要保護+準要保護の合計" },
+        { "name": "公立小中学校児童生徒総数", "type": "integer", "unit": "人", "description": "公立小中学校の児童生徒総数" },
+        { "name": "就学援助率", "type": "number", "unit": "%", "description": "認定者計が児童生徒総数に占める割合" }
+      ]
+    }
+  ],
+  "map": {
+    "column": "就学援助率"
+  },
+  "caveats": [
+    "小中学校計の表を収録しています。小学校・中学校別の表は一次資料を参照してください。",
+    "原資料には被災児童生徒就学援助(東日本大震災分)の人数と、それを含む率もありますが、本データセットには収録していません。",
+    "準要保護の認定基準は市町村ごとに異なるため、都道府県間の比較には制度運用の違いが含まれます。",
+    "人数のカンマ区切り(1,710 など)は除去して整数化しています。率は原文表記(小数第2位)のままです。",
+    "令和5年度の率は、公表 PDF の文字埋め込み形式の問題で機械抽出できないため未収録です(判明し次第の追加を検討)。"
+  ],
+  "changelog": [
+    { "date": "2026-07-05", "description": "初版作成(令和4年度分)" }
+  ],
+  "relatedDatasets": ["gakuryoku-chosa-r7-todofuken", "shugaku-enjo-keinen", "kodomo-chosa-konkyu-keinen", "shugaku-enjo-r5-okinawa-shichoson"],
+  "status": "published"
+}

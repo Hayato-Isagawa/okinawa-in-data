@@ -1,0 +1,67 @@
+{
+  "id": "kazei-shotoku-okinawa-shichoson",
+  "title": "課税対象所得と納税義務者1人当たり所得 沖縄県内市町村別(2024年度)",
+  "description": "沖縄県内41市町村の課税対象所得(個人住民税所得割)・納税義務者数と、納税義務者1人当たり課税対象所得。総務省統計局「統計でみる市区町村のすがた2026」C経済基盤(原資料は市町村税課税状況等の調)から構造化しました。市町村の所得水準を比較する基礎データです。",
+  "themes": ["economy"],
+  "tags": ["所得", "課税対象所得", "住民税", "市町村別", "経済"],
+  "sources": [
+    {
+      "publisher": "総務省統計局",
+      "title": "統計でみる市区町村のすがた2026 C経済基盤(基礎データ)",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040463586&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260712234513/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040463586&fileKind=0",
+      "retrievedAt": "2026-07-05",
+      "format": "xls",
+      "permalinkNote": "statInfId は年次更新で変わります。e-Stat で「統計でみる市区町村のすがた」を検索してください。"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-05"
+  },
+  "conversion": {
+    "method": "公表 Excel(旧 .xls)から SheetJS で機械抽出(指標コード C120110・C120120)。納税義務者1人当たり課税対象所得(千円)=課税対象所得(百万円)×1000÷納税義務者数 を整数に四捨五入した導出値",
+    "script": "scripts/convert/kazei-shotoku-okinawa-shichoson.ts",
+    "verification": "那覇市(課税対象所得 473,431百万円)・北大東村を元 Excel と照合済み(2026-07-05)。導出値は変換時に逆算検証を機械実行。41市町村の完全一致を機械検証",
+    "convertedAt": "2026-07-05"
+  },
+  "temporal": {
+    "coverageStart": "2024年度",
+    "coverageEnd": "2024年度",
+    "granularity": "年度"
+  },
+  "spatial": {
+    "level": "市町村",
+    "area": "沖縄県"
+  },
+  "updateFrequency": "年1回(「統計でみる市区町村のすがた」の年次更新)",
+  "nextExpectedUpdate": "次年版の公表後",
+  "readingGuide": "「納税義務者1人当たり」であり、住民1人当たりの所得ではない点に注意してください(納税義務のない人は分母に含まれません)。個人住民税(所得割)は前年中の所得に対して課税されるため、2024年度の値は前年の所得を反映しています。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "rowCount": 41,
+      "columns": [
+        { "name": "市町村", "type": "string", "description": "沖縄県内の41市町村" },
+        { "name": "団体コード", "type": "string", "description": "全国地方公共団体コード(先頭5桁)" },
+        { "name": "課税対象所得", "type": "integer", "unit": "百万円", "description": "個人住民税所得割の課税対象所得(2024年度)" },
+        { "name": "納税義務者数", "type": "integer", "unit": "人", "description": "所得割の納税義務者数" },
+        { "name": "納税義務者1人当たり課税対象所得", "type": "integer", "unit": "千円", "description": "課税対象所得÷納税義務者数(整数に四捨五入した導出値)" }
+      ]
+    }
+  ],
+  "map": { "column": "納税義務者1人当たり課税対象所得", "note": "「1人当たり」は納税義務者1人当たりです(住民1人当たりではありません)。" },
+  "caveats": [
+    "「1人当たり」は納税義務者1人当たりで、住民1人当たりではありません。",
+    "1人当たり所得は当サイトによる導出値です(丸めは整数への四捨五入)。",
+    "個人住民税は前年所得課税のため、2024年度の値は前年中の所得に対応します。",
+    "小規模町村は納税義務者数が少なく、少数の高額所得者の有無で値が大きく動くことがあります。"
+  ],
+  "changelog": [
+    { "date": "2026-07-05", "description": "初版作成(2024年度分)" }
+  ],
+  "relatedDatasets": ["shugaku-enjo-r5-okinawa-shichoson", "jinko-setai-okinawa-shichoson"],
+  "status": "published"
+}

@@ -1,0 +1,142 @@
+{
+  "id": "boshi-fushi-setai-okinawa-shichoson",
+  "title": "母子世帯・父子世帯数 沖縄県内市町村別(2020年国勢調査)",
+  "description": "令和2年国勢調査(人口等基本集計)から、沖縄県内41市町村の母子世帯数・父子世帯数(狭義と「他の世帯員がいる世帯を含む」の両方)と一般世帯数、一般世帯に占める母子世帯の割合を収録したデータセットです。ひとり親世帯の地域差を確認できます。",
+  "themes": ["poverty", "population"],
+  "tags": ["国勢調査", "ひとり親世帯"],
+  "sources": [
+    {
+      "publisher": "総務省統計局",
+      "title": "令和2年国勢調査 人口等基本集計 第36-1表 母子・父子世帯の種類，子供の数・年齢別一般世帯数(母子世帯)－全国，都道府県，市区町村",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032142682&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "statInfId は e-Stat の収録替えで変わることがあります。失効時は e-Stat で「令和2年国勢調査 人口等基本集計」を検索してください。"
+    },
+    {
+      "publisher": "総務省統計局",
+      "title": "令和2年国勢調査 人口等基本集計 第39-1表 母子・父子世帯の種類，子供の数・年齢別一般世帯数(父子世帯)－全国，都道府県，市区町村",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032142690&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260713001957/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032142690&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "失効時は e-Stat で同集計を検索してください。"
+    },
+    {
+      "publisher": "総務省統計局",
+      "title": "令和2年国勢調査 人口等基本集計 第10表 世帯の家族類型，世帯人員の人数別一般世帯数－全国，都道府県，市区町村",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032142501&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260712234235/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032142501&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "一般世帯数(割合の分母)の出典。失効時は e-Stat で同集計を検索してください。"
+    },
+    {
+      "publisher": "総務省統計局",
+      "title": "令和2年国勢調査 国勢調査の結果で用いる用語の解説(母子世帯・父子世帯の定義)",
+      "url": "https://www.stat.go.jp/data/kokusei/2020/kekka/pdf/ug_03.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260216105809/https://www.stat.go.jp/data/kokusei/2020/kekka/pdf/ug_03.pdf",
+      "retrievedAt": "2026-07-06",
+      "format": "pdf",
+      "permalinkNote": "定義の参照資料。総務省統計局サイトの利用規約(https://www.stat.go.jp/info/riyou.html、政府標準利用規約準拠)の適用。"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-06",
+    "note": "統計表3本は e-Stat 提供。用語解説 PDF のみ総務省統計局サイト(同じく政府標準利用規約準拠)からの取得。"
+  },
+  "conversion": {
+    "method": "各表の市区町村行(地域名「47xxx_名称」)から団体コードで41市町村を同定して抽出。母子・父子とも狭義(1_)と「他の世帯員がいる世帯を含む」(2_)の両区分の総数を収録。一般世帯数は第10表の世帯人員「0_総数」行。「-」(該当数字がないもの)は 0 として収録。母子世帯割合(%)=母子世帯数(狭義)÷一般世帯数×100 を小数第2位で四捨五入(サイト導出値)",
+    "script": "scripts/convert/boshi-fushi-setai-okinawa-shichoson.ts",
+    "verification": "那覇市(母子2,721・父子266・一般世帯144,011)・石垣市・北大東村・与那国町の全収録値を取得時の独立読取(行番号付き逐語)と照合済み(2026-07-06)。41市町村の合計が同表の沖縄県値(母子13,575・父子1,651・一般世帯613,294 ほか全列)と一致することを変換時 assert(網羅性と転記の同時検証)。導出割合は変換時に式から直接計算",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2020年10月",
+    "coverageEnd": "2020年10月",
+    "granularity": "調査回(5年ごと)"
+  },
+  "spatial": {
+    "level": "市町村",
+    "area": "沖縄県"
+  },
+  "updateFrequency": "5年ごと(国勢調査)",
+  "readingGuide": "国勢調査の「母子世帯」「父子世帯」は、未婚・死別または離別の親と、その未婚の20歳未満の子供のみから成る一般世帯を指します(狭義)。祖父母などが同居する世帯は「他の世帯員がいる世帯を含む」の列に含まれます。母子世帯割合は一般世帯全体に対する狭義の母子世帯の割合です。分母の一般世帯数は国勢調査(2020年10月)の値で、市町村ページの「世帯数」(住民基本台帳・令和7年1月)とは定義も時点も異なるため一致しません。世帯数が1桁の小さな町村では、1世帯の増減で割合や県内順位が大きく動く点にも注意してください。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 41,
+      "columns": [
+        {
+          "name": "市町村",
+          "type": "string",
+          "description": "市町村名"
+        },
+        {
+          "name": "団体コード",
+          "type": "string",
+          "description": "全国地方公共団体コードの先頭5桁"
+        },
+        {
+          "name": "母子世帯数",
+          "type": "integer",
+          "unit": "世帯",
+          "description": "未婚・死別・離別の女親と未婚の20歳未満の子供のみから成る一般世帯(狭義)"
+        },
+        {
+          "name": "父子世帯数",
+          "type": "integer",
+          "unit": "世帯",
+          "description": "未婚・死別・離別の男親と未婚の20歳未満の子供のみから成る一般世帯(狭義)"
+        },
+        {
+          "name": "母子世帯数(他の世帯員がいる世帯を含む)",
+          "type": "integer",
+          "unit": "世帯",
+          "description": "狭義の母子世帯に、他の世帯員(祖父母など)が同居する世帯を含めた数"
+        },
+        {
+          "name": "父子世帯数(他の世帯員がいる世帯を含む)",
+          "type": "integer",
+          "unit": "世帯",
+          "description": "狭義の父子世帯に、他の世帯員が同居する世帯を含めた数"
+        },
+        {
+          "name": "一般世帯数",
+          "type": "integer",
+          "unit": "世帯",
+          "description": "一般世帯の総数(割合の分母)"
+        },
+        {
+          "name": "母子世帯割合",
+          "type": "number",
+          "unit": "%",
+          "description": "母子世帯数(狭義)÷一般世帯数×100(小数第2位で四捨五入したサイト導出値)"
+        }
+      ]
+    }
+  ],
+  "map": {
+    "column": "母子世帯割合",
+    "note": "地図は一般世帯に占める母子世帯(狭義)の割合で塗り分け。"
+  },
+  "caveats": [
+    "2020年10月1日現在の値です(国勢調査は5年ごと)。",
+    "原表の「-」(該当数字がないもの)は 0 として収録しています(例: 北大東村の父子世帯)。",
+    "母子世帯割合は本サイトの導出値です(式は conversion.method 参照)。原資料には割合の掲載はありません。",
+    "第10表の家族類型「女親と子供から成る世帯」(子の年齢制限なし)は別概念であり、本データセットの母子世帯とは一致しません。",
+    "statInfId は e-Stat の収録替えで変わることがあります(permalinkNote 参照)。"
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-06",
+      "description": "初版(令和2年国勢調査)"
+    }
+  ],
+  "relatedDatasets": ["jinko-setai-okinawa-shichoson", "kodomo-chosa-konkyu-keinen"],
+  "status": "published"
+}

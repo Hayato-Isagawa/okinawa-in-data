@@ -1,0 +1,164 @@
+{
+  "id": "kenmin-shotoku-todofuken",
+  "title": "1人当たり県民所得 都道府県別の推移(平成23年度〜令和4年度)",
+  "description": "内閣府「県民経済計算」の総括表7から、1人当たり県民所得(千円)を47都道府県+全県計で平成23年度から令和4年度まで12年分収録したデータセットです。沖縄県の経済水準の全国での位置と推移を確認できます。教育格差の背景となる地域の経済状況を示す基礎データです。",
+  "themes": [
+    "economy"
+  ],
+  "tags": [
+    "県民経済計算",
+    "県民所得",
+    "経年"
+  ],
+  "sources": [
+    {
+      "publisher": "内閣府経済社会総合研究所",
+      "title": "県民経済計算(平成23年度 - 令和4年度)(2008SNA・平成27年基準計数) 総括表7 1人当たり県民所得",
+      "url": "https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/tables/2022/soukatu7.xlsx",
+      "archiveUrl": "https://web.archive.org/web/20260712234545/https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/tables/2022/soukatu7.xlsx",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "掲載ページは https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/main_2022.html 。基準改定・年次更新で URL のディレクトリ(2022)が変わります。"
+    },
+    {
+      "publisher": "内閣府経済社会総合研究所",
+      "title": "県民経済計算 利用上の注意(用語の定義)",
+      "url": "https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/pdf/riyouchui.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260712234704/https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/pdf/riyouchui.pdf",
+      "retrievedAt": "2026-07-06",
+      "format": "pdf"
+    }
+  ],
+  "license": {
+    "name": "公共データ利用規約(第1.0版)",
+    "url": "https://www.cao.go.jp/notice/rule.html",
+    "confirmedAt": "2026-07-06",
+    "note": "内閣府ホームページ利用規約により、権利表記のないコンテンツには公共データ利用規約(第1.0版)が適用されます(出典明記で複製・加工・商用利用可)。"
+  },
+  "conversion": {
+    "method": "公表 Excel(総括表7)の「実数」シートから、都道府県コード01〜47の行と「全県計」行の平成23〜令和4年度の値(千円単位の整数、原表のまま丸めなし)を抽出",
+    "script": "scripts/convert/kenmin-shotoku-todofuken.ts",
+    "verification": "47都道府県の一意性・コード順の名称一致・末尾コード再掲との一致(行ずれ検出)・全セル整数を変換時に機械検証。沖縄県(2,034→2,249)・東京都(6,037)・全県計(3,449)の値を取得時の別プロセスによる読み取りと照合済み(2026-07-06)",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2011年度",
+    "coverageEnd": "2022年度",
+    "granularity": "年度"
+  },
+  "spatial": {
+    "level": "都道府県",
+    "area": "全国"
+  },
+  "updateFrequency": "年1回(県民経済計算の年次公表)",
+  "readingGuide": "「県民所得」は個人の給与や手取りの平均ではありません。雇用者報酬に加えて企業所得・財産所得を含む、その都道府県の経済全体の所得水準を表す指標です(1人当たり=県民所得÷総人口)。沖縄県の令和4年度値は224万9千円で47都道府県中47位、全県計(344万9千円)の約65%です。個人の所得感覚に近い数字を見たい場合は、関連データセットの課税対象所得(納税義務者1人当たり)も併せて参照してください。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 48,
+      "columns": [
+        {
+          "name": "都道府県",
+          "type": "string",
+          "description": "都道府県名。最終行は全国の「全県計」(原表記のまま)"
+        },
+        {
+          "name": "平成23年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2011年度の1人当たり県民所得"
+        },
+        {
+          "name": "平成24年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2012年度の1人当たり県民所得"
+        },
+        {
+          "name": "平成25年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2013年度の1人当たり県民所得"
+        },
+        {
+          "name": "平成26年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2014年度の1人当たり県民所得"
+        },
+        {
+          "name": "平成27年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2015年度の1人当たり県民所得"
+        },
+        {
+          "name": "平成28年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2016年度の1人当たり県民所得"
+        },
+        {
+          "name": "平成29年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2017年度の1人当たり県民所得"
+        },
+        {
+          "name": "平成30年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2018年度の1人当たり県民所得"
+        },
+        {
+          "name": "令和元年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2019年度の1人当たり県民所得"
+        },
+        {
+          "name": "令和2年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2020年度の1人当たり県民所得"
+        },
+        {
+          "name": "令和3年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2021年度の1人当たり県民所得"
+        },
+        {
+          "name": "令和4年度",
+          "type": "integer",
+          "unit": "千円",
+          "description": "2022年度の1人当たり県民所得"
+        }
+      ]
+    }
+  ],
+  "map": {
+    "column": "令和4年度",
+    "label": "1人当たり県民所得(令和4年度)",
+    "note": "地図は最新の令和4年度(2022年度)値で塗り分け。東京都が突出して高いため、等分の塗り分けでは残りの都道府県の差は小さく見えます。県内の位置づけは下のランキングで確認してください。県民所得は個人の所得水準ではなく地域経済全体の所得水準を表します(読み方参照)。"
+  },
+  "caveats": [
+    "県民所得は県民雇用者報酬・財産所得・企業所得の合計で、個人の所得水準を表すものではありません(出典の「利用上の注意」総括表5)。",
+    "1人当たり県民所得の分母は県の総人口です(就業者数ではありません)。",
+    "令和5年度(2023年度)値は取得時点で31都道府県のみの途中掲載のため収録していません。",
+    "収録値は2026年6月10日の計数修正を反映した現行公表版です。",
+    "原表にある政令指定都市・地域ブロックの値は本データセットの対象外です。"
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-06",
+      "description": "初版(平成23年度〜令和4年度の12年分)"
+    }
+  ],
+  "relatedDatasets": [
+    "kazei-shotoku-okinawa-shichoson"
+  ],
+  "status": "published"
+}

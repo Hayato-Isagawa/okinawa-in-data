@@ -1,0 +1,111 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="検索 | データでみる沖縄"
+  description="データでみる沖縄のデータセット・市町村ページ・解説を検索します。"
+  searchable={false}
+>
+  <h1 class="text-3xl font-bold">検索</h1>
+  <p class="mt-4 max-w-2xl">
+    データセット・市町村・解説のページをキーワードで検索できます。表・グラフ・数値カードの中身(数値や市町村名)は検索の対象外です。
+  </p>
+  <div id="search" class="mt-6 max-w-3xl"></div>
+  <p id="search-unavailable" class="mt-6 max-w-2xl" hidden>
+    検索を読み込めませんでした。<a href="/datasets/" class="link-underline" style="color: var(--color-accent);">データセット一覧</a>や<a href="/area/" class="link-underline" style="color: var(--color-accent);">市町村から探す</a>からもたどれます。
+  </p>
+  <noscript>
+    <p class="mt-6 max-w-2xl">
+      検索には JavaScript が必要です。<a href="/datasets/" class="link-underline" style="color: var(--color-accent);">データセット一覧</a>や<a href="/area/" class="link-underline" style="color: var(--color-accent);">市町村から探す</a>からもたどれます。
+    </p>
+  </noscript>
+
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
+  <script>
+    // pagefind-ui.js(上の classic script)は同期で読み込まれ、このモジュールは
+    // その後に実行される。dev サーバーには /pagefind/ が無いので案内文を出す。
+    const PagefindUI = (window as { PagefindUI?: PagefindUIConstructor }).PagefindUI;
+    if (PagefindUI) {
+      const ui = new PagefindUI({
+        element: "#search",
+        showSubResults: true,
+        showImages: false,
+        translations: { placeholder: "キーワードで検索" },
+      });
+      // Default UI の入力欄はラベルを持たず(title と placeholder だけ)、axe の label-title-only に当たる
+      document
+        .querySelector("#search .pagefind-ui__search-input")
+        ?.setAttribute("aria-label", "サイト内を検索");
+      const q = new URLSearchParams(window.location.search).get("q");
+      if (q) ui.triggerSearch(q);
+    } else {
+      document.getElementById("search-unavailable")?.removeAttribute("hidden");
+    }
+
+    interface PagefindUIConstructor {
+      new (options: Record<string, unknown>): { triggerSearch(term: string): void };
+    }
+  </script>
+
+  <style is:global>
+    #search {
+      --pagefind-ui-scale: 0.9;
+      --pagefind-ui-primary: var(--color-accent);
+      --pagefind-ui-text: var(--color-ink);
+      --pagefind-ui-background: var(--color-card);
+      --pagefind-ui-border: var(--color-line);
+      --pagefind-ui-tag: var(--color-accent-soft);
+      --pagefind-ui-border-width: 1px;
+      --pagefind-ui-border-radius: 0.5rem;
+      --pagefind-ui-font: inherit;
+    }
+    #search .pagefind-ui__result-link {
+      color: var(--color-accent);
+    }
+    #search .pagefind-ui__result-excerpt,
+    #search .pagefind-ui__message {
+      color: var(--color-sub);
+    }
+    #search mark {
+      background: var(--color-accent-soft);
+      color: var(--color-ink);
+    }
+
+    /* 結果の行間と文字サイズは姉妹サイト(edu-evidence / edu-watch / edu-law)に倣う。
+       左バーの hover を入れないので余白は詰めている。指定しないとサイト全体の
+       行間(1.85)を継いで見出しと抜粋の間が開く */
+    #search .pagefind-ui__message {
+      font-size: 0.875rem;
+      padding: 1.25rem 0 0.75rem;
+    }
+    #search .pagefind-ui__result {
+      padding: 1.25rem 0;
+    }
+    #search .pagefind-ui__result-inner {
+      gap: 0.5rem;
+      margin-top: 0;
+    }
+    #search .pagefind-ui__result-title {
+      font-size: 1.125rem;
+      line-height: 1.4;
+    }
+    #search .pagefind-ui__result-excerpt {
+      font-size: 0.875rem;
+      line-height: 1.7;
+      margin-top: 0;
+    }
+    #search .pagefind-ui__result-nested {
+      margin-top: 0.25rem;
+      padding: 0 0 0 1rem;
+      border-left: 2px solid var(--color-line);
+    }
+    #search .pagefind-ui__result-nested .pagefind-ui__result-title {
+      font-size: 0.95rem;
+    }
+    #search .pagefind-ui__result-nested .pagefind-ui__result-excerpt {
+      font-size: 0.8rem;
+    }
+  </style>
+</BaseLayout>

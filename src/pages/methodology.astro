@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="データの作り方 | データでみる沖縄"
+  description="データでみる沖縄のデータの作り方。元の資料の入手から、数値の突き合わせ、変換と検証まで、公開までの手順を説明します。"
+>
+  <h1 class="text-3xl font-bold">データの作り方</h1>
+  <p class="mt-4 max-w-2xl">
+    本サイトのデータセットは、公的機関が公表する一次資料(多くは PDF)から次の手順で作っています。どの判断も後から見直せるよう、手順と作業メモをデータセットごとに記録しています。
+  </p>
+
+  <ol class="mt-8 max-w-2xl space-y-6">
+    <li class="rounded-lg border p-5" style="border-color: var(--color-line); background: var(--color-card);">
+      <h2 class="text-lg font-bold">1. 一次資料の取得</h2>
+      <p class="mt-2 text-sm">
+        発行元(国・県など公的機関)のページから資料を取得し、URL・取得日を記録します。年度ごとに URL が変わる資料は、その旨をデータセットの出典欄に明記します。
+      </p>
+    </li>
+    <li class="rounded-lg border p-5" style="border-color: var(--color-line); background: var(--color-card);">
+      <h2 class="text-lg font-bold">2. テキストの取り出しと表への変換</h2>
+      <p class="mt-2 text-sm">
+        PDF は <code>pdftotext -layout</code> で生テキストに変換し、そのまま照合用の記録として保存します。生テキストから CSV への変換は専用スクリプトで行い、セル結合の解釈や欠損の扱いなど判断を要した点はすべてメモに記録します。
+      </p>
+    </li>
+    <li class="rounded-lg border p-5" style="border-color: var(--color-line); background: var(--color-card);">
+      <h2 class="text-lg font-bold">3. 原文との突き合わせ(逐語照合)</h2>
+      <p class="mt-2 text-sm">
+        変換した数値は一次資料の原文と1件ずつ突き合わせます。照合が完了するまでデータセットは「検証中」と表示し、引用を推奨しません。
+      </p>
+    </li>
+    <li class="rounded-lg border p-5" style="border-color: var(--color-line); background: var(--color-card);">
+      <h2 class="text-lg font-bold">4. 機械検証</h2>
+      <p class="mt-2 text-sm">
+        メタデータ(出典・ライセンス・列定義)と CSV の整合(行数・列名・数値型・欠損)を検証スクリプトが全件チェックし、通過したものだけを公開します。CSV と JSON は同一データから機械生成され、手編集しません。
+      </p>
+    </li>
+  </ol>
+
+  <section class="mt-10 max-w-2xl">
+    <h2 class="text-xl font-bold">地図データについて</h2>
+    <p class="mt-3 text-sm">
+      都道府県マップの境界データは「国土数値情報(行政区域データ)」(国土交通省)を加工して作成しています(加工: <a href="https://github.com/smartnews-smri/japan-topography" rel="noopener noreferrer" target="_blank" class="link-underline" style="color: var(--color-accent);">スマートニュース メディア研究所</a>・当サイト)。国土数値情報の利用規約は政府標準利用規約準拠(CC BY 4.0 互換)です。表示の都合上、南鳥島・沖ノ鳥島は表示範囲外としていますが、境界データ自体からは削除していません。
+    </p>
+  </section>
+
+  <section class="mt-10 max-w-2xl">
+    <h2 class="text-xl font-bold">公式オープンデータカタログとの関係</h2>
+    <p class="mt-3 text-sm">
+      沖縄県には公式のオープンデータカタログ「<a href="https://odcs.bodik.jp/okinawa-dpf/" rel="noopener noreferrer" target="_blank" class="link-underline" style="color: var(--color-accent);">OKINAWA DPF</a>」があります。本サイトはそれを置き換えるものではなく、カタログに収録されていない PDF 中心の資料(特に教育分野)を読める形に整え、分野をまたいでつないだ地図・表と解説を添えることに役割を絞っています。
+    </p>
+  </section>
+</BaseLayout>

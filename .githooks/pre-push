@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Repo-tracked Git pre-push hook — block direct push, force push, and deletion
+# that target main.
+#
+# .githooks/pre-commit already refuses to create a commit on main, but it says
+# nothing about pushing: a commit made on a feature branch can still be sent to
+# main with `git push origin HEAD:main`, and main can be rewritten or deleted
+# outright. GitHub rejects these too (a ruleset on main requires a pull request
+# and blocks force pushes and deletion); this hook stops them before they leave
+# the machine, so a mistaken push never reaches GitHub at all.
+#
+# Bypass for the rare hotfix case: `git push --no-verify`.
+# Enable once per clone with `npm run prepare` (sets core.hooksPath; see README.md).
+
+set -euo pipefail
+
+protected_ref="refs/heads/main"
+zero_sha="0000000000000000000000000000000000000000"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" != "$protected_ref" ]; then
+    continue
+  fi
+
+  if [ "$local_sha" = "$zero_sha" ]; then
+    echo "[pre-push] BLOCKED: deleting main is forbidden." >&2
+    exit 1
+  fi
+
+  if [ "$remote_sha" != "$zero_sha" ] \
+    && ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+    echo "[pre-push] BLOCKED: non-fast-forward push to main is forbidden." >&2
+    exit 1
+  fi
+
+  echo "[pre-push] BLOCKED: pushing directly to main is forbidden. Open a PR instead." >&2
+  echo "[pre-push] To bypass intentionally (rare hotfix only): git push --no-verify" >&2
+  exit 1
+done
+
+exit 0

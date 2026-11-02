@@ -1,0 +1,141 @@
+name: Build
+
+# PR を検証する CI がこのリポジトリには無かった(2026-08-07 時点で audit.yml のみ)。
+# Workers Builds は main へのマージ後にしか動かないため、壊れた状態がマージされる
+# まで誰も気づけない。ローカルの `npm run check:all` を CI に移して、PR の時点で
+# 止められるようにする。
+#
+# 順序は「速い順・データ層優先」。CLAUDE.md が「メタデータは Zod スキーマが単一
+# ソース」と定めているとおり、data/ の破損はサイト実装の型エラーより重い。
+
+# **main への push では回さない。** マージ後の再検証は PR で見たものと同じ内容で、
+# ここが捕まえた失敗は実測 0 件だった(e2e.yml に理由の全文がある)。デプロイの
+# 健全性は Workers Builds が main で見ている。npm キャッシュは e2e.yml の週次
+# schedule が main で作る。
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ".tool-versions"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # data/datasets/*/meta.json を Zod スキーマで検証する。サイトを組み立てる
+      # 前に落としたいので最初に置く。
+      - name: Validate datasets
+        run: npm run check:data
+
+      # CLAUDE.md の規約: 「data.json は npm run build:json で data.csv から
+      # 生成する。手編集しない」。しかしそれを検証するものが無かった。
+      # data.csv を直して build:json を忘れると、コミットされた data.json は
+      # 古いままで、サイトは古い数値を配信し続ける。数値の正確さがこのサイトの
+      # 価値そのものなので、生成し直して差分が出ないことを確かめる。
+      #
+      # 追跡外の新規ファイルも拾いたいので diff ではなく status で見る。
+      - name: Verify generated data.json is in sync
+        run: |
+          set -euo pipefail
+          npm run build:json
+          if [ -n "$(git status --porcelain -- data/)" ]; then
+            echo "::error::data/ に差分が出ました。data.csv を変更したあと npm run build:json の結果をコミットしてください。"
+            git status --porcelain -- data/
+            git diff -- data/
+            exit 1
+          fi
+
+      # Excel から data.csv を起こす変換ヘルパーの単体テスト。
+      # 変換の欠陥は例外ではなく「もっともらしい別の数値」として出るため、
+      # 型チェックでもビルドでも捕まらない。数値の正確さがこのサイトの価値
+      # そのものなので、ビルドより手前に置く。件数の下限の検査を含めても数秒で終わる。
+      - name: Library unit tests
+        run: npm run test:lib
+
+      # .githooks/ の pre-commit / pre-push。GitHub 側でも main は ruleset で守って
+      # いる(PR 必須・force push と削除の禁止)が、止めるのは push の時点。フックは
+      # それより手前、commit と push を手元で止める。
+      #
+      # フックが壊れても git は黙って先へ進むので、保護が消えたことに気づく手段が
+      # 無い。フックは dist にも入らないため build も e2e も届かない。約 2 秒。
+      #
+      # `if: ${{ !cancelled() }}` は必須。このステップは Validate datasets /
+      # data.json 同期検証 / Library unit tests の後段にあるので、これが無いと
+      # **無関係なデータ検証が 1 つ落ちただけでフックガードが一度も走らない**。
+      # `.githooks/` が生きているかを見る唯一の検査が、データの不備で黙って消える
+      # (`.claude/hooks/branch-guard.sh` はここでは検査していない。glob は
+      #  `.githooks/__tests__/*.test.mjs` だけで、あちらの検査は別の場所にある)。
+      #
+      # `always()` ではなく `!cancelled()` を使う。このファイルは
+      # `cancel-in-progress: true` なので、`always()` だと push を重ねて打ち切った
+      # run でもフックテストが走り切り、捨てるはずの run に赤 / 緑が付く。
+      #
+      # `npm ci` が落ちた場合もこのステップは走るが、二次エラーにはならない。
+      # フックテストは node 組み込みモジュールしか使わず node_modules に依存しない
+      # (node_modules 無しで 15 pass / exit 0 を実測)。**この不変条件は
+      # このガードが成立する前提**なので、フックテストに外部依存を足さないこと。
+      #
+      # 姉妹リポ(evi / watch / law など)も同等のフックテストステップに同じ `if:` を
+      # 持つ。ただし evi / watch / law が持つのは `test:hooks`(Claude Code フック)。
+      - name: Git hook regression tests
+        if: ${{ !cancelled() }}
+        run: npm run test:githooks
+
+      # ワークフローに埋め込まれた判定ロジック(auto-merge・link-check・ci-summary・vrt-baseline)と、
+      # VRT の配信スクリプト(serve-dist)の検査。どれも壊れ方が静かで、CI は緑のまま結果だけが
+      # 変わる(それぞれが守るものは AGENTS.md「テスト」節)。例:
+      #   - dependabot-auto-merge.yml の待機ロジック。main への唯一の自動書き込み
+      #     経路なので、判定を 1 つ間違えると赤い PR が誰にも見られずに本番へ入る。
+      #     #83 の job 名変更では 30 分沈黙 -> CANCELLED に化け、CI が緑のまま
+      #     PR が 2 本溜まるまで気づけなかった(#94)。
+      #   - link-check.yml の通知分岐。open な Issue があると検出を捨てていたため、
+      #     2026-08-17 に見つかった 404 が 2 日間どこにも出なかった。
+      #
+      # `if:` はフックテストと同じ理由で付ける。前段のデータ検証が落ちただけで
+      # この検査が一度も走らない状態にしない。
+      # フックテストと違い node_modules に依存する。ci-summary・link-check・auto-merge のテストが
+      # `yaml`(devDependency)でワークフローをパースするため(#148 / #218)。`npm ci` が落ちた回はこのステップも
+      # ERR_MODULE_NOT_FOUND で赤になるが、一次の失敗は `npm ci` 側に出ている。
+      - name: Workflow tests
+        if: ${{ !cancelled() }}
+        run: npm run test:workflows
+
+      # astro check は errors でのみ非ゼロ終了する(既定の minimumFailingSeverity=error)。
+      # 現在 hints が 4 件あるが落ちない。
+      - name: Type check
+        run: npm run check
+
+      # oxlint / oxfmt(ADR 0004)。warning でも exit 0 なので --deny-warnings で止める。
+      # oxfmt は .astro を扱えない。.md / .yml / .css / .html / wrangler.jsonc /
+      # data/datasets / src/data/geo は .oxfmtrc.json の ignorePatterns で外してある。
+      - name: Lint (oxlint)
+        if: ${{ !cancelled() }}
+        run: npm run lint
+
+      - name: Format check (oxfmt)
+        if: ${{ !cancelled() }}
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build

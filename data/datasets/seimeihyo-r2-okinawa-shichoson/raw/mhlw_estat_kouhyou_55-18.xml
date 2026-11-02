@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xsl" href="release_info_j.xsl" ?>
+<!-- This is os_code constant Ver.2.166  Update 2026.06.02 -->
+<e-stat>
+        <os_code id="00450012" name="生命表" count_number="2"> 
+            <update_year>2026</update_year>
+            <update_month>7</update_month>
+            <update_day>24</update_day>
+            <class_1 name="完全生命表">
+                <class_2 name="第24回生命表（令和７年）">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2027</release_year>
+                                <release_month>3</release_month>
+                                <release_day>頃</release_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+                <class_2 name="第23回生命表（令和２年）">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2022</release_year>
+                                <release_month>3</release_month>
+                                <release_day>2</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/23th/index.html</internet_url>
+                                <internet_year>2022</internet_year>
+                                <internet_month>3</internet_month>
+                                <internet_day>2</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+            </class_1>
+            <class_1 name="簡易生命表">
+                <class_2 name="令和７年簡易生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2026</release_year>
+                                <release_month>7</release_month>
+                                <release_day>24</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/life25/index.html</internet_url>
+                                <internet_year>2026</internet_year>
+                                <internet_month>7</internet_month>
+                                <internet_day>24</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+                <class_2 name="令和６年簡易生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2025</release_year>
+                                <release_month>7</release_month>
+                                <release_day>25</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/life24/index.html</internet_url>
+                                <internet_year>2025</internet_year>
+                                <internet_month>7</internet_month>
+                                <internet_day>25</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+                <class_2 name="令和５年簡易生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2024</release_year>
+                                <release_month>7</release_month>
+                                <release_day>26</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/life23/index.html</internet_url>
+                                <internet_year>2024</internet_year>
+                                <internet_month>7</internet_month>
+                                <internet_day>26</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+                <class_2 name="令和４年簡易生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2023</release_year>
+                                <release_month>7</release_month>
+                                <release_day>28</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/life22/index.html</internet_url>
+                                <internet_year>2023</internet_year>
+                                <internet_month>7</internet_month>
+                                <internet_day>28</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+            </class_1>
+            <class_1 name="都道府県別生命表">
+                <class_2 name="令和２年都道府県別生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2022</release_year>
+                                <release_month>12</release_month>
+                                <release_day>23</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/tdfk20/index.html</internet_url>
+                                <internet_year>2022</internet_year>
+                                <internet_month>12</internet_month>
+                                <internet_day>23</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+                <class_2 name="平成27年都道府県別生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2017</release_year>
+                                <release_month>12</release_month>
+                                <release_day>13</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/tdfk15/index.html</internet_url>
+                                <internet_year>2017</internet_year>
+                                <internet_month>12</internet_month>
+                                <internet_day>13</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+            </class_1>
+            <class_1 name="市区町村別生命表">
+                <class_2 name="令和２年市区町村別生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2023</release_year>
+                                <release_month>5</release_month>
+                                <release_day>12</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/ckts20/index.html</internet_url>
+                                <internet_year>2023</internet_year>
+                                <internet_month>5</internet_month>
+                                <internet_day>12</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+                <class_2 name="平成27年市区町村別生命表">
+                    <class_3 name="">
+                        <class_4 name="">
+                            <class_5 name="">
+                                <release_year>2018</release_year>
+                                <release_month>4</release_month>
+                                <release_day>17</release_day>
+                                <internet_url>https://www.mhlw.go.jp/toukei/saikin/hw/life/ckts15/index.html</internet_url>
+                                <internet_year>2018</internet_year>
+                                <internet_month>4</internet_month>
+                                <internet_day>17</internet_day>
+                            </class_5>
+                        </class_4>
+                    </class_3>
+                </class_2>
+            </class_1>
+        </os_code>
+</e-stat>

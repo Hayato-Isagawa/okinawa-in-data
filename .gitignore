@@ -1,0 +1,120 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# Claude Code のローカルセッション状態(他リポと同様に非追跡)
+.claude/state/
+.claude/worktrees/
+
+# playwright
+test-results/
+playwright-report/
+
+# 大容量の原本(再取得可能)は履歴に載せない。監査痕跡は raw/ の
+# 抽出テキスト・README(statInfId 記載)+ data.csv で担保する。
+# 全国分を含む国勢調査 Excel(沖縄以外が大半で 12〜15MB)
+data/datasets/gakureki-okinawa-shichoson/raw/*.xlsx
+data/datasets/roudoryoku-okinawa-shichoson/raw/*.xlsx
+# SES 委託分析の報告書 PDF(mext.go.jp から再取得可能。照合は raw/*.txt を使用)
+data/datasets/ses-gakuryoku-hogosha-chosa/raw/*.pdf
+# 本文を再配布できない、または再配布できるか確認できていない出典の生テキスト(理由と取得先は各 raw/README.md)
+data/datasets/ses-gakuryoku-hogosha-chosa/raw/*.txt
+data/datasets/kodomo-chosa-konkyu-keinen/raw/*.txt
+# 学校保健統計の年度別 Excel・公表 PDF(e-Stat 直リンクから再取得可能。
+# 監査痕跡は raw/ACQUISITION.md の statInfId + md5 錨と公表資料の抽出テキスト)
+data/datasets/gakko-hoken-keinen/raw/*.xlsx
+data/datasets/gakko-hoken-keinen/raw/*.xls
+data/datasets/gakko-hoken-keinen/raw/*.pdf
+data/datasets/gakko-hoken-r7-todofuken/raw/*.xlsx
+# 学校基本調査 県外就職の年次 Excel・公表 PDF(e-Stat 直リンクから再取得可能。
+# 監査痕跡は raw/ACQUISITION.md の statInfId + md5 錨と公表資料の抽出テキスト)
+data/datasets/kengai-shushoku-keinen/raw/*.xlsx
+data/datasets/kengai-shushoku-keinen/raw/*.xls
+data/datasets/kengai-shushoku-keinen/raw/*.pdf
+data/datasets/kengai-shushoku-r7-todofuken/raw/*.xlsx
+# 福祉行政報告例(児童扶養手当)の公表資料 PDF(厚労省・こども家庭庁サイトから
+# 再取得可能。監査痕跡は raw/ の抽出テキスト+ACQUISITION.md の md5 錨)
+data/datasets/jido-fuyo-teate-keinen/raw/*.pdf
+# 保育所等関連状況取りまとめの Excel/PDF(こども家庭庁・NDL WARP から
+# 再取得可能。監査痕跡は raw/ の抽出テキスト+ACQUISITION.md の md5 錨)
+data/datasets/hoiku-taiki-keinen/raw/*.xlsx
+data/datasets/hoiku-taiki-keinen/raw/*.pdf
+data/datasets/hoiku-taiki-r7-okinawa-shichoson/raw/*.xlsx
+# 社会生活基本調査の Excel/PDF(e-Stat・stat.go.jp から statInfId で
+# 再取得可能。監査痕跡は raw/ の抽出テキスト+ACQUISITION.md の md5 錨)
+data/datasets/suimin-jikan-keinen/raw/*.xlsx
+data/datasets/suimin-jikan-keinen/raw/*.xls
+data/datasets/suimin-jikan-keinen/raw/*.pdf
+data/datasets/suimin-jikan-r3-todofuken/raw/*.xlsx
+# 賃金構造基本統計調査(初任給)の年次 Excel・公表 PDF(e-Stat 直リンクから
+# 再取得可能。監査痕跡は raw/ACQUISITION.md の statInfId + md5 錨と抽出テキスト)
+data/datasets/shoninkyu-keinen/raw/*.xlsx
+data/datasets/shoninkyu-keinen/raw/*.xls
+data/datasets/shoninkyu-keinen/raw/*.pdf
+data/datasets/shoninkyu-r7-todofuken/raw/*.xlsx
+data/datasets/shoninkyu-r7-todofuken/raw/*.pdf
+# 学テ児童生徒質問調査の県別 Excel・公表 PDF(nier.go.jp から再取得可能。
+# 監査痕跡は raw/ACQUISITION.md の URL 規則+checksums.md5 と抽出テキスト。
+# 沖縄(47p/47m)と全国(25p_402/25m_402)の Excel は追跡対象として残す)
+data/datasets/katei-zosho-r7-todofuken/raw/*_25a.xlsx
+!data/datasets/katei-zosho-r7-todofuken/raw/47p_25a.xlsx
+!data/datasets/katei-zosho-r7-todofuken/raw/47m_25a.xlsx
+data/datasets/katei-zosho-r7-todofuken/raw/*.pdf
+# 人口動態統計の年次 Excel・公表 PDF(mhlw.go.jp から再取得可能。監査痕跡は
+# raw/ACQUISITION.md の URL 対応表 + checksums.md5 + 抽出テキスト、および
+# raw/estat_4-5_tfr_crosscheck.md(e-Stat 表4-5 との突合値))
+data/datasets/jinko-dotai-r6-todofuken/raw/*.xls
+data/datasets/jinko-dotai-r6-todofuken/raw/*.xlsx
+data/datasets/jinko-dotai-r6-todofuken/raw/*.pdf
+# 問題行動・不登校等調査(中途退学)の統計表 Excel・公表 PDF(e-Stat / mext.go.jp から
+# 再取得可能。監査痕跡は raw/ACQUISITION.md の statInfId + checksums.md5 + 抽出テキスト)
+data/datasets/chuto-taigaku-r6-todofuken/raw/*.xlsx
+data/datasets/chuto-taigaku-r6-todofuken/raw/*.pdf
+# 市区町村別生命表の統計表 Excel・公表 PDF(e-Stat / mhlw.go.jp から再取得可能。
+# 監査痕跡は raw/ACQUISITION.md の URL 対応表 + checksums.md5 + 抽出テキスト)
+data/datasets/seimeihyo-r2-okinawa-shichoson/raw/*.xls
+data/datasets/seimeihyo-r2-okinawa-shichoson/raw/*.xlsx
+data/datasets/seimeihyo-r2-okinawa-shichoson/raw/*.pdf
+# 医師・歯科医師・薬剤師統計の概況 Excel・公表 PDF(mhlw.go.jp / e-Stat から再取得可能。
+# 監査痕跡は raw/ACQUISITION.md の URL・statInfId 対応表 + checksums.md5 + 抽出テキスト + e-Stat CSV)
+data/datasets/shonika-ishi-r6-todofuken/raw/*.xlsx
+data/datasets/shonika-ishi-r6-todofuken/raw/*.pdf
+# 市区町村別生命表の参考表 Excel(mhlw.go.jp から再取得可能。
+# 監査痕跡は raw/ACQUISITION.md の URL + checksums.md5、および元データセットの raw/)
+data/datasets/seimeihyo-h27-r2-okinawa-shichoson/raw/*.xlsx
+# 最低賃金の原本 PDF / Excel(mhlw.go.jp から再取得可能。ただし令和7年度の一覧 PDF と
+# 平成14〜令和7年度の改定状況 xlsx は令和8年度版の公表で削除されたので、meta.json の archiveUrl から取る。
+# 監査痕跡は raw/ACQUISITION.md の URL 対応表 + checksums.md5 + 抽出テキスト)
+data/datasets/saitei-chingin-r7-todofuken/raw/*.pdf
+data/datasets/saitei-chingin-r7-todofuken/raw/*.xlsx
+data/datasets/saitei-chingin-r8-todofuken/raw/*.pdf
+data/datasets/saitei-chingin-keinen/raw/*.xlsx
+
+# VRT のベースライン(CI で毎回撮り直すためコミットしない)
+vrt/__screenshots__/
+
+# Local security assessment notes (kept outside the repository)
+VULN_ASSESSMENT_*.md
+SUPPLY_CHAIN_AUDIT_*.md
+NODEJS_AUDIT_RESULT_*.md

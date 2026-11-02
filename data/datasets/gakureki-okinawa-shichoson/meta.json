@@ -1,0 +1,77 @@
+{
+  "id": "gakureki-okinawa-shichoson",
+  "title": "最終学歴別人口 沖縄県内市町村別(令和2年国勢調査)",
+  "description": "令和2年国勢調査(就業状態等基本集計)から、沖縄県内41市町村の15歳以上人口の最終学歴別内訳(小学校・中学校/高校/短大・高専/大学/大学院)を収録したデータセットです。令和2年調査で初めて大学と大学院が分離集計されました。地域の教育水準は SES(社会経済的地位)を構成する主要な要素で、教育格差の背景を市町村単位で見るための基礎データです。",
+  "themes": ["education", "population"],
+  "tags": ["国勢調査", "最終学歴", "SES"],
+  "sources": [
+    {
+      "publisher": "総務省統計局",
+      "title": "令和2年国勢調査 就業状態等基本集計 第11-2表 男女,年齢(5歳階級),在学か否かの別・最終卒業学校の種類別人口(15歳以上)-全国,都道府県,市区町村",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032201217&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260418050035/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032201217&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "statInfId は集計更新で変わります。e-Stat で「令和2年国勢調査 就業状態等基本集計 最終卒業学校の種類別人口 市区町村」を検索してください。"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-06"
+  },
+  "conversion": {
+    "method": "公表 Excel(第11-2表)から、男女「0_総数」×年齢「00_総数」×地域「47xxx」の行に限定して最終学歴別人数を抽出。恒等式(卒業者内訳の和=卒業者、区分の和=総数)を全行 assert。大学・大学院卒割合と卒業学校不詳率はサイト導出値",
+    "script": "scripts/convert/gakureki-okinawa-shichoson.ts",
+    "verification": "41市町村の各学歴区分の合計が沖縄県(47000)の値と全列一致することを assert。那覇市(15歳以上261,823・大学卒47,013)を取得時の別プロセス読み取りと照合済み(2026-07-06)。市町村の同定は団体コード5桁で行い境界データの41市町村と完全一致を確認",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2020年",
+    "coverageEnd": "2020年",
+    "granularity": "5年(国勢調査)"
+  },
+  "spatial": {
+    "level": "市町村",
+    "area": "沖縄県"
+  },
+  "updateFrequency": "5年ごと(国勢調査)",
+  "readingGuide": "15歳以上人口を最終学歴(卒業した学校の種類)で分けた人数です。数を市町村間で比べるときは人口規模の差に注意してください(那覇市と離島の村では母数が大きく違います)。重要な注意として、令和2年調査は回収方法の変更で「卒業学校不詳」(学歴を答えなかった人)が大幅に増え、その割合が市町村で0〜35%とばらつきます。そのため「大学・大学院卒割合」(学歴が判明した卒業者の中での割合)を市町村間で単純比較すると、不詳の多い都市部ほど誤差が大きくなります。各市町村の不詳率を同じ表に併記しているので、割合を読むときは必ず不詳率と併せて見てください。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 41,
+      "columns": [
+        { "name": "市町村", "type": "string", "description": "市町村名(コード昇順)" },
+        { "name": "15歳以上人口", "type": "integer", "unit": "人", "description": "在学か否かの別の総数(卒業者+在学者+未就学者+不詳)" },
+        { "name": "卒業者", "type": "integer", "unit": "人", "description": "学校を卒業した者。以下の学歴別内訳の合計(卒業学校不詳を含む)" },
+        { "name": "小学校卒", "type": "integer", "unit": "人", "description": "最終学歴が小学校の卒業者" },
+        { "name": "中学校卒", "type": "integer", "unit": "人", "description": "最終学歴が中学校の卒業者" },
+        { "name": "高校・旧中卒", "type": "integer", "unit": "人", "description": "最終学歴が高校・旧制中学の卒業者" },
+        { "name": "短大・高専卒", "type": "integer", "unit": "人", "description": "最終学歴が短期大学・高等専門学校の卒業者" },
+        { "name": "大学卒", "type": "integer", "unit": "人", "description": "最終学歴が大学(学部)の卒業者" },
+        { "name": "大学院卒", "type": "integer", "unit": "人", "description": "最終学歴が大学院の卒業者(令和2年調査で大学と分離)" },
+        { "name": "卒業学校不詳", "type": "integer", "unit": "人", "description": "卒業者のうち最終学歴を回答しなかった者" },
+        { "name": "在学者", "type": "integer", "unit": "人", "description": "現在学校に在学中の者" },
+        { "name": "未就学者", "type": "integer", "unit": "人", "description": "学校に通ったことがない、または小学校を中途退学した者" },
+        { "name": "在学か否か不詳", "type": "integer", "unit": "人", "description": "在学か否かの別が不詳の者" },
+        { "name": "大学・大学院卒割合", "type": "number", "unit": "%", "description": "サイト導出値: (大学卒+大学院卒)÷(卒業者−卒業学校不詳)×100。学歴が判明した卒業者の中での割合" },
+        { "name": "卒業学校不詳率", "type": "number", "unit": "%", "description": "サイト導出値: 卒業学校不詳÷卒業者×100。上記割合の市町村間比較の信頼度を測る指標" }
+      ]
+    }
+  ],
+  "caveats": [
+    "令和2年国勢調査は回収方法の変更などにより「最終卒業学校の種類不詳」が例年より大幅に増加しました。本データの卒業学校不詳率は市町村で0〜35%(中央値約12%)と大きくばらつきます。",
+    "「大学・大学院卒割合」は不詳を分母から除いた割合です。不詳者の学歴が判明者と同じ構成である保証はないため、不詳率の高い市町村ほどこの割合の不確実性が大きくなります。市町村間の順位づけには使わないでください。",
+    "地図(塗り分け)は設けていません。不詳率のばらつきが大きく、単一指標での市町村間比較が誤解を招くためです。学歴別の人数と不詳率を表で併せて確認してください。",
+    "分母は15歳以上人口です。大学・大学院卒は在学者(現役学生)を含みません。",
+    "『-』(該当数字がないもの)は0として収録しています(小規模町村の大学院卒など)。"
+  ],
+  "changelog": [
+    { "date": "2026-07-06", "description": "初版(令和2年国勢調査 就業状態等基本集計)" }
+  ],
+  "relatedDatasets": ["ses-gakuryoku-hogosha-chosa", "kazei-shotoku-okinawa-shichoson", "roudoryoku-okinawa-shichoson"],
+  "status": "published"
+}

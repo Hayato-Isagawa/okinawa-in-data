@@ -1,0 +1,81 @@
+---
+import { getDataset, getDatasetRows } from "../lib/datasets";
+
+/**
+ * FV の代表数値カード。値はすべてデータセットの CSV からビルド時に取得する
+ * (手打ちの数値を置かない。データ更新に自動追随し、転記ミスを構造的に防ぐ)。
+ */
+function figure(datasetId: string, rowName: string, column: string): string {
+  const { header, rows } = getDatasetRows(datasetId);
+  const colIdx = header.indexOf(column);
+  const row = rows.find((r) => r[0] === rowName);
+  const value = row?.[colIdx];
+  if (colIdx === -1 || value === undefined || value === "") {
+    throw new Error(`KeyFigures: ${datasetId} ${rowName}/${column} が見つかりません`);
+  }
+  return value;
+}
+
+const cards = [
+  {
+    question: "生活保護は?",
+    value: figure("seikatsu-hogo-todofuken", "沖縄県", "保護率(人口千対)"),
+    unit: "‰",
+    // ‰(人口千対)は見慣れない読者が % と誤読しやすいため、人数に翻訳して補足する
+    context: `保護率・人口千対(令和6年度)。人口1,000人あたり${figure("seikatsu-hogo-todofuken", "沖縄県", "保護率(人口千対)")}人(全国平均は${figure("seikatsu-hogo-todofuken", "全国", "保護率(人口千対)")}人)`,
+    datasetId: "seikatsu-hogo-todofuken",
+  },
+  {
+    question: "就学援助は?",
+    value: figure("shugaku-enjo-r4-todofuken", "沖縄県", "就学援助率"),
+    unit: "%",
+    context: `就学援助率(令和4年度)。全国平均は${figure("shugaku-enjo-r4-todofuken", "合計", "就学援助率")}%`,
+    datasetId: "shugaku-enjo-r4-todofuken",
+  },
+  {
+    question: "学力は?",
+    value: figure("gakuryoku-chosa-r7-todofuken", "沖縄県", "中学校数学"),
+    unit: "%",
+    context: `中学校数学の平均正答率(令和7年度)。全国平均(公立)は${figure("gakuryoku-chosa-r7-todofuken", "全国（公立）", "中学校数学")}%`,
+    datasetId: "gakuryoku-chosa-r7-todofuken",
+  },
+].map((card) => ({ ...card, draft: getDataset(card.datasetId).status === "draft" }));
+---
+
+<section aria-label="沖縄の代表的な数値">
+  <div class="grid gap-5 sm:grid-cols-3">
+    {
+      cards.map((card) => (
+        <a
+          href={`/datasets/${card.datasetId}/`}
+          class="card card-lift block p-5 no-underline"
+        >
+          <p class="text-sm font-bold" style="color: var(--color-accent);">
+            {card.question}
+          </p>
+          <p class="mt-1 font-bold" style="color: var(--color-ink-accent);">
+            <span class="display-en text-4xl">{card.value}</span><span class="ml-0.5 text-2xl">{card.unit}</span>
+          </p>
+          <p class="mt-2 text-sm" style="color: var(--color-sub);">
+            {card.context}
+          </p>
+          <p class="mt-3 text-xs font-semibold" style="color: var(--color-sub);">
+            出典つきで見る →
+            {card.draft && (
+              <span class="ml-1 rounded-full border px-1.5 py-0.5" style="border-color: var(--color-line);">
+                検証中
+              </span>
+            )}
+          </p>
+        </a>
+      ))
+    }
+  </div>
+  {
+    cards.some((card) => card.draft) && (
+      <p class="mt-3 text-xs" style="color: var(--color-sub);">
+        「検証中」は、元の資料との突き合わせがまだ終わっていないデータです。照合が完了するまで数値が変わる可能性があります(<a href="/methodology/" class="link-underline">検証の流れ</a>)。
+      </p>
+    )
+  }
+</section>

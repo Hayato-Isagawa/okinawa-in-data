@@ -1,0 +1,67 @@
+---
+import type { DatasetSource } from "../../data/schema/dataset-meta";
+
+interface Props {
+  sources: DatasetSource[];
+}
+
+const { sources } = Astro.props;
+
+const FORMAT_LABELS: Record<DatasetSource["format"], string> = {
+  pdf: "PDF",
+  xlsx: "Excel",
+  xls: "Excel",
+  csv: "CSV",
+  html: "Web ページ",
+};
+---
+
+<section aria-labelledby="sources-heading" class="my-8">
+  <h2 id="sources-heading" class="text-xl font-bold">一次出典</h2>
+  <p class="mt-1 text-sm" style="color: var(--color-sub);">
+    本データセットの数値はすべて以下の一次資料から転記し、原文と照合しています。
+  </p>
+  <ul class="mt-4 space-y-4">
+    {
+      sources.map((source) => (
+        <li
+          class="card p-4"
+        >
+          <p class="font-semibold">{source.publisher}</p>
+          <p class="mt-1">
+            <a
+              href={source.url}
+              rel="noopener noreferrer"
+              target="_blank"
+              class="link-underline"
+              style="color: var(--color-accent);"
+            >
+              {source.title}({FORMAT_LABELS[source.format]})
+            </a>
+          </p>
+          <p class="mt-2 text-sm num" style="color: var(--color-sub);">
+            取得日: {source.retrievedAt}
+          </p>
+          {source.permalinkNote && (
+            <p class="mt-1 text-sm" style="color: var(--color-sub);">
+              ⚠ {source.permalinkNote}
+            </p>
+          )}
+          {source.archiveUrl && (
+            <p class="mt-1 text-sm">
+              <a
+                href={source.archiveUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+                class="link-underline"
+                style="color: var(--color-accent);"
+              >
+                アーカイブ(取得時点のスナップショット)
+              </a>
+            </p>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</section>

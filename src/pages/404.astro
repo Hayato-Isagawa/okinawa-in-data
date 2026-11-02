@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="ページが見つかりません | データでみる沖縄"
+  description="お探しのページは見つかりませんでした。"
+  searchable={false}
+>
+  <h1 class="text-3xl font-bold">ページが見つかりません</h1>
+  <p class="mt-4">
+    お探しのページは移動または削除された可能性があります。
+  </p>
+  <ul class="mt-4 space-y-2">
+    <li><a href="/" class="link-underline" style="color: var(--color-accent);">トップページへ</a></li>
+    <li><a href="/area/" class="link-underline" style="color: var(--color-accent);">市町村から探す</a></li>
+    <li><a href="/datasets/" class="link-underline" style="color: var(--color-accent);">データセット一覧へ</a></li>
+  </ul>
+</BaseLayout>

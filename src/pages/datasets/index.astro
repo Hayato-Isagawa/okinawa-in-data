@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DatasetCard from "../../components/DatasetCard.astro";
+import { getAllDatasets } from "../../lib/datasets";
+
+const datasets = getAllDatasets();
+---
+
+<BaseLayout
+  title="データセット一覧 | データでみる沖縄"
+  description="沖縄の公的データを、表計算やプログラムでそのまま使える形にしたデータセットの一覧。CSV / JSON でダウンロードでき、一次出典・取得日・変換方法を明記しています。"
+>
+  <h1 class="text-3xl font-bold">データセット一覧</h1>
+  <p class="mt-3 max-w-2xl">
+    どのデータセットも一次資料(公的機関の公表資料)から作成し、出典・取得日・変換方法を明記しています。「検証中」のものは、元の資料との突き合わせがまだ終わっていません(<a href="/methodology/" class="link-underline" style="color: var(--color-accent);">データの作り方</a>)。
+  </p>
+  {
+    datasets.length === 0 ? (
+      <p class="mt-8" style="color: var(--color-sub);">
+        データセットを準備中です。
+      </p>
+    ) : (
+      <div class="mt-8 grid gap-5 sm:grid-cols-2">
+        {datasets.map((meta) => (
+          <DatasetCard meta={meta} headingLevel="h2" />
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>

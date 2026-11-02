@@ -1,0 +1,19 @@
+// Cloudflare Workers (static assets) デプロイ設定。
+// 本番: https://okinawa-in-data.org (Workers custom domain、deploy 時に自動アタッチ)
+{
+  "name": "okinawa-in-data",
+  "compatibility_date": "2026-07-01",
+  // *.workers.dev はカスタムドメインを通らないので、WAF もゾーン設定も効かない
+  // 裏口になる。現在は routes があるため推論で off だが、設定に書いていないと
+  // 次のデプロイで既定に戻りうる(preview_urls は既定で workers_dev に追従する)。
+  // ファミリー他 4 リポと同じく明示して固定する。
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "okinawa-in-data.org", "custom_domain": true }
+  ]
+}

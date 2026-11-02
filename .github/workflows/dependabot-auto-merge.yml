@@ -1,0 +1,243 @@
+# Dependabot の patch / minor 更新を、CI 通過を確認してから取り込む。
+#
+# 他のファミリーリポ（edu-evidence 等）は `gh pr merge --auto` を使っている。
+# あれは「ブランチ保護の required check がマージを止めている」ことが前提で、
+# その解除を予約する仕組みなので、待つのは required の check だけになる。
+# このリポジトリの required check は Build site と Playwright E2E だけで、
+# paths で走らないことがある VRT などは入れていない。`--auto` にすると、走った
+# VRT が赤でもマージされうる。そこで、現れた check をすべて自前で待つ。
+#
+# `gh pr checks --watch` は使えない。**このワークフロー自身の run も check として
+# 数えるため自己デッドロックする。** 自分自身は明示的に除外すること。
+name: Dependabot auto-merge
+
+on: pull_request
+
+# permissions を明示すると、**列挙しなかった権限はすべて none になる**。
+# check の読み取りには checks: read が要る。これが無いと check-runs API が
+# "Resource not accessible by integration" を返し、check を 1 件も取得できない。
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  auto-merge:
+    # 作成者は user.login で見る。github.actor は最後に動いた者で、作成者ではない(zizmor の
+    # bot-conditions)。head が別リポの PR は対象にしない。actor も Dependabot に限るのは、
+    # 人が push した後の run では動かないようにするため(作成者の判定には使っていない)。
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == github.event.pull_request.head.repo.full_name && github.actor == 'dependabot[bot]' # zizmor: ignore[bot-conditions] actor は作成者の判定でなく、人の push 後の run を外すために残している
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for CI, then merge
+        # major は内容を読む価値があるので手動レビューに残す。
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          # **待つ check を列挙しない。** 列挙は古くなる。実際 #83 で a11y.yml を
+          # e2e.yml に差し替えたとき、ここが "Playwright a11y" のまま残り、8/9 以降の
+          # Dependabot PR は 30 分沈黙してから CANCELLED になっていた（#94 で修正）。
+          # 列挙を増やすほど同じ壊れ方の面積が増えるので、判定を反転させる:
+          #
+          #   ANCHORS   … paths フィルタが無く必ず走る check。現れなければ異常
+          #   それ以外  … この SHA に**現れている** check はすべてゲートする。
+          #               条件付きで走る vrt.yml は、走った PR でだけ自動的に対象になる
+          #   IGNORE    … 意図的に見ない check（既定は完全一致）
+          #
+          # ANCHORS は錨でもある。これが無いと、check がまだ 1 件も登録されて
+          # いない瞬間を「pending 0 件」と読んで即マージしてしまう。
+          #
+          # build.yml / e2e.yml は paths フィルタが無く、main 向けの PR なら必ず走る。
+          # **paths フィルタ付きのワークフローを ANCHORS に足してはいけない** —
+          # 起動しない PR で猶予判定が「名前がずれている」と誤判定して落ちる。
+          ANCHORS=("Build site" "Playwright E2E")
+
+          # 意図的に見ない check。**前方一致を既定にしない** — "auto-merge" の
+          # 前方一致は "auto-merge-extra" のような別 job まで巻き込み、赤いまま
+          # 通してしまう。前方一致は「後半が可変で、かつ確実に対象外」のものだけ。
+          #
+          # かつて "Dependabot" も除外していたが、Dependabot PR の head には
+          # そんな check は現れない（#88 / #95 / #89 の 3 本で実測）。main への
+          # push で見えたものを PR にも在ると誤認していた。存在しない名前の
+          # 除外は穴を広げるだけなので外した。
+          IGNORE_EXACT=("auto-merge")          # 自分自身。待つと自己デッドロックする
+          IGNORE_PREFIXES=("Workers Builds:")  # Cloudflare のデプロイ側。後半はプロジェクト名
+
+          # 錨が猶予を過ぎても一度も現れないなら、「まだ来ていない」ではなく
+          # 「もう来ない」＝名前がずれている。待ち続けずに落とす。
+          GRACE=15                         # 20 秒 × 15 = 約 5 分
+          # ループ予算は timeout-minutes より**十分**短くする。同値だと job が先に
+          # CANCELLED になり、下の「待っても完了しなかった」が一度も出力されない。
+          # sleep だけでなく gh api の往復も積み上がるので、その分の余裕も要る。
+          # 実際の CI は build 40 秒 / e2e 3.5 分 / vrt 2.5 分なので 20 分あれば足りる。
+          MAX=60                           # 20 秒 × 60 = 20 分。残り 10 分が API 往復の余裕
+
+          seen=""
+
+          for attempt in $(seq 1 "$MAX"); do
+            # 取得できないことを「まだ実行中」と混同しない。権限不足などで
+            # 読めないまま黙ってループすると、20 分回して初めて気づくことになる。
+            # filter=latest は既定値だが明示する。**名前ごとに最新の check-run
+            # だけが返る**という前提の上に下の判定が乗っているので、既定に
+            # 頼らず読める形にしておく。
+            if ! json=$(gh api "repos/$REPO/commits/$SHA/check-runs?filter=latest&per_page=100" 2>&1); then
+              echo "check-runs を取得できない: $json" >&2
+              exit 1
+            fi
+
+            # 「現れている check をすべてゲートする」は、全部が 1 ページに収まって
+            # いることが前提。溢れると**見えない check は無いのと同じ**になり、
+            # 静かにゲートを抜ける。溢れたら判定せずに落とす。
+            if ! counts=$(printf '%s' "$json" | jq -r '[(.total_count // 0), (.check_runs | length)] | @tsv' 2>&1); then
+              echo "check-runs を解釈できない: $counts" >&2
+              exit 1
+            fi
+            total=$(printf '%s' "$counts" | cut -f1)
+            got=$(printf '%s' "$counts" | cut -f2)
+            if [ "$total" -gt "$got" ]; then
+              # 全角括弧が直後に来る変数はブレースで閉じる。$total） のままだと
+              # bash が続く多バイト文字まで変数名として読み、unbound variable で死ぬ。
+              echo "check-runs が 1 ページに収まっていない（${got} / ${total}）。判定できないので中止する。" >&2
+              exit 1
+            fi
+
+            # それでも同名が複数返ったときのために、名前ごとに 1 つへ畳む。
+            # 順序は 実行中 > 失敗 > 成功。まず「まだ分からない」を優先して待ち、
+            # 分かったうえで悪いものがあれば止める。started_at では比べない
+            # （同値や null がありうるうえ、新しい方が正しいとも限らない）。
+            #
+            # jq が落ちても set -e で死ぬだけで理由が残らないので、ここも捕まえる。
+            if ! checks=$(printf '%s' "$json" | jq -r '
+              def worst($s):
+                ($s | map(select(. as $x | ["queued","in_progress","waiting","requested","pending"] | index($x))) | first)
+                // ($s | map(select(. as $x | ["success","neutral","skipped"] | index($x) | not)) | first)
+                // $s[0];
+              .check_runs
+              | group_by(.name)
+              | map([.[0].name, worst(map(if .status != "completed" then .status else (.conclusion // "unknown") end))])
+              | .[]
+              | @tsv' 2>&1); then
+              echo "check-runs を解釈できない: $checks" >&2
+              exit 1
+            fi
+
+            pending=0
+            failed=""
+            missing=""
+            gated=""
+
+            # 1) 錨: 必ず現れることを要求する
+            for name in "${ANCHORS[@]}"; do
+              state=$(printf '%s\n' "$checks" | awk -F'\t' -v n="$name" '$1 == n { print $2; exit }')
+              # 一度でも現れた check を覚えておく（GitHub が check-run を作り
+              # 直すと一時的に応答から消えることがあるため）。job 名は任意の
+              # 文字列なので、部分一致ではなく行単位の完全一致で持つ。
+              if [ -n "$state" ]; then
+                if ! printf '%s' "$seen" | grep -qxF -- "$name"; then
+                  seen="$seen$name"$'\n'
+                fi
+              fi
+              if ! printf '%s' "$seen" | grep -qxF -- "$name"; then
+                missing="$missing \"$name\""
+              fi
+              [ -z "$state" ] || gated="$gated  - $name ($state)"$'\n'
+              # **錨だけは skipped / neutral を成功扱いしない。** 錨は「必ず走る」ことを
+              # 要求する対象で、job レベルの `if:` で止めると check-run は
+              # conclusion: skipped として現れる＝名前は在るのに中身は走っていない。
+              # 上の 2 通り（名前が変わった / trigger に paths が付いた）は捕まえられるが、
+              # job レベルで止められた場合だけ素通りしていた。
+              # 条件付きで走る check（vrt 等）を通すのは下の 2) の側の役目。
+              case "$state" in
+                success)                          ;;
+                ""|queued|in_progress|waiting|requested|pending) pending=1 ;;
+                *) failed="$failed $name=$state"  ;;
+              esac
+            done
+
+            # 2) 現れている check をすべて見る（錨と IGNORE を除く）。
+            # パイプで while に渡すとサブシェルになり pending / failed の更新が
+            # 消えるので、here-string で渡す。
+            while IFS=$'\t' read -r name state; do
+              [ -n "$name" ] || continue
+
+              skip=""
+              for exact in "${IGNORE_EXACT[@]}"; do
+                [ "$name" != "$exact" ] || skip=1
+              done
+              for prefix in "${IGNORE_PREFIXES[@]}"; do
+                case "$name" in "$prefix"*) skip=1 ;; esac
+              done
+              for anchor in "${ANCHORS[@]}"; do
+                [ "$name" != "$anchor" ] || skip=1
+              done
+              [ -z "$skip" ] || continue
+
+              if ! printf '%s' "$seen" | grep -qxF -- "$name"; then
+                seen="$seen$name"$'\n'
+              fi
+
+              gated="$gated  - $name ($state)"$'\n'
+              case "$state" in
+                success|neutral|skipped) ;;
+                queued|in_progress|waiting|requested|pending) pending=1 ;;
+                *) failed="$failed $name=$state" ;;
+              esac
+            done <<< "$checks"
+
+            # 3) 一度ゲートに載った check が応答から消えたら、消えたことを
+            # 「通ってよい」と読まない。錨は上のループで空 state を pending に
+            # しているので気づくが、錨以外は行ごと無くなるため素通りしてしまう。
+            while IFS= read -r name; do
+              [ -n "$name" ] || continue
+              if ! printf '%s\n' "$checks" | awk -F'\t' -v n="$name" '$1 == n { found = 1 } END { exit !found }'; then
+                pending=1
+              fi
+            done <<< "$seen"
+
+            if [ -n "$failed" ]; then
+              echo "CI が通っていないためマージしない:$failed" >&2
+              exit 1
+            fi
+
+            if [ "$pending" -eq 0 ]; then
+              # 見ると決めた check だけを出す。見ないもの（自分自身・デプロイ側）を
+              # ここに混ぜると、赤い行を並べながら「すべて成功」と言うことになる。
+              echo "ゲート対象の check がすべて成功。マージする。"
+              printf '%s' "$gated"
+              # **判定した SHA と、実際にマージする head を一致させる。** ゲートは $SHA を
+              # 見るが、マージ先は $PR_URL の「現在の」head。Dependabot は対象ブランチへの
+              # push で衝突したとき（兄弟 PR のマージを含む）や、スケジュール実行・再オープンで
+              # 変更を見つけたときに PR を rebase し、`@dependabot rebase` のコメントでも
+              # head が変わるので、最後のポーリングからマージまでの間に head が動きうる。
+              # ずれていたらマージせず落ちる（新しい head では synchronize で本 workflow が
+              # 走り直すので、取りこぼしにはならない）。
+              exec gh pr merge --squash --delete-branch --match-head-commit "$SHA" "$PR_URL"
+            fi
+
+            # 猶予の間に一度も現れなかった錨は、待っても来ない。
+            # ANCHORS の名前が実際の job 名とずれた状態なので、待ち続けずに落とす。
+            if [ "$attempt" -ge "$GRACE" ] && [ -n "$missing" ]; then
+              echo "錨にしている check がこの PR に一度も現れなかった:$missing" >&2
+              echo "ANCHORS の名前が実際の job 名とずれている可能性が高い。来ている check:" >&2
+              printf '%s\n' "$checks" | awk -F'\t' 'NF { print "  - " $1 " (" $2 ")" }' >&2
+              exit 1
+            fi
+
+            sleep 20
+          done
+
+          echo "20 分待っても CI が完了しなかった" >&2
+          exit 1

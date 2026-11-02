@@ -1,0 +1,80 @@
+{
+  "id": "gakuryoku-chosa-r7-todofuken",
+  "title": "全国学力・学習状況調査 都道府県別平均正答率(令和7年度)",
+  "description": "令和7年度(2025年度)全国学力・学習状況調査の都道府県別(公立)平均正答率。小学校は国語・算数・理科、中学校は国語・数学の5教科を収録し、全国値(国公私立・公立)を含みます。国立教育政策研究所の公表資料(PDF)から構造化しました。",
+  "themes": ["education"],
+  "tags": ["全国学力・学習状況調査", "学力", "小学校", "中学校", "都道府県別"],
+  "sources": [
+    {
+      "publisher": "国立教育政策研究所",
+      "title": "令和7年度全国学力・学習状況調査 調査結果資料【全国-都道府県(公立)】小学校調査",
+      "url": "https://www.nier.go.jp/25chousakekkahoukoku/factsheet/25p_101.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260606042617/https://www.nier.go.jp/25chousakekkahoukoku/factsheet/25p_101.pdf",
+      "retrievedAt": "2026-07-05",
+      "format": "pdf",
+      "permalinkNote": "報告書 URL は年度ごとのディレクトリ(25chousakekkahoukoku)配下にあり、次年度以降は URL が変わります。"
+    },
+    {
+      "publisher": "国立教育政策研究所",
+      "title": "令和7年度全国学力・学習状況調査 調査結果資料【全国-都道府県(公立)】中学校調査",
+      "url": "https://www.nier.go.jp/25chousakekkahoukoku/factsheet/25m_101.pdf",
+      "archiveUrl": "https://web.archive.org/web/20260606051419/https://www.nier.go.jp/25chousakekkahoukoku/factsheet/25m_101.pdf",
+      "retrievedAt": "2026-07-05",
+      "format": "pdf",
+      "permalinkNote": "報告書 URL は年度ごとのディレクトリ(25chousakekkahoukoku)配下にあり、次年度以降は URL が変わります。"
+    }
+  ],
+  "license": {
+    "name": "政府標準利用規約(第2.0版)",
+    "url": "https://www.mext.go.jp/b_menu/1351168.htm",
+    "confirmedAt": "2026-07-05",
+    "note": "文部科学省の利用規約ページで確認。NIER サイトの著作権ページ(nier.go.jp/11_copyright/)が文科省ウェブサイト利用規約へ全面委任しており、同規約の適用ドメインに nier.go.jp が明記されていることを確認(2026-07-06)。数値データは著作権の対象外と同規約に明記。"
+  },
+  "conversion": {
+    "method": "pdftotext -layout で生テキスト化し、変換スクリプトで平均正答率(括弧表記)を機械抽出",
+    "script": "scripts/convert/gakuryoku-chosa-r7-todofuken.ts",
+    "verification": "raw/ の生テキストと CSV を全国(公立)・秋田県・沖縄県の全教科で逐語照合済み(2026-07-05)。値は一次資料の表記のまま保持(全国=小数第1位、都道府県=整数)",
+    "convertedAt": "2026-07-05"
+  },
+  "temporal": {
+    "coverageStart": "2025年度",
+    "coverageEnd": "2025年度",
+    "granularity": "年度(単年)"
+  },
+  "spatial": {
+    "level": "都道府県"
+  },
+  "updateFrequency": "年1回(調査は毎年4月実施)",
+  "nextExpectedUpdate": "令和8年度調査の結果公表後",
+  "readingGuide": "平均正答率は、各教科の問題全体のうち正答できた割合の平均です。都道府県の値は整数(有効数字2桁)で公表されているため、小数点以下の細かな比較はできません。1〜2ポイントの差を順位として読むのではなく、全国的な分布の中での位置として読むことをおすすめします。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "rowCount": 49,
+      "columns": [
+        { "name": "区分", "type": "string", "description": "全国(国公私立)・全国(公立)・47都道府県" },
+        { "name": "小学校国語", "type": "number", "unit": "%", "description": "小学校 国語の平均正答率" },
+        { "name": "小学校算数", "type": "number", "unit": "%", "description": "小学校 算数の平均正答率" },
+        { "name": "小学校理科", "type": "number", "unit": "%", "description": "小学校 理科の平均正答率" },
+        { "name": "中学校国語", "type": "number", "unit": "%", "description": "中学校 国語の平均正答率" },
+        { "name": "中学校数学", "type": "number", "unit": "%", "description": "中学校 数学の平均正答率" }
+      ]
+    }
+  ],
+  "map": {
+    "column": "中学校数学",
+    "note": "地図は一例として中学校数学(全国との差が最も大きい教科)を表示しています。他教科は下の表を参照してください。"
+  },
+  "caveats": [
+    "都道府県の値は公立学校の集計です(指定都市立を含む「都道府県(公立)」区分を採用)。",
+    "都道府県別の正答率は整数(有効数字2桁)、全国値のみ小数第1位で公表されており、本データセットは一次資料の表記をそのまま保持しています。",
+    "令和7年度の中学校理科は IRT に基づくスコア形式で公表され、平均正答率が存在しないため収録していません。",
+    "調査対象・実施状況の詳細(実施校数・児童生徒数など)は一次資料を参照してください。"
+  ],
+  "changelog": [
+    { "date": "2026-07-05", "description": "初版作成(令和7年度調査分)" }
+  ],
+  "relatedDatasets": ["kodomo-chosa-konkyu-keinen", "shugaku-enjo-r4-todofuken"],
+  "status": "published"
+}

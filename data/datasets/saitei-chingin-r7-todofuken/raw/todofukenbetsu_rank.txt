@@ -1,0 +1,56 @@
+# text dump of todofukenbetsu_rank.xlsx (all sheets; phonetic runs stripped; date-formatted cells rendered ISO with raw serial in brackets; floats rounded to 10dp)
+## sheet: 都道府県別ランク
+## dimension: A1:Y53
+row1: 都道府県別ランク
+row2: 
+row3: 年度 | 平成14年度 | 平成15年度 | 平成16年度 | 平成17年度 | 平成18年度 | 平成19年度 | 平成20年度 | 平成21年度 | 平成22年度 | 平成23年度 | 平成24年度 | 平成25年度 | 平成26年度 | 平成27年度 | 平成28年度 | 平成29年度 | 平成30年度 | 令和元年度 | 令和２年度 | 令和３年度 | 令和４年度 | 令和５年度 | 令和６年度 | 令和７年度
+row4:  | 2002年度 | 2003年度 | 2004年度 | 2005年度 | 2006年度 | 2007年度 | 2008年度 | 2009年度 | 2010年度 | 2011年度 | 2012年度 | 2013年度 | 2014年度 | 2015年度 | 2016年度 | 2017年度 | 2018年度 | 2019年度 | 2020年度 | 2021年度 | 2022年度 | 2023年度 | 2024年度 | 2025年度
+row5: 北海道 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row6: 青森 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row7: 岩手 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row8: 宮城 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row9: 秋田 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row10: 山形 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row11: 福島 | C | C | C | C | C | C | C | C | C | D | D | D | D | D | D | D | D | D | D | D | D | B | B | B
+row12: 茨城 | C | C | C | C | C | C | C | C | C | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row13: 栃木 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row14: 群馬 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row15: 埼玉 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | A | A | A | A | A | A | A | A | A
+row16: 千葉 | B | B | B | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A
+row17: 東京 | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A
+row18: 神奈川 | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A
+row19: 新潟 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row20: 富山 | C | C | C | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row21: 石川 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row22: 福井 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row23: 山梨 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B | B | B | B | B | B | B
+row24: 長野 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row25: 岐阜 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row26: 静岡 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row27: 愛知 | B | B | B | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A
+row28: 三重 | C | C | C | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row29: 滋賀 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row30: 京都 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row31: 大阪 | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A | A
+row32: 兵庫 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row33: 奈良 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row34: 和歌山 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row35: 鳥取 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row36: 島根 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | B | B | B
+row37: 岡山 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row38: 広島 | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B | B
+row39: 山口 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row40: 徳島 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C | C | C | C | B | B | B
+row41: 香川 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row42: 愛媛 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | B | B | B
+row43: 高知 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row44: 福岡 | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | C | B | B | B
+row45: 佐賀 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row46: 長崎 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row47: 熊本 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row48: 大分 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row49: 宮崎 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row50: 鹿児島 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row51: 沖縄 | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | D | C | C | C
+row52:  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+row53:  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 

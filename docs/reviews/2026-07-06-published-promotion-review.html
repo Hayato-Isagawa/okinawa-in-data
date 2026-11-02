@@ -1,0 +1,335 @@
+<title>published 昇格レビュー — データでみる沖縄</title>
+<style>
+  :root {
+    --paper: #f7fafb;
+    --card: #ffffff;
+    --ink: #13242e;
+    --sub: #52707d;
+    --line: #d9e4e9;
+    --accent: #0a6c9e;
+    --accent-soft: #e3f2f9;
+    --ok: #177346;
+    --ok-soft: #e4f4eb;
+    --warn: #8a5f00;
+    --warn-soft: #fdf3d9;
+    --hold: #7a4a9e;
+    --hold-soft: #f1e8f9;
+    --mono: "SF Mono", "Menlo", "Consolas", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #101b22; --card: #18252e; --ink: #e4edf2; --sub: #93aab6;
+      --line: #2b3d48; --accent: #57b2df; --accent-soft: #143647;
+      --ok: #5fc78f; --ok-soft: #14392a; --warn: #e2b95a; --warn-soft: #3a2f12;
+      --hold: #c19be0; --hold-soft: #33244a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #101b22; --card: #18252e; --ink: #e4edf2; --sub: #93aab6;
+    --line: #2b3d48; --accent: #57b2df; --accent-soft: #143647;
+    --ok: #5fc78f; --ok-soft: #14392a; --warn: #e2b95a; --warn-soft: #3a2f12;
+    --hold: #c19be0; --hold-soft: #33244a;
+  }
+  :root[data-theme="light"] {
+    --paper: #f7fafb; --card: #ffffff; --ink: #13242e; --sub: #52707d;
+    --line: #d9e4e9; --accent: #0a6c9e; --accent-soft: #e3f2f9;
+    --ok: #177346; --ok-soft: #e4f4eb; --warn: #8a5f00; --warn-soft: #fdf3d9;
+    --hold: #7a4a9e; --hold-soft: #f1e8f9;
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "BIZ UDGothic", Meiryo, system-ui, sans-serif;
+    line-height: 1.8;
+    margin: 0;
+    font-feature-settings: "palt";
+  }
+  main { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+  h1 { font-size: 1.55rem; line-height: 1.4; margin: 0.3rem 0 0; text-wrap: balance; }
+  h2 { font-size: 1.15rem; margin: 0; }
+  .eyebrow {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--accent); text-transform: uppercase;
+  }
+  .lede { color: var(--sub); font-size: 0.92rem; max-width: 46rem; }
+  .verdict-band {
+    display: flex; flex-wrap: wrap; gap: 1.75rem; margin-top: 1.5rem;
+    border-block: 1px solid var(--line); padding: 1rem 0.25rem;
+  }
+  .verdict-band div { min-width: 8rem; }
+  .verdict-band .num {
+    font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums;
+    color: var(--ink); line-height: 1.2;
+  }
+  .verdict-band .num.good { color: var(--ok); }
+  .verdict-band p { margin: 0; font-size: 0.78rem; color: var(--sub); }
+  .chip {
+    display: inline-block; border-radius: 999px; padding: 0.1rem 0.7rem;
+    font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+  }
+  .chip.ok { background: var(--ok-soft); color: var(--ok); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.hold { background: var(--hold-soft); color: var(--hold); }
+  section.ds {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.4rem 1.5rem 1.5rem; margin-top: 1.6rem;
+  }
+  section.ds header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem 0.9rem; }
+  .ds-id { font-family: var(--mono); font-size: 0.72rem; color: var(--sub); }
+  .meta-line { font-size: 0.84rem; color: var(--sub); margin: 0.5rem 0 0; }
+  .meta-line b { color: var(--ink); font-weight: 600; }
+  .tablewrap { overflow-x: auto; margin-top: 0.9rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
+  caption {
+    text-align: left; font-size: 0.78rem; font-weight: 700; color: var(--sub);
+    padding-bottom: 0.35rem; letter-spacing: 0.04em;
+  }
+  th, td { border-top: 1px solid var(--line); padding: 0.45rem 0.7rem; text-align: left; vertical-align: top; }
+  thead th {
+    border-top: none; font-size: 0.72rem; letter-spacing: 0.06em; color: var(--sub);
+    font-weight: 700; padding-top: 0;
+  }
+  td.v { font-family: var(--mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.match { color: var(--ok); font-weight: 700; white-space: nowrap; }
+  .src { color: var(--sub); font-size: 0.72rem; display: block; }
+  .allrows {
+    margin: 0.8rem 0 0; font-size: 0.84rem; padding: 0.55rem 0.9rem;
+    background: var(--ok-soft); color: var(--ok); border-radius: 7px; font-weight: 600;
+  }
+  ul.notes { margin: 0.6rem 0 0; padding-left: 1.2rem; font-size: 0.85rem; }
+  ul.notes li { margin-top: 0.3rem; }
+  ul.notes li::marker { color: var(--sub); }
+  .attn { border-left: 3px solid var(--warn); background: var(--warn-soft); border-radius: 0 7px 7px 0; padding: 0.7rem 1rem; margin-top: 1rem; }
+  .attn p { margin: 0; font-size: 0.78rem; font-weight: 700; color: var(--warn); letter-spacing: 0.05em; }
+  .attn ul { margin: 0.35rem 0 0; padding-left: 1.15rem; font-size: 0.85rem; }
+  .attn ul li { margin-top: 0.25rem; }
+  h3.sec { font-size: 0.8rem; letter-spacing: 0.1em; color: var(--sub); margin: 1.4rem 0 0; text-transform: uppercase; }
+  .sumwrap { overflow-x: auto; margin-top: 1.4rem; }
+  .sum td, .sum th { font-size: 0.84rem; }
+  .excl { display: grid; gap: 0.8rem; margin-top: 0.9rem; }
+  .excl article { border: 1px dashed var(--line); border-radius: 8px; padding: 0.8rem 1rem; font-size: 0.87rem; background: transparent; }
+  .excl b { display: block; }
+  .excl span { color: var(--sub); font-size: 0.82rem; }
+  .foot { margin-top: 2.2rem; border-top: 1px solid var(--line); padding-top: 1.2rem; font-size: 0.85rem; color: var(--sub); }
+  ol.next { font-size: 0.9rem; padding-left: 1.3rem; }
+  ol.next li { margin-top: 0.35rem; }
+  a { color: var(--accent); }
+</style>
+<main>
+  <p class="eyebrow">Promotion Review · 2026-07-06</p>
+  <h1>published 昇格レビュー — 6 データセットの独立再照合結果</h1>
+  <p class="lede">過去の照合記録を入力とせず、raw/ の一次証跡(pdftotext 生テキスト・元 Excel)から<b>別実装のパーサで全行を引き直し</b>、data.csv と機械照合しました(変換に使った SheetJS は不使用 = 変換系統のバグも検出対象)。データセットごとに「逐語対比の抜粋 → 全数照合の結果 → 注意点」の順で確認できます。</p>
+
+  <div class="verdict-band">
+    <div><div class="num good">0 件</div><p>不一致(全データセット)</p></div>
+    <div><div class="num">6 / 6</div><p>昇格推奨</p></div>
+    <div><div class="num">997+</div><p>全数照合セル数(41市町村×全列×4本 + 48都道府県×全列 + 導出値再計算)</p></div>
+    <div><div class="num">8 / 8</div><p>check:data(機械検証)通過</p></div>
+  </div>
+
+  <div class="sumwrap">
+    <table class="sum">
+      <caption>サマリー</caption>
+      <thead><tr><th>データセット</th><th>全数照合</th><th>恒等式・導出値</th><th>所見</th></tr></thead>
+      <tbody>
+        <tr><td>就学援助 都道府県別(R4)</td><td class="v">48行×全列 一致</td><td>a+b=c 全48行成立・率再計算一致</td><td><span class="chip ok">昇格推奨</span></td></tr>
+        <tr><td>就学援助率 県内市町村別(R5・階級)</td><td class="v">41行 一致</td><td>—(階級値)</td><td><span class="chip ok">昇格推奨</span></td></tr>
+        <tr><td>課税対象所得・納税者1人当たり</td><td class="v">41行×全列 一致</td><td>導出値41行再計算一致(四捨五入規則を実証)</td><td><span class="chip ok">昇格推奨</span> <span class="chip warn">format表記</span></td></tr>
+        <tr><td>学校数・児童生徒数</td><td class="v">205チェック 一致</td><td>—</td><td><span class="chip ok">昇格推奨</span> <span class="chip warn">format表記</span></td></tr>
+        <tr><td>住基人口・世帯・出生死亡</td><td class="v">287チェック 一致</td><td>—(過去の誤マップは修正済みを再確認)</td><td><span class="chip ok">昇格推奨</span></td></tr>
+        <tr><td>年少人口・割合(導出)</td><td class="v">164チェック 一致</td><td>割合41行を独立再計算し一致・2表間整合も確認</td><td><span class="chip ok">昇格推奨</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 1 ===== -->
+  <section class="ds">
+    <header><h2>就学援助 都道府県別実施状況(令和4年度)</h2><span class="chip ok">昇格推奨</span></header>
+    <p class="ds-id">shugaku-enjo-r4-todofuken</p>
+    <p class="meta-line"><b>出典</b>: 文科省「令和5年度に実施した就学援助実施状況等調査の結果」PDF(2026-07-05取得) / <b>ライセンス</b>: 政府標準利用規約2.0 / 表の同定は raw 617行目の表題「令和４年度要保護及び準要保護児童生徒数について(学用品費等)」で独立確認</p>
+    <div class="tablewrap">
+      <table>
+        <caption>逐語対比(抜粋)— raw: raw/shugaku-r5jisshi.txt</caption>
+        <thead><tr><th>行</th><th>raw の値(行番号つき逐語)</th><th>data.csv</th><th>一致</th></tr></thead>
+        <tbody>
+          <tr><td>沖縄県</td><td class="v">L680: 1,710 32,993 34,703 … 146,847 … 23.63</td><td class="v">1710, 32993, 34703, 146847, 23.63</td><td class="match">○</td></tr>
+          <tr><td>東京都</td><td class="v">L646: 8,973 120,523 129,496 … 837,068 … 15.47</td><td class="v">8973, 120523, 129496, 837068, 15.47</td><td class="match">○</td></tr>
+          <tr><td>合計</td><td class="v">L681: 84,881 1,172,422 1,257,303 … 9,043,332 … 13.90</td><td class="v">84881, 1172422, 1257303, 9043332, 13.90</td><td class="match">○</td></tr>
+          <tr><td>高知県 <span class="src">再照合が独自選定</span></td><td class="v">L672: 680 10,310 10,990 … 43,132 … 25.48</td><td class="v">680, 10310, 10990, 43132, 25.48</td><td class="match">○</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="allrows">全48行×全列を再抽出して照合: 不一致 0(末尾ゼロの表記「13.90」「8.00」まで一致)。要保護+準要保護=認定者計を全48行で独立計算・成立。率も再計算一致。</p>
+    <h3 class="sec">変換時の判断(notes.md)</h3>
+    <ul class="notes">
+      <li>同一表題の3表から「最初の出現=小中学校計」の規則で採用(表題・ヘッダで裏取り済み)</li>
+      <li>被災児童生徒分(d, e列)は誤読防止のため非収録 / 率は原文表記のまま保持</li>
+    </ul>
+    <div class="attn"><p>レビューで見ておく点</p><ul>
+      <li>「沖縄県23.63%は県の中間評価資料とも一致」という相互検証は Web 調査由来で、今回のオフライン再照合では対象外(raw 照合のみで昇格判断は可能)</li>
+      <li>調査年度(令和5年度実施)と率の対象年度(令和4年度)のずれは meta・caveats で区別済み</li>
+    </ul></div>
+  </section>
+
+  <!-- ===== 2 ===== -->
+  <section class="ds">
+    <header><h2>就学援助率 沖縄県内市町村別(令和5年度・階級値)</h2><span class="chip ok">昇格推奨</span></header>
+    <p class="ds-id">shugaku-enjo-r5-okinawa-shichoson</p>
+    <p class="meta-line"><b>出典</b>: 文科省「令和6年度就学援助の実施状況(市町村別実施状況)沖縄県」PDF / <b>ライセンス</b>: 政府標準利用規約2.0 / セクション同定は raw L740「４．就学援助率」+ L762 ヘッダ「令和５年度」で独立確認</p>
+    <div class="tablewrap">
+      <table>
+        <caption>逐語対比(抜粋)— raw: raw/shugaku_r6_okinawa.txt</caption>
+        <thead><tr><th>行</th><th>raw の値</th><th>data.csv</th><th>一致</th></tr></thead>
+        <tbody>
+          <tr><td>那覇市</td><td class="v">L787: …25%未満</td><td class="v">25%未満</td><td class="match">○</td></tr>
+          <tr><td>座間味村</td><td class="v">L982: …0%未満</td><td class="v">0%未満</td><td class="match">○</td></tr>
+          <tr><td>渡名喜村</td><td class="v">L991: …○ 現時点準要保護認定を行っていない 0%未満</td><td class="v">0%未満</td><td class="match">○</td></tr>
+          <tr><td>名護市 <span class="src">再照合が独自選定</span></td><td class="v">L807: …15%未満</td><td class="v">15%未満</td><td class="match">○</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="allrows">全41行を再抽出して照合: 不一致 0・掲載順一致。「沖縄県」を含む行246行のうち行末が %未満/%以上 の行はちょうど41 = 抽出規則の妥当性も裏取り。</p>
+    <h3 class="sec">変換時の判断(notes.md)</h3>
+    <ul class="notes">
+      <li>階級値のまま収録(実数化・下限補完をしない)。「0%未満」も逐語保持</li>
+      <li>渡名喜村の補足「現時点準要保護認定を行っていない」は同一行(L991)にあることを確認 = caveats の記載は正確</li>
+      <li>座間味村「該当者がいないため」は別設問(入学前支給)ブロック由来のため caveats 不採用 — 帰属判断の妥当性を再確認済み</li>
+    </ul>
+    <div class="attn"><p>レビューで見ておく点</p><ul>
+      <li>「0%未満」という論理的に不自然な原文表記を逐語保持する方針。サイト側には凡例注記(「階級は一次資料の回答表記のまま」)を実装済み</li>
+      <li>階級の下限定義は一次資料に記載がなく未確認のまま(notes.md に残タスクとして記録。昇格ブロッカーではない)</li>
+    </ul></div>
+  </section>
+
+  <!-- ===== 3 ===== -->
+  <section class="ds">
+    <header><h2>課税対象所得と納税義務者1人当たり所得(2024年度)</h2><span class="chip ok">昇格推奨</span><span class="chip warn">format 表記の修正推奨</span></header>
+    <p class="ds-id">kazei-shotoku-okinawa-shichoson</p>
+    <p class="meta-line"><b>出典</b>: 総務省統計局「統計でみる市区町村のすがた2026 C経済基盤」e-Stat Excel / <b>ライセンス</b>: e-Stat 利用規約(CC BY 互換) / 列の同定は指標コード C120110・C120120+単位行(百万円・人)+年次2024 で独立確認</p>
+    <div class="tablewrap">
+      <table>
+        <caption>逐語対比(抜粋)— raw: raw/sugata-c.xls(独立パーサで読取)</caption>
+        <thead><tr><th>行</th><th>Excel の値(課税対象所得 / 納税義務者数)</th><th>data.csv</th><th>一致</th></tr></thead>
+        <tbody>
+          <tr><td>那覇市</td><td class="v">行1930: 473431 / 131287</td><td class="v">473431, 131287</td><td class="match">○</td></tr>
+          <tr><td>北大東村</td><td class="v">行1963: 989 / 300</td><td class="v">989, 300</td><td class="match">○</td></tr>
+          <tr><td>嘉手納町 <span class="src">再照合が独自選定</span></td><td class="v">行1951: 19524 / 4970</td><td class="v">19524, 4970</td><td class="match">○</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="allrows">団体コード47xxx全41行×全列: 不一致 0(Excel↔CSV 双方向で過不足なし)。導出値「1人当たり」を全41行独立再計算: 一致 — 北大東村 989×1000÷300=3296.67→3297 が CSV と一致し、四捨五入規則そのものを実証。</p>
+    <h3 class="sec">変換時の判断(notes.md)</h3>
+    <ul class="notes">
+      <li>市町村の同定は名称でなく団体コード先頭5桁 + 境界データとの完全一致 assert</li>
+      <li>導出式は変換スクリプト冒頭コメントに明記・変換時に逆算検証を機械実行</li>
+    </ul>
+    <div class="attn"><p>レビューで見ておく点</p><ul>
+      <li><b>meta の sources[0].format が "xlsx" だが実ファイルは旧 .xls</b>(スキーマの enum に "xls" が無いための最近似値)。数値には無関係 — 昇格と同時にスキーマへ "xls" を追加して修正することを推奨</li>
+      <li>「納税義務者1人当たり ≠ 住民1人当たり」「前年所得課税」は readingGuide で明示済み / e-Stat statInfId の年次失効は permalinkNote で自己申告済み</li>
+    </ul></div>
+  </section>
+
+  <!-- ===== 4 ===== -->
+  <section class="ds">
+    <header><h2>小中学校数と児童生徒数(2024年)</h2><span class="chip ok">昇格推奨</span><span class="chip warn">format 表記の修正推奨</span></header>
+    <p class="ds-id">gakko-jido-okinawa-shichoson</p>
+    <p class="meta-line"><b>出典</b>: 総務省統計局「統計でみる市区町村のすがた2026 E教育」e-Stat Excel / <b>ライセンス</b>: e-Stat 利用規約 / 列の同定は指標コード E2101/E2501/E3101/E3501+年次2024 で独立確認</p>
+    <div class="tablewrap">
+      <table>
+        <caption>逐語対比(抜粋)— raw: raw/sugata-e.xls</caption>
+        <thead><tr><th>行</th><th>Excel の値(小学校数/児童数/中学校数/生徒数)</th><th>data.csv</th><th>一致</th></tr></thead>
+        <tbody>
+          <tr><td>那覇市</td><td class="v">行1929: 36 / 18041 / 20 / 9967</td><td class="v">36, 18041, 20, 9967</td><td class="match">○</td></tr>
+          <tr><td>石垣市 <span class="src">再照合が独自選定</span></td><td class="v">行1931: 20 / 3324 / 9 / 1637</td><td class="v">20, 3324, 9, 1637</td><td class="match">○</td></tr>
+          <tr><td>宮古島市 <span class="src">再照合が独自選定</span></td><td class="v">行1938: 16 / 3395 / 11 / 1635</td><td class="v">16, 3395, 11, 1635</td><td class="match">○</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="allrows">41市町村×5項目 = 205チェック: 不一致 0。</p>
+    <h3 class="sec">変換時の判断(notes.md)</h3>
+    <ul class="notes">
+      <li>国立・私立を含む「所在地ベース」の集計である旨を readingGuide・caveats に明記済み</li>
+    </ul>
+    <div class="attn"><p>レビューで見ておく点</p><ul>
+      <li>format 表記は kazei と同じく実体 .xls(スキーマ修正と同時に対応)</li>
+      <li>3本の e-Stat 系のうち<b>このデータセットのみ調査ページへの直リンクが permalinkNote に無い</b>(「検索してください」のみ)。任意の改善余地</li>
+    </ul></div>
+  </section>
+
+  <!-- ===== 5 ===== -->
+  <section class="ds">
+    <header><h2>人口・世帯数・出生死亡(令和7年1月1日現在)</h2><span class="chip ok">昇格推奨</span></header>
+    <p class="ds-id">jinko-setai-okinawa-shichoson</p>
+    <p class="meta-line"><b>出典</b>: 総務省「住民基本台帳に基づく人口・人口動態・世帯数調査 表25-03【総計】」e-Stat Excel / <b>ライセンス</b>: e-Stat 利用規約 / 列の同定(D=男…Q=死亡者数)と年次の帰属(人口=R7.1.1、動態=R6年中)を独立確認</p>
+    <div class="tablewrap">
+      <table>
+        <caption>逐語対比(抜粋)— raw: raw/juki-2503.xlsx</caption>
+        <thead><tr><th>行</th><th>Excel の値(男/女/計/世帯/出生/死亡)</th><th>data.csv</th><th>一致</th></tr></thead>
+        <tbody>
+          <tr><td>那覇市</td><td class="v">行2235: 151604 / 161820 / 313424 / 161048 / 2122 / 3544</td><td class="v">同値</td><td class="match">○</td></tr>
+          <tr><td>石垣市 <span class="src">再照合が独自選定</span></td><td class="v">行2237: 25272 / 24558 / 49830 / 26612 / 392 / 521</td><td class="v">同値</td><td class="match">○</td></tr>
+          <tr><td>宮古島市 <span class="src">再照合が独自選定</span></td><td class="v">行2244: 28276 / 27380 / 55656 / 30599 / 384 / 791</td><td class="v">同値</td><td class="match">○</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="allrows">41市町村×7項目 = 287チェック: 不一致 0。郡小計行(国頭郡など5行)が正しく除外されていることも確認。</p>
+    <h3 class="sec">変換時の判断(notes.md)</h3>
+    <ul class="notes">
+      <li><b>過去の転記バグの記録あり</b>: 当初「死亡者数」に転出者数(計)列を誤マッピング → 那覇市の照合(3,544 ≠ 16,834)で検出・修正・全行再生成。再照合でも raw の P列=16834 を確認し、記録は正確・修正は完了と裏取り</li>
+      <li>住基 vs 国勢調査の人口定義差、外国人含む【総計】である旨は caveats 明記済み</li>
+    </ul>
+    <div class="attn"><p>レビューで見ておく点</p><ul>
+      <li>唯一「一度間違えて、照合で捕まえた」実績のあるデータセット。ゲートが機能した証跡であり、現行データは全数一致</li>
+    </ul></div>
+  </section>
+
+  <!-- ===== 6 ===== -->
+  <section class="ds">
+    <header><h2>年少人口(0〜14歳)と割合(令和7年1月1日現在)</h2><span class="chip ok">昇格推奨</span></header>
+    <p class="ds-id">nenshojinko-okinawa-shichoson</p>
+    <p class="meta-line"><b>出典</b>: 総務省 同調査 表25-04【総計】年齢階級別人口 e-Stat Excel / <b>ライセンス</b>: e-Stat 利用規約 / 「年少人口割合」は<b>元資料に無いサイト導出値</b>(0-4+5-9+10-14 ÷ 総数、小数第1位四捨五入)</p>
+    <div class="tablewrap">
+      <table>
+        <caption>逐語対比+導出値再計算(抜粋)— raw: raw/juki-2504.xlsx</caption>
+        <thead><tr><th>行</th><th>Excel の値(0-4/5-9/10-14/総数)</th><th>割合の独立再計算</th><th>data.csv</th><th>一致</th></tr></thead>
+        <tbody>
+          <tr><td>那覇市</td><td class="v">行6688: 11790/14451/16140/313424</td><td class="v">42381 ÷ 313424 = 13.52% → 13.5</td><td class="v">42381, 13.5</td><td class="match">○</td></tr>
+          <tr><td>石垣市 <span class="src">再照合が独自選定</span></td><td class="v">行6694: 2268/2738/2764/49830</td><td class="v">7770 ÷ 49830 = 15.59% → 15.6</td><td class="v">7770, 15.6</td><td class="match">○</td></tr>
+          <tr><td>北大東村</td><td class="v">行6796: 18/28/26/544</td><td class="v">72 ÷ 544 = 13.24% → 13.2</td><td class="v">72, 13.2</td><td class="match">○</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="allrows">41市町村×4項目 = 164チェック: 不一致 0。割合は全41行を独立実装で再計算し全一致。総人口は表25-03(住基人口)とも全41市町村で一致 = 2表間の整合を確認。</p>
+    <h3 class="sec">変換時の判断(notes.md)</h3>
+    <ul class="notes">
+      <li>変換スクリプトに割合の逆算検証(±0.05%幅)を組込み済み。導出値である旨は caveats・readingGuide 双方に明示</li>
+    </ul>
+    <div class="attn"><p>レビューで見ておく点</p><ul>
+      <li>トップページの地図で使う指標がこの<b>導出値</b>である点は昇格判断者として把握を(式・丸め規則は再照合で実証済み)</li>
+    </ul></div>
+  </section>
+
+  <h3 class="sec">今回昇格しない 2 本(照合済み・外部確認待ち)</h3>
+  <div class="excl">
+    <article><b>学力調査 都道府県別(令和7年度) <span class="chip hold">NIER 規約確認 待ち</span></b><span>逐語照合は完了しているが、国立教育政策研究所の利用規約確認が未了のため保留。</span></article>
+    <article><b>こども調査 困窮世帯割合の経年 <span class="chip hold">県への確認メール 待ち</span></b><span>県サイトの制限的規約のため、公開前の県確認(メール下書き済み・未送付)を経てから判断。</span></article>
+  </div>
+
+  <h3 class="sec">昇格ブロッカーではない残課題</h3>
+  <ul class="notes">
+    <li>スキーマ enum に "xls" を追加し、kazei-shotoku と gakko-jido の sources[0].format を実体に合わせる(昇格と同じブランチで対応可)</li>
+    <li>gakko-jido の permalinkNote に調査ページ直リンクを追加(任意)</li>
+    <li>就学援助 R5 の階級「下限」の定義確認 / R4 の県中間評価資料との相互検証の再実施(いずれも記録済みの残タスク)</li>
+    <li>全 sources の Wayback スナップショット取得(archiveUrl 8件、公開前タスク)</li>
+  </ul>
+
+  <div class="foot">
+    <p><b>昇格を承認した場合の作業</b>(承認後に実施):</p>
+    <ol class="next">
+      <li>6本の meta.json を <span style="font-family: var(--mono);">status: "published"</span> へ変更+スキーマに "xls" 追加と format 修正</li>
+      <li>data.json 再生成(status が配布 JSON にも反映)→ check / check:data / build / axe</li>
+      <li>「検証中」バナー・チップが該当6データセットから消えることを確認 → コミット・ff マージ</li>
+    </ol>
+    <p>再照合は独立サブエージェント2体で実施(全行 diff・別実装パーサ)。実施時点でリポジトリは無変更(読み取り専用)。</p>
+  </div>
+</main>

@@ -1,0 +1,94 @@
+{
+  "id": "shingaku-ritsu-todofuken",
+  "title": "高校・大学等進学率 都道府県別(令和7年3月卒業者)",
+  "description": "学校基本調査(令和7年度確報)の卒業後の状況調査から、中学校卒業者の高等学校等進学率と、高等学校(全日制・定時制)卒業者の大学等進学率を都道府県別に収録したデータセットです。沖縄県の進学構造を全国と比較できます。",
+  "themes": ["education"],
+  "tags": ["学校基本調査", "進学率"],
+  "sources": [
+    {
+      "publisher": "文部科学省",
+      "title": "令和7年度学校基本調査(確報) 中学校 卒業後の状況調査 表259 状況別卒業者数",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040393912&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260712235853/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040393912&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "statInfId は年次更新で変わります。e-Stat で「学校基本調査 卒業後の状況調査 状況別卒業者数 中学校」を検索してください。"
+    },
+    {
+      "publisher": "文部科学省",
+      "title": "令和7年度学校基本調査(確報) 高等学校(全日制・定時制) 卒業後の状況調査 表283 状況別卒業者数",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040393936&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260713000000/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040393936&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "statInfId は年次更新で変わります。e-Stat で「学校基本調査 卒業後の状況調査 状況別卒業者数 高等学校」を検索してください。"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-06"
+  },
+  "conversion": {
+    "method": "公表 Excel(表259・表283)の男女計シート((3-1))から、令和7年3月卒業者の行に限定して「高等学校等進学率」「大学等進学率」列を抽出。セルは丸め前の生値のため、公表 Excel の表示形式(小数第1位)に合わせて四捨五入して収録",
+    "script": "scripts/convert/shingaku-ritsu-todofuken.ts",
+    "verification": "沖縄県(97.2/48.8)・東京都(98.7/74.8)・全国計(98.6/62.6)・鹿児島県(大学等 48.7)を、変換系統と独立の実装(openpyxl 系)による読取値と照合済み(2026-07-06)。47都道府県+計の一意性・率の 0〜100 範囲を変換時に機械検証",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2025年3月卒業",
+    "coverageEnd": "2025年3月卒業",
+    "granularity": "年度(単年)"
+  },
+  "spatial": {
+    "level": "都道府県",
+    "area": "全国"
+  },
+  "updateFrequency": "年1回(学校基本調査)",
+  "readingGuide": "高等学校等進学率の分母は中学校卒業者、大学等進学率の分母は高等学校(全日制・定時制)卒業者で、通信制高校の卒業者は含まれません。「大学等」には大学・短期大学の通信教育部への進学も含まれます(除いた率は原表に併記)。高等学校等進学率は沖縄県(97.2%)が47都道府県で最も低い値ですが、最も高い県(99.6%)との差は2.4ポイントで、全県が97〜99%台に密集しています。序列でなく幅として読んでください。大学等進学率の沖縄県は46位で、最下位ではありません(最も低いのは48.7%の鹿児島県)。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 48,
+      "columns": [
+        {
+          "name": "都道府県",
+          "type": "string",
+          "description": "都道府県名。最終行は全国の「計」(原表記のまま)"
+        },
+        {
+          "name": "高等学校等進学率",
+          "type": "number",
+          "unit": "%",
+          "description": "中学校卒業者(令和7年3月)のうち高等学校等へ進学した者の割合"
+        },
+        {
+          "name": "大学等進学率",
+          "type": "number",
+          "unit": "%",
+          "description": "高等学校(全日制・定時制)卒業者(令和7年3月)のうち大学等へ進学した者の割合"
+        }
+      ]
+    }
+  ],
+  "map": {
+    "column": "大学等進学率",
+    "note": "地図は都道府県差が最も大きい大学等進学率で塗り分け(高等学校等進学率は全県97〜99%台に密集)。"
+  },
+  "caveats": [
+    "高等学校等進学率の分母は中学校卒業者のみで、義務教育学校・中等教育学校前期課程・特別支援学校中学部の卒業者を含みません(文部科学省公表の概要値とはわずかに差が出ることがあります)。",
+    "大学等進学率の分母は高等学校(全日制・定時制)の卒業者のみで、通信制課程の卒業者を含みません。",
+    "率は公表 Excel のセル値(丸め前の生値)を、公表時の表示形式に合わせて小数第1位に四捨五入した値です。",
+    "都道府県の値には指定都市を含みます。"
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-06",
+      "description": "初版(令和7年度学校基本調査 確報)"
+    }
+  ],
+  "relatedDatasets": ["gakuryoku-chosa-r7-todofuken"],
+  "status": "published"
+}

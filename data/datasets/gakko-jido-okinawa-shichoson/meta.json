@@ -1,0 +1,65 @@
+{
+  "id": "gakko-jido-okinawa-shichoson",
+  "title": "小中学校数と児童生徒数 沖縄県内市町村別(2024年)",
+  "description": "沖縄県内41市町村の小学校数・小学校児童数・中学校数・中学校生徒数。総務省統計局「統計でみる市区町村のすがた2026」E教育から構造化しました。就学援助率など教育指標の規模感をつかむ基礎データです。",
+  "themes": ["education"],
+  "tags": ["学校数", "児童数", "生徒数", "小学校", "中学校", "市町村別"],
+  "sources": [
+    {
+      "publisher": "総務省統計局",
+      "title": "統計でみる市区町村のすがた2026 E教育(基礎データ)",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040463588&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260712234359/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040463588&fileKind=0",
+      "retrievedAt": "2026-07-05",
+      "format": "xls",
+      "permalinkNote": "statInfId は年次更新で変わります。e-Stat で「統計でみる市区町村のすがた」を検索してください。"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-05"
+  },
+  "conversion": {
+    "method": "公表 Excel(旧 .xls)から SheetJS で機械抽出(指標コード E2101・E2501・E3101・E3501、2024年)",
+    "script": "scripts/convert/gakko-jido-okinawa-shichoson.ts",
+    "verification": "那覇市(小36校・児童18,041人・中20校・生徒9,967人)・北大東村を元 Excel と照合済み(2026-07-05)。41市町村の完全一致を機械検証",
+    "convertedAt": "2026-07-05"
+  },
+  "temporal": {
+    "coverageStart": "2024年",
+    "coverageEnd": "2024年",
+    "granularity": "年次"
+  },
+  "spatial": {
+    "level": "市町村",
+    "area": "沖縄県"
+  },
+  "updateFrequency": "年1回(「統計でみる市区町村のすがた」の年次更新)",
+  "nextExpectedUpdate": "次年版の公表後",
+  "readingGuide": "市町村立以外(国立・私立)を含む所在地ベースの学校数・在籍者数です。小規模離島村では学校数1〜2校・児童生徒数が数十人の規模であり、割合系の指標(就学援助率など)が少人数の変動で大きく動く背景が分かります。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "rowCount": 41,
+      "columns": [
+        { "name": "市町村", "type": "string", "description": "沖縄県内の41市町村" },
+        { "name": "団体コード", "type": "string", "description": "全国地方公共団体コード(先頭5桁)" },
+        { "name": "小学校数", "type": "integer", "unit": "校", "description": "小学校数(2024年)" },
+        { "name": "小学校児童数", "type": "integer", "unit": "人", "description": "小学校児童数(2024年)" },
+        { "name": "中学校数", "type": "integer", "unit": "校", "description": "中学校数(2024年)" },
+        { "name": "中学校生徒数", "type": "integer", "unit": "人", "description": "中学校生徒数(2024年)" }
+      ]
+    }
+  ],
+  "caveats": [
+    "義務教育学校・分校の扱いなど定義の詳細は原資料(統計でみる市区町村のすがた の指標解説)を参照してください。",
+    "学校の所在地ベースの集計であり、児童生徒の居住地ベースではありません。"
+  ],
+  "changelog": [
+    { "date": "2026-07-05", "description": "初版作成(2024年分)" }
+  ],
+  "relatedDatasets": ["shugaku-enjo-r5-okinawa-shichoson", "nenshojinko-okinawa-shichoson"],
+  "status": "published"
+}

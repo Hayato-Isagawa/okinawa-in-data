@@ -1,0 +1,5 @@
+# RFC 9116
+Contact: mailto:security@okinawa-in-data.org
+Expires: 2027-07-01T00:00:00.000Z
+Preferred-Languages: ja, en
+Canonical: https://okinawa-in-data.org/.well-known/security.txt

@@ -1,0 +1,144 @@
+{
+  "id": "futoko-ijime-todofuken",
+  "title": "不登校といじめ認知件数 都道府県別(令和6年度)",
+  "description": "文部科学省「児童生徒の問題行動・不登校等生徒指導上の諸課題に関する調査」(令和6年度)から、都道府県別の不登校児童生徒数(小・中)といじめ認知件数、それぞれの1,000人当たりの値を収録したデータセットです。沖縄県の状況を全国と比較できます。",
+  "themes": [
+    "education"
+  ],
+  "tags": [
+    "不登校",
+    "いじめ",
+    "問題行動等調査"
+  ],
+  "sources": [
+    {
+      "publisher": "文部科学省",
+      "title": "令和6年度児童生徒の問題行動・不登校等生徒指導上の諸課題に関する調査 表(4-15)都道府県別・指定都市別 不登校児童生徒数(①都道府県別)",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040366363&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260712234305/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040366363&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "statInfId は年次更新で変わります。e-Stat で「児童生徒の問題行動・不登校等生徒指導上の諸課題に関する調査」を検索してください。"
+    },
+    {
+      "publisher": "文部科学省",
+      "title": "令和6年度児童生徒の問題行動・不登校等生徒指導上の諸課題に関する調査 表(2-12)都道府県別・指定都市別 いじめの認知件数及びアンケート調査実施状況(①都道府県別)",
+      "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040366303&fileKind=0",
+      "archiveUrl": "https://web.archive.org/web/20260712234332/https://www.e-stat.go.jp/stat-search/file-download?statInfId=000040366303&fileKind=0",
+      "retrievedAt": "2026-07-06",
+      "format": "xlsx",
+      "permalinkNote": "statInfId は年次更新で変わります。e-Stat で同調査を検索してください。"
+    }
+  ],
+  "license": {
+    "name": "e-Stat 利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "url": "https://www.e-stat.go.jp/terms-of-use",
+    "confirmedAt": "2026-07-06"
+  },
+  "conversion": {
+    "method": "公表 Excel の都道府県別シートから、コード列(01〜47、全国=00)で行を同定して抽出。1,000人当たりの値はセルに公表値(小数第1位)が入っているが、一部が浮動小数点表現の都合で末尾に誤差を含む値として保存されているため小数第1位に丸め直して収録。アンケート調査実施状況の列は対象外",
+    "script": "scripts/convert/futoko-ijime-todofuken.ts",
+    "verification": "沖縄県(不登校小中 7,432人・49.5、いじめ 12,395件・57.2)・東京都・全国の値を、取得時の独立読取および文科省公表 PDF(令和8年1月16日更新版)と照合済み(2026-07-06)。不登校の 小+中=小中計 を全48行で機械検証。名称列がコード順に47都道府県と一致することを assert",
+    "convertedAt": "2026-07-06"
+  },
+  "temporal": {
+    "coverageStart": "2024年度",
+    "coverageEnd": "2024年度",
+    "granularity": "年度(単年)"
+  },
+  "spatial": {
+    "level": "都道府県",
+    "area": "全国"
+  },
+  "updateFrequency": "年1回(問題行動・不登校等調査)",
+  "readingGuide": "【不登校】「1,000人当たり」は在籍児童生徒1,000人当たりの人数です(調査の掲載値)。人数ベースの指標で、定義の詳細は一次資料を参照してください。【いじめ】件数は学校が「認知」した件数であり、実際に起きた件数そのものではありません。認知件数の多さは把握の積極性によっても増減するため、多い=悪い(少ない=良い)と単純には読めません。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 48,
+      "columns": [
+        {
+          "name": "都道府県",
+          "type": "string",
+          "description": "都道府県名。最終行は「全国」"
+        },
+        {
+          "name": "不登校児童数(小学校)",
+          "type": "integer",
+          "unit": "人",
+          "description": "小学校の不登校児童数(国公私立)"
+        },
+        {
+          "name": "1000人当たり不登校児童数(小学校)",
+          "type": "number",
+          "unit": "人",
+          "description": "在籍児童1,000人当たりの不登校児童数"
+        },
+        {
+          "name": "不登校生徒数(中学校)",
+          "type": "integer",
+          "unit": "人",
+          "description": "中学校の不登校生徒数(国公私立)"
+        },
+        {
+          "name": "1000人当たり不登校生徒数(中学校)",
+          "type": "number",
+          "unit": "人",
+          "description": "在籍生徒1,000人当たりの不登校生徒数"
+        },
+        {
+          "name": "不登校児童生徒数(小中計)",
+          "type": "integer",
+          "unit": "人",
+          "description": "小・中学校の不登校児童生徒数の計"
+        },
+        {
+          "name": "1000人当たり不登校児童生徒数(小中計)",
+          "type": "number",
+          "unit": "人",
+          "description": "小・中学校の在籍児童生徒1,000人当たりの不登校児童生徒数"
+        },
+        {
+          "name": "いじめ認知件数(小中高特支計)",
+          "type": "integer",
+          "unit": "件",
+          "description": "小・中・高等学校・特別支援学校のいじめ認知件数の計(国公私立)"
+        },
+        {
+          "name": "1000人当たりいじめ認知件数(小中高特支計)",
+          "type": "number",
+          "unit": "件",
+          "description": "全校種の在籍児童生徒1,000人当たりのいじめ認知件数"
+        }
+      ]
+    }
+  ],
+  "map": {
+    "column": "1000人当たり不登校児童生徒数(小中計)",
+    "note": "地図は小・中学校の1,000人当たり不登校児童生徒数で塗り分け(いじめ認知件数は認知の積極性でも増減するため地図には使わない)。"
+  },
+  "caveats": [
+    "都道府県の値には指定都市を含みます(指定都市別の内訳は一次資料の別表参照)。",
+    "いじめの「1,000人当たり認知件数」は小・中・高・特別支援学校の計のみ公表されており、分母は全校種の在籍児童生徒数です(不登校の1,000人当たり(小中)とは分母が異なります)。",
+    "1,000人当たりの値は公表 Excel に載っている値(小数第1位)をそのまま収録しています(セルによっては浮動小数点表現の都合で末尾に誤差を含むため、小数第1位に丸め直しています)。",
+    "いじめは「認知」件数であり発生件数そのものではありません(readingGuide 参照)。",
+    "statInfId は年次更新で変わります(permalinkNote 参照)。"
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-06",
+      "description": "初版(令和6年度調査)"
+    },
+    {
+      "date": "2026-08-02",
+      "description": "「1,000人当たりの値」の説明を修正(公表 Excel のセルに入っているのは丸め前の生値ではなく公表値そのもののため)"
+    }
+  ],
+  "relatedDatasets": [
+    "shugaku-enjo-r4-todofuken",
+    "gakuryoku-chosa-r7-todofuken"
+  ],
+  "status": "published"
+}

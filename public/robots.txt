@@ -1,0 +1,33 @@
+# 公益目的のオープンデータサイトのため、クローラーは原則許可
+User-agent: *
+Allow: /
+
+# --- AI 検索・引用クローラ（許可：回答エンジンの citation を駆動）---
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# --- AI 学習クローラ（公益目的のオープンデータとして許可）---
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# --- 攻撃的スクレイパ（block）---
+User-agent: Bytespider
+Disallow: /
+
+# サイトマップ URL は本番ドメイン確定後に差し替える
+Sitemap: https://okinawa-in-data.org/sitemap-index.xml

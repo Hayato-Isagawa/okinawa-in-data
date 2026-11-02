@@ -1,0 +1,168 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DatasetCard from "../../components/DatasetCard.astro";
+import ChartFigure from "../../components/ChartFigure.astro";
+import DataTable from "../../components/DataTable.astro";
+import { getAllDatasets, getDatasetRows } from "../../lib/datasets";
+import { renderPlotSvg, renderLineChartSvg } from "../../lib/chart";
+import * as Plot from "@observablehq/plot";
+
+const datasets = getAllDatasets().filter(
+  (d) => d.themes.includes("education") || d.themes.includes("poverty"),
+);
+
+// --- 可視化1: 学テ 沖縄県 vs 全国(公立) (gakuryoku-chosa-r7-todofuken) ---
+const GAKUTE_ID = "gakuryoku-chosa-r7-todofuken";
+const gakute = getDatasetRows(GAKUTE_ID);
+const subjects = gakute.header.slice(1); // 小学校国語〜中学校数学
+const compareTargets = ["全国（公立）", "沖縄県"];
+const comparePoints = gakute.rows
+  .filter((r) => compareTargets.includes(r[0]))
+  .flatMap((r) =>
+    subjects.map((subject, i) => ({
+      教科: subject,
+      区分: r[0],
+      正答率: Number(r[i + 1]),
+    })),
+  );
+const gakuteSvg = renderPlotSvg({
+  width: 640,
+  height: 340,
+  marginLeft: 48,
+  style: { fontSize: "13px", background: "transparent" },
+  fx: { label: null },
+  x: { axis: null, type: "band" },
+  y: { label: "平均正答率(%)", grid: true, domain: [0, 80] },
+  color: {
+    legend: true,
+    domain: compareTargets,
+    range: ["#94a3b8", "#0e7490"],
+  },
+  marks: [
+    Plot.barY(comparePoints, {
+      fx: "教科",
+      x: "区分",
+      y: "正答率",
+      fill: "区分",
+    }),
+    Plot.ruleY([0]),
+  ],
+});
+const gakuteTableRows = compareTargets.map((target) => {
+  const row = gakute.rows.find((r) => r[0] === target)!;
+  return row;
+});
+
+// --- 可視化2: 就学援助率の推移 (shugaku-enjo-keinen) ---
+const ENJO_ID = "shugaku-enjo-keinen";
+const enjo = getDatasetRows(ENJO_ID);
+const enjoSvg = renderLineChartSvg({
+  header: enjo.header,
+  rows: enjo.rows,
+  xColumn: "年度",
+  yColumns: ["沖縄県", "全国"],
+  yLabel: "就学援助率(%)",
+});
+
+const stringCol = (name: string, description: string) => ({
+  name,
+  type: "string" as const,
+  description,
+});
+const pctCol = (name: string, description: string) => ({
+  name,
+  type: "number" as const,
+  unit: "%",
+  description,
+});
+---
+
+<BaseLayout
+  title="教育×子どもの貧困 | データでみる沖縄"
+  description="沖縄県の教育データと子どもの貧困データを横断して読むテーマページ。学力調査と就学援助のデータを、出典つきで並べて読み解きます。"
+>
+  <h1 class="text-3xl font-bold">教育×子どもの貧困</h1>
+  <p class="mt-4 max-w-2xl">
+    教育のデータと子どもの貧困のデータは、別々の機関が別々の資料で公表しているため、あわせて読みにくいのが実情です。このページでは両分野の一次データを、出典と注意点つきで並べて読み解きます。
+  </p>
+
+  <section aria-labelledby="gakute-heading" class="mt-12">
+    <h2 id="gakute-heading" class="text-2xl font-bold">学力: 沖縄県と全国の平均正答率(令和7年度)</h2>
+    <p class="mt-3 max-w-2xl">
+      令和7年度の全国学力・学習状況調査では、沖縄県の平均正答率は小・中いずれの教科でも全国(公立)平均を下回っています。差が最も大きいのは中学校数学(全国 48.3% に対し沖縄県 38%)です。
+    </p>
+    <ChartFigure
+      svg={gakuteSvg}
+      title="沖縄県と全国(公立)の平均正答率"
+      caption="令和7年度 全国学力・学習状況調査の教科別平均正答率。沖縄県は整数、全国は小数第1位で公表されている。"
+      tableAnchor="#gakute-table"
+    />
+    <DataTable
+      id="gakute-table"
+      caption="沖縄県と全国(公立)の平均正答率(令和7年度、%)"
+      columns={[
+        stringCol("区分", "全国(公立)・沖縄県"),
+        ...subjects.map((s) => pctCol(s, `${s}の平均正答率`)),
+      ]}
+      rows={gakuteTableRows}
+    />
+    <p class="text-sm" style="color: var(--color-sub);">
+      出典・注意点は
+      <a href={`/datasets/${GAKUTE_ID}/`} class="link-underline" style="color: var(--color-accent);">データセット詳細</a>
+      を参照。
+    </p>
+  </section>
+
+  <section aria-labelledby="enjo-heading" class="mt-12">
+    <h2 id="enjo-heading" class="text-2xl font-bold">貧困: 就学援助率の推移</h2>
+    <p class="mt-3 max-w-2xl">
+      経済的な理由で就学が難しい小中学生の保護者には、市町村が学用品費や給食費などを援助しています(就学援助)。その対象となる児童生徒の割合は、沖縄県では平成30年度の24.79%から令和4年度の23.63%へとわずかに下がっていますが、全国(13〜14%台)のおよそ1.7倍の水準が続いています。
+    </p>
+    <p class="mt-2 max-w-2xl text-sm" style="color: var(--color-sub);">
+      ※ 調査に回答した保護者世帯のうち困窮世帯がどれだけあるかは、<a href="/datasets/kodomo-chosa-konkyu-keinen/" class="link-underline" style="color: var(--color-accent);">沖縄こども調査 困窮世帯の割合(経年)</a>で見られます。
+    </p>
+    <ChartFigure
+      svg={enjoSvg}
+      title="就学援助率の推移"
+      caption="就学援助率の推移(平成30〜令和4年度)。沖縄県と全国の比較。"
+      tableAnchor="#enjo-table"
+    />
+    <DataTable
+      id="enjo-table"
+      caption="就学援助率の推移(%)"
+      columns={[
+        stringCol("年度", "対象年度"),
+        pctCol("沖縄県", "沖縄県の就学援助率"),
+        pctCol("全国", "全国の就学援助率"),
+      ]}
+      rows={enjo.rows}
+    />
+    <p class="text-sm" style="color: var(--color-sub);">
+      出典・注意点は
+      <a href={`/datasets/${ENJO_ID}/`} class="link-underline" style="color: var(--color-accent);">データセット詳細</a>
+      を参照。
+    </p>
+  </section>
+
+  <section aria-labelledby="caution-heading" class="mt-12 max-w-2xl">
+    <h2 id="caution-heading" class="text-xl font-bold">二つのデータを並べて読むときの注意</h2>
+    <p class="mt-3 text-sm">
+      上の2つのデータは、調査主体・対象・年度・地域粒度が異なる別々の調査です。並べて見ることで沖縄の教育と子どもの貧困の現在地を把握しやすくなりますが、並べて見えること自体は、両者の因果関係(貧困が学力に影響する、あるいはその逆)を示すものではありません。関係をきちんと調べるには、個人単位のデータ(個票)を使った研究が必要です。
+    </p>
+  </section>
+
+  <h2 class="mt-12 text-xl font-bold">このテーマのデータセット</h2>
+  {
+    datasets.length === 0 ? (
+      <p class="mt-4" style="color: var(--color-sub);">
+        データセットを準備中です。
+      </p>
+    ) : (
+      <div class="mt-4 grid gap-5 sm:grid-cols-2">
+        {datasets.map((meta) => (
+          <DatasetCard meta={meta} />
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>

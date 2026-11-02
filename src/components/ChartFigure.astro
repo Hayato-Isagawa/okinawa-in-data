@@ -1,0 +1,43 @@
+---
+interface Props {
+  svg: string;
+  title: string;
+  caption: string;
+  tableAnchor?: string;
+  /** 地図内リンクなどを含む場合 true(role="img" を付けない) */
+  interactive?: boolean;
+}
+
+const {
+  svg,
+  title,
+  caption,
+  tableAnchor = "#data-table",
+  interactive = false,
+} = Astro.props;
+const captionId = `chart-caption-${Math.abs(
+  [...title].reduce((acc, ch) => acc * 31 + ch.charCodeAt(0), 7) % 100000,
+)}`;
+---
+
+<!-- role は付けない。`figcaption` を持つ `figure` に許される role は `doc-example` だけで
+     (ARIA in HTML)、`group` を被せると図表としての意味が消えるうえ axe が落とす。
+     アクセシブル名は figcaption から得られる。下の aria-labelledby はそれを明示するもの。 -->
+<figure
+  aria-labelledby={captionId}
+  class="card map-figure my-6 overflow-x-auto p-5"
+>
+  {
+    interactive ? (
+      <div set:html={svg} />
+    ) : (
+      <div role="img" aria-label={title} set:html={svg} />
+    )
+  }
+  <figcaption id={captionId} class="mt-3 text-sm" style="color: var(--color-sub);">
+    {caption}
+    <a href={tableAnchor} class="link-underline ml-2" style="color: var(--color-accent);">
+      同じ内容を表で見る
+    </a>
+  </figcaption>
+</figure>

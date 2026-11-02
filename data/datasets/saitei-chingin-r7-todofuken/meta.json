@@ -1,0 +1,199 @@
+{
+  "id": "saitei-chingin-r7-todofuken",
+  "title": "地域別最低賃金 都道府県別(令和7年度)",
+  "description": "厚生労働省が公表している令和7年度の地域別最低賃金を、47都道府県と全国加重平均について収録したデータセットです。沖縄県は時間額1,023円で、改定前の952円から71円(7.5%)引き上げられました。1,023円は全国で最も低い額で、高知県・宮崎県と並びます。最も高いのは東京都の1,226円で、その差は203円です。全国加重平均は1,121円ですが、これは適用労働者数で重みを付けた平均で、47都道府県の単純平均(1,067円)とは異なります。最低賃金は統計調査の結果ではなく、最低賃金審議会の調査審議を経て都道府県労働局長が決定する額で、発効日は都道府県ごとに異なります(沖縄県は令和7年12月1日)。",
+  "themes": [
+    "economy",
+    "poverty"
+  ],
+  "tags": [
+    "最低賃金",
+    "地域別最低賃金",
+    "賃金",
+    "都道府県別"
+  ],
+  "sources": [
+    {
+      "publisher": "厚生労働省",
+      "title": "令和7年度 地域別最低賃金 全国一覧",
+      "url": "https://web.archive.org/web/20260803220933/https://www.mhlw.go.jp/content/11200000/001571192.pdf",
+      "retrievedAt": "2026-08-03",
+      "format": "pdf",
+      "permalinkNote": "47都道府県の時間額・改定前額・引上げ額・引上げ率・発効日の出所。厚生労働省のサイト上の原本は令和8年度版の公表で削除されたため、リンク先は取得時点のインターネット・アーカイブの控えです。掲載元の「地域別最低賃金の全国一覧」ページ(https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/minimumichiran/)は現在、令和8年度の一覧を掲載しています。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "地域別最低賃金の全国一覧",
+      "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/minimumichiran/",
+      "retrievedAt": "2026-08-03",
+      "archiveUrl": "https://web.archive.org/web/20260731214951/https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/minimumichiran/",
+      "format": "html",
+      "permalinkNote": "最新年度の一覧が掲載されるページ。年度が変わるとこのページの内容も更新されます。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "全ての都道府県で地域別最低賃金額の改定額を答申(令和7年9月5日)",
+      "url": "https://www.mhlw.go.jp/stf/newpage_63030.html",
+      "retrievedAt": "2026-08-03",
+      "archiveUrl": "https://web.archive.org/web/20260803221014/https://www.mhlw.go.jp/stf/newpage_63030.html",
+      "format": "html",
+      "permalinkNote": "答申から発効までの手続きと、令和7年度の改定額が「令和7年10月1日から令和8年3月31日までの間に順次発効される予定」である旨の出所。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "最低賃金の種類(地域別最低賃金と特定最低賃金)",
+      "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/chingin/newpage_43885.html",
+      "retrievedAt": "2026-08-03",
+      "archiveUrl": "https://web.archive.org/web/20260803221042/https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/chingin/newpage_43885.html",
+      "format": "html",
+      "permalinkNote": "地域別最低賃金(産業を問わず県内すべての労働者に適用・47件)と特定最低賃金(特定の産業の基幹的労働者に適用)の違いの出所。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "中央最低賃金審議会(令和8年度目安答申)参考3 地域別最低賃金の全国加重平均と引上げ率の推移",
+      "url": "https://www.mhlw.go.jp/content/11302000/001729653.pdf",
+      "retrievedAt": "2026-08-03",
+      "archiveUrl": "https://web.archive.org/web/20260803221105/https://www.mhlw.go.jp/content/11302000/001729653.pdf",
+      "format": "pdf",
+      "permalinkNote": "全国加重平均が「適用労働者数による全国加重平均額」である旨と、平成28年度・令和5年度の全国加重平均に労働者数の更新による影響分(+1円)が含まれる旨の出所。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "特定最低賃金について",
+      "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000041788.html",
+      "retrievedAt": "2026-08-04",
+      "archiveUrl": "https://web.archive.org/web/20260803224508/https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000041788.html",
+      "format": "html",
+      "permalinkNote": "特定最低賃金の全国加重平均額(令和7年度1,128円。地域別最低賃金を下回るものを除く)の出所。地域別最低賃金の1,121円とは別の数字です。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "最低賃金の適用される労働者の範囲",
+      "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/chingin/newpage_43886.html",
+      "retrievedAt": "2026-08-04",
+      "archiveUrl": "https://web.archive.org/web/20260803224534/https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/chingin/newpage_43886.html",
+      "format": "html",
+      "permalinkNote": "地域別最低賃金が雇用形態を問わずすべての労働者に適用されること、特定最低賃金が基幹的労働者に適用され18歳未満・65歳以上の方などには適用されないことの出所。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "令和8年度地域別最低賃金額改定の目安について(令和8年7月28日)",
+      "url": "https://www.mhlw.go.jp/stf/newpage_74920.html",
+      "retrievedAt": "2026-08-04",
+      "archiveUrl": "https://web.archive.org/web/20260730142237/https://www.mhlw.go.jp/stf/newpage_74920.html",
+      "format": "html",
+      "permalinkNote": "令和8年度の目安答申の内容と、目安どおりに改定された場合の全国加重平均が1,176円になるという仮定の数字の出所。"
+    },
+    {
+      "publisher": "厚生労働省",
+      "title": "全ての都道府県で地域別最低賃金の改定額が答申されました(令和8年9月3日)",
+      "url": "https://www.mhlw.go.jp/stf/newpage_75950.html",
+      "retrievedAt": "2026-10-08",
+      "archiveUrl": "https://web.archive.org/web/20261002023848/https://www.mhlw.go.jp/stf/newpage_75950.html",
+      "format": "html",
+      "permalinkNote": "令和8年度の改定額の全国加重平均額が1,177円である旨の出所。"
+    }
+  ],
+  "license": {
+    "name": "公共データ利用規約(第1.0版)(PDL1.0)",
+    "url": "https://www.mhlw.go.jp/chosakuken/",
+    "confirmedAt": "2026-08-03",
+    "note": "厚生労働省「利用規約・リンク・著作権等」に、コンテンツは特記のない限り同省に帰属し、権利表記の記載がない限り「公共データ利用規約(第1.0版)」(PDL1.0)に準拠した利用条件の下で利用できる旨の明記を確認。同ページはコンテンツの利用にあたり出典の記載を求めており、編集・加工して利用する場合は加工した旨も記載することとされています。"
+  },
+  "conversion": {
+    "method": "一覧 PDF を pdftotext -layout でテキスト化し、1行あたり「都道府県名/時間額/(改定前額)/引上げ額/引上げ率/発効日」を機械抽出。原表の名称は「青　森」のように分かち書きされ、接尾辞(県・府・都)も付かないため、空白を除いたうえでコード順の位置と正式名称との前方一致で確認した(原表に都道府県コードの列は無い)。最終行の全国加重平均は基準行として最後に置き、発効日は原表で「-」のため空欄にしている。発効日は原表の和暦表記のまま収録した",
+    "script": "scripts/convert/saitei-chingin-r7-todofuken.ts",
+    "verification": "48行すべてで(1)引上げ額=時間額-改定前額、(2)引上げ率=引上げ額÷改定前額×100の四捨五入が公表値と一致することを機械検証。さらに全国加重平均(1,121円)が47都道府県の単純平均(1,067.09円)と一致しないことを assert している(加重平均を単純平均と取り違えた場合に失敗する)。表題に「令和７年度 地域別最低賃金 全国一覧」が含まれることと、沖縄県1,023円・令和7年12月1日、東京都1,226円・令和7年10月3日、全国加重平均1,121円のアンカーも突合",
+    "convertedAt": "2026-08-03"
+  },
+  "temporal": {
+    "coverageStart": "令和7年度(2025年度)の改定",
+    "coverageEnd": "令和7年度(2025年度)の改定",
+    "granularity": "年度(単年)",
+    "iso8601": "2025"
+  },
+  "spatial": {
+    "level": "都道府県",
+    "area": "全国"
+  },
+  "updateFrequency": "年1回(毎年度の改定審議。据え置きとなる都道府県もある)",
+  "nextExpectedUpdate": "令和8年度の改定額は公表済みで、「地域別最低賃金 都道府県別(令和8年度)」に収録しています",
+  "readingGuide": "最低賃金は、使用者が労働者に支払わなければならない賃金の下限額です。ここに収録した地域別最低賃金は、産業や職種を問わず、その都道府県内で働くすべての労働者に適用されます(パート・アルバイト・臨時・嘱託などの雇用形態を問いません)。他のデータセットと違い、これは調査で得られた統計ではなく、最低賃金審議会の調査審議を経て都道府県労働局長が決定する額です。年度をまたぐ点に注意が必要で、令和7年度の額といっても発効日は都道府県ごとに違い、令和7年10月1日から令和8年3月31日までの間に順次発効します(沖縄県は令和7年12月1日)。したがって「令和7年度の額」は発効日ではなく改定の回次を指します。全国加重平均の1,121円は、47都道府県の単純平均ではなく適用労働者数で重みを付けた平均です。なお産業別に定められる特定最低賃金にも全国加重平均額(令和7年度1,128円)がありますが、別の制度の数字です。",
+  "files": [
+    {
+      "path": "data.csv",
+      "format": "csv",
+      "encoding": "UTF-8",
+      "rowCount": 48,
+      "columns": [
+        {
+          "name": "都道府県",
+          "type": "string",
+          "description": "都道府県名(コード順)。最終行は全国加重平均"
+        },
+        {
+          "name": "最低賃金(時間額)",
+          "type": "integer",
+          "unit": "円",
+          "description": "令和7年度の改定で決定された地域別最低賃金の時間額"
+        },
+        {
+          "name": "改定前の額",
+          "type": "integer",
+          "unit": "円",
+          "description": "令和6年度の地域別最低賃金の時間額(一覧の括弧内の数字)"
+        },
+        {
+          "name": "引上げ額",
+          "type": "integer",
+          "unit": "円",
+          "description": "時間額から改定前の額を引いた差"
+        },
+        {
+          "name": "引上げ率",
+          "type": "number",
+          "unit": "%",
+          "description": "引上げ額を改定前の額で割った割合(公表値・小数第1位)"
+        },
+        {
+          "name": "発効日",
+          "type": "string",
+          "description": "改定額が効力を生じる日(原表の和暦表記のまま)。全国加重平均の行は空欄"
+        }
+      ]
+    }
+  ],
+  "map": {
+    "column": "最低賃金(時間額)",
+    "note": "地図は令和7年度の時間額で塗り分け。発効日は都道府県ごとに異なり、令和7年10月から令和8年3月にかけて順次発効します。"
+  },
+  "caveats": [
+    "地域別最低賃金は統計調査の結果ではありません。最低賃金審議会の調査審議と関係労使からの異議申出の手続を経て、都道府県労働局長が決定する額です。当サイトの他のデータセット(調査で得られた数値)とは性格が異なります。",
+    "「令和7年度の額」は改定の回次を指し、発効日ではありません。発効日は都道府県ごとに異なり、令和7年10月1日から令和8年3月31日までの間に順次発効します(最も早いのは栃木県の令和7年10月1日、最も遅いのは秋田県の令和8年3月31日)。したがって、ある時点で全国の額を横並びに比べると、まだ改定前の額が適用されている都道府県が含まれます。",
+    "全国加重平均は「適用労働者数による全国加重平均額」です(中央最低賃金審議会 参考資料3の注記)。47都道府県の単純平均は1,067円で、公表されている1,121円とは54円異なります。加重に用いた都道府県別の適用労働者数は全国加重平均額と併せては公表されていないため、当サイトで加重平均を再計算して検算することはできません。",
+    "産業別に定められる特定最低賃金にも全国加重平均額があり、令和7年度は1,128円(地域別最低賃金を下回るものを除く)です。本データセットの1,121円は地域別最低賃金の全国加重平均で、別の数字です。特定最低賃金は特定の産業の基幹的労働者に適用され、18歳未満・65歳以上の方などには適用されません。",
+    "引上げ率は公表値をそのまま収録しています(引上げ額÷改定前の額の再計算が48行すべてで一致することは確認しています)。",
+    "令和8年度の改定額は公表済みで、別のデータセット「地域別最低賃金 都道府県別(令和8年度)」に収録しています(全国加重平均1,177円)。令和8年7月28日の目安答申の段階で示された全国加重平均1,176円は「目安どおりに各都道府県で引上げが行われた場合」の仮定の数字で、確定した1,177円とは別の数字です。"
+  ],
+  "changelog": [
+    {
+      "date": "2026-08-03",
+      "description": "初版作成(令和7年度・検証中)"
+    },
+    {
+      "date": "2026-08-04",
+      "description": "独立再照合ゲート通過により正式公開(published)に昇格。ゲートの指摘により出典を追加し(特定最低賃金の全国加重平均・適用される労働者の範囲・令和8年度の目安)、注意書きなどの表現を一次資料に合わせて是正。出典にインターネット・アーカイブの控えを追加"
+    },
+    {
+      "date": "2026-10-08",
+      "description": "厚生労働省が令和8年度の一覧を公表し、令和7年度の一覧 PDF が削除されたため、出典のリンク先をインターネット・アーカイブの控えに切り替え。令和8年度は未確定としていた記述を、公表済み(別データセットに収録)に改めた。収録値に変更なし"
+    }
+  ],
+  "relatedDatasets": [
+    "saitei-chingin-r8-todofuken",
+    "shoninkyu-r7-todofuken",
+    "kenmin-shotoku-todofuken",
+    "kengai-shushoku-r7-todofuken"
+  ],
+  "status": "published"
+}

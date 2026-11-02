@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAreas } from "../../lib/areas";
+import { profileValue } from "../../lib/profile";
+
+const areas = getAreas();
+const groups = [
+  { title: "市", areas: areas.filter((a) => a.kind === "市") },
+  { title: "町", areas: areas.filter((a) => a.kind === "町") },
+  { title: "村", areas: areas.filter((a) => a.kind === "村") },
+];
+const populationOf = (name: string) =>
+  profileValue(name, { datasetId: "jinko-setai-okinawa-shichoson", column: "人口" });
+---
+
+<BaseLayout
+  title="市町村から探す | データでみる沖縄"
+  description="沖縄県内41市町村のプロファイルページ一覧。人口・世帯・所得・教育の主要データを一次出典つきで確認できます。"
+>
+  <h1 class="text-3xl font-bold">市町村から探す</h1>
+  <p class="mt-3 max-w-2xl">
+    県内41市町村それぞれのページで、人口・世帯・所得・教育の主要データを一次出典つきで確認できます。トップページの県内地図から市町村をクリックしても移動できます。
+  </p>
+
+  {
+    groups.map((group) => (
+      <section aria-label={group.title} class="mt-10">
+        <h2 class="text-xl font-bold">
+          {group.title}
+          <span class="num ml-2 text-sm font-normal" style="color: var(--color-sub);">
+            {group.areas.length}
+          </span>
+        </h2>
+        <div class="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {group.areas.map((area) => {
+            const pop = populationOf(area.name);
+            return (
+              <a href={`/area/${area.slug}/`} class="card card-lift block p-4 no-underline">
+                <p class="font-bold" style="color: var(--color-ink-accent);">
+                  {area.name}
+                </p>
+                <p class="num mt-1 text-xs" style="color: var(--color-sub);">
+                  人口 {pop.display}人
+                </p>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    ))
+  }
+</BaseLayout>

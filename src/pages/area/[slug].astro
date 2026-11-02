@@ -1,0 +1,184 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAreas, type Area } from "../../lib/areas";
+import {
+  profileValue,
+  PROFILE_CARDS,
+  PROFILE_SECTIONS,
+} from "../../lib/profile";
+import { getDataset } from "../../lib/datasets";
+import { renderAreaGroupLocatorSvg, renderAreaLocatorSvg } from "../../lib/map";
+
+export function getStaticPaths() {
+  return getAreas().map((area) => ({
+    params: { slug: area.slug },
+    props: { area },
+  }));
+}
+
+const { area } = Astro.props as { area: Area };
+
+const cards = PROFILE_CARDS.map((spec) => profileValue(area.name, spec));
+const sections = PROFILE_SECTIONS.map((section) => ({
+  title: section.title,
+  dataset: getDataset(section.datasetId),
+  values: section.specs.map((spec) => profileValue(area.name, spec)),
+}));
+
+const population = profileValue(area.name, {
+  datasetId: "jinko-setai-okinawa-shichoson",
+  column: "人口",
+});
+const youngRatio = profileValue(area.name, {
+  datasetId: "nenshojinko-okinawa-shichoson",
+  column: "年少人口割合",
+});
+const lead = `${area.name}の人口は${population.display}人(県内41市町村中、大きい順で${population.rank}番目)、年少人口割合は${youngRatio.display}%(大きい順で${youngRatio.rank}番目)です。`;
+
+const locatorSvg = renderAreaLocatorSvg(area.name);
+const { svg: groupSvg, groupTitle } = renderAreaGroupLocatorSvg(area.name);
+
+const usedDatasetIds = [...new Set(PROFILE_SECTIONS.flatMap((s) => s.specs.map((x) => x.datasetId)))];
+const usedDatasets = usedDatasetIds.map((id) => getDataset(id));
+---
+
+<BaseLayout
+  title={`${area.name}のデータ | データでみる沖縄`}
+  description={`${area.name}の人口・世帯・所得・教育の主要データ。一次出典つきで、CSV / JSON でダウンロードできます。`}
+>
+  <nav aria-label="パンくず" class="text-sm">
+    <ol role="list" class="flex flex-wrap gap-x-2 gap-y-0.5" style="color: var(--color-sub);">
+      <li><a href="/" class="link-underline">トップ</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/area/" class="link-underline">市町村から探す</a></li>
+      <li aria-hidden="true">/</li>
+      <li aria-current="page">{area.name}</li>
+    </ol>
+  </nav>
+
+  <div class="mt-5">
+    <p class="display-en text-xs font-bold tracking-[0.25em]" style="color: var(--color-accent);">
+      {area.slug.toUpperCase()}
+    </p>
+    <h1 class="mt-1 text-3xl font-bold sm:text-4xl">{area.name}</h1>
+  </div>
+
+  <p class="mt-5 max-w-2xl border-l-4 py-1 pl-4 text-lg" style="border-color: var(--color-accent);">
+    {lead}
+  </p>
+
+  <section aria-label="位置図" class="mt-8">
+    <figure class="max-w-full">
+      <div
+        class="map-figure locator-map"
+        role="img"
+        aria-label={`${area.name}の位置(${groupTitle})`}
+        set:html={groupSvg}
+      />
+      <figcaption class="mt-2 text-sm" style="color: var(--color-sub);">
+        {groupTitle}での位置(青が{area.name})
+      </figcaption>
+    </figure>
+    <figure class="mt-8 max-w-full">
+      <div
+        class="map-figure locator-map"
+        role="img"
+        aria-label={`${area.name}の県内での位置`}
+        set:html={locatorSvg}
+      />
+      <figcaption class="mt-2 text-sm" style="color: var(--color-sub);">
+        県内全域での位置
+      </figcaption>
+    </figure>
+  </section>
+
+  <section aria-label="代表的な数値" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-pagefind-ignore>
+    {
+      cards.map((v) => (
+        <div class="card p-4">
+          <p class="text-xs font-bold" style="color: var(--color-sub);">
+            {v.glossary ? (
+              <a href={`/glossary/#${v.glossary}`} class="term-link">{v.label}</a>
+            ) : (
+              v.label
+            )}
+          </p>
+          <p class="display-en mt-1 text-2xl font-bold" style="color: var(--color-ink-accent);">
+            {v.display}
+            <span class="text-sm font-semibold">{v.unit}</span>
+          </p>
+          {v.rank && (
+            <p class="mt-1 text-xs num" style="color: var(--color-sub);">
+              県内 {v.rank} / 41 位(大きい順)
+            </p>
+          )}
+        </div>
+      ))
+    }
+  </section>
+  <p class="mt-2 text-xs" style="color: var(--color-sub);" data-pagefind-ignore>
+    このページの順位は、いずれも県内41市町村で値が大きい順です。
+  </p>
+
+  {
+    sections.map((section) => (
+      <section aria-label={section.title} class="mt-10">
+        <h2 class="text-xl font-bold">{section.title}</h2>
+        <div class="card mt-4 overflow-x-auto" data-pagefind-ignore>
+          <table class="w-full border-collapse text-sm">
+            <caption class="sr-only">
+              {area.name}の{section.title}に関する指標
+            </caption>
+            <tbody>
+              {section.values.map((v) => (
+                <tr>
+                  <th
+                    scope="row"
+                    class="border-b px-4 py-2.5 text-left font-semibold"
+                    style="border-color: var(--color-line); width: 50%;"
+                  >
+                    {v.glossary ? (
+                      <a href={`/glossary/#${v.glossary}`} class="term-link">{v.label}</a>
+                    ) : (
+                      v.label
+                    )}
+                  </th>
+                  <td class="num border-b px-4 py-2.5 text-right" style="border-color: var(--color-line);">
+                    {v.display}
+                    {v.unit && <span class="text-xs" style="color: var(--color-sub);"> {v.unit}</span>}
+                  </td>
+                  <td class="num border-b px-4 py-2.5 text-right text-xs" style="border-color: var(--color-line); color: var(--color-sub);">
+                    {v.rank ? `県内${v.rank}位` : ""}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))
+  }
+
+  <section aria-label="出典" class="mt-10">
+    <h2 class="text-xl font-bold">出典・ダウンロード</h2>
+    <p class="mt-2 text-sm" style="color: var(--color-sub);">
+      このページの数値は以下のデータセット(いずれも一次資料から作成)によります。CSV / JSON のダウンロードは各データセットページから。
+    </p>
+    <ul class="mt-3 space-y-1 text-sm" data-pagefind-ignore>
+      {
+        usedDatasets.map((d) => (
+          <li>
+            <a href={`/datasets/${d.id}/`} class="link-underline font-semibold" style="color: var(--color-accent);">
+              {d.title}
+            </a>
+            {d.status === "draft" && (
+              <span class="ml-1 rounded-full border px-1.5 py-0.5 text-xs" style="border-color: var(--color-line); color: var(--color-sub);">
+                検証中
+              </span>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

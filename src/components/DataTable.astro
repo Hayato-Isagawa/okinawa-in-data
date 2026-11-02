@@ -1,0 +1,111 @@
+---
+import type { DatasetColumn } from "../../data/schema/dataset-meta";
+import { PREFECTURES } from "../../scripts/lib/prefectures";
+
+interface Props {
+  caption: string;
+  columns: DatasetColumn[];
+  rows: string[][];
+  id?: string;
+}
+
+const { caption, columns, rows, id = "data-table" } = Astro.props;
+
+const headerLabel = (col: DatasetColumn) =>
+  col.unit ? `${col.name}(${col.unit})` : col.name;
+
+const isTextColumn = (idx: number) => idx > 0 && columns[idx]?.type === "string";
+
+// 文字列列のうち、最長セルが長い列(備考など)だけ折り返しを許す。
+// 団体コードや階級のような短い文字列は折り返さず、桁や記号を割らせない。
+const wrapsText = columns.map(
+  (col, idx) =>
+    isTextColumn(idx) && rows.some((row) => (row[idx] ?? "").length > 24),
+);
+
+// 47都道府県を並べた表でだけ、沖縄県と集計(全国)行を埋没させない。
+// 2行の比較表などでは全行が該当して強調の意味が消えるため、
+// 都道府県行が十分に多い表に限る。
+const prefectures = new Set<string>(PREFECTURES);
+const isPrefectureTable =
+  rows.filter((row) => prefectures.has(row[0])).length >= 10;
+const rowRole = (label: string) => {
+  if (!isPrefectureTable) return undefined;
+  if (label === "沖縄県") return "focus";
+  return prefectures.has(label) ? undefined : "total";
+};
+---
+
+<div
+  id={id}
+  class="card table-scroll my-6 max-h-[32rem] overflow-auto"
+  tabindex="0"
+  role="region"
+  aria-label={caption}
+  data-pagefind-ignore
+>
+  <table class="w-full border-collapse text-sm">
+    <caption class="px-4 py-3 text-left font-semibold">{caption}</caption>
+    <thead>
+      <tr>
+        {
+          columns.map((col, idx) => (
+            <th
+              scope="col"
+              class:list={[
+                "sticky top-0 whitespace-nowrap border-b px-4 py-2 font-semibold",
+                idx === 0 || isTextColumn(idx) ? "text-left" : "text-right",
+              ]}
+              style="border-color: var(--color-line); background: var(--color-accent-soft);"
+            >
+              {headerLabel(col)}
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr data-row-role={rowRole(row[0])}>
+            {row.map((cell, idx) => {
+              if (idx === 0) {
+                return (
+                  <th
+                    scope="row"
+                    class="whitespace-nowrap border-b px-4 py-2 text-left font-normal"
+                    style="border-color: var(--color-line);"
+                  >
+                    {cell}
+                  </th>
+                );
+              }
+              const value = cell === "" ? "—" : cell;
+              if (wrapsText[idx]) {
+                return (
+                  <td
+                    class="border-b px-4 py-2 text-left align-top"
+                    style="border-color: var(--color-line);"
+                  >
+                    <span class="block min-w-[12rem] max-w-[22rem]">{value}</span>
+                  </td>
+                );
+              }
+              return (
+                <td
+                  class:list={[
+                    "num whitespace-nowrap border-b px-4 py-2",
+                    isTextColumn(idx) ? "text-left" : "text-right",
+                  ]}
+                  style="border-color: var(--color-line);"
+                >
+                  {value}
+                </td>
+              );
+            })}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
