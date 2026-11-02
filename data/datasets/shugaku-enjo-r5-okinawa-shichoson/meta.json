@@ -16,9 +16,9 @@
     }
   ],
   "license": {
-    "name": "政府標準利用規約(第2.0版)",
+    "name": "文部科学省ウェブサイト利用規約(公共データ利用規約(第1.0版)準拠・CC BY 互換)",
     "url": "https://www.mext.go.jp/b_menu/1351168.htm",
-    "confirmedAt": "2026-07-05"
+    "confirmedAt": "2026-11-02"
   },
   "conversion": {
     "method": "pdftotext -layout で生テキスト化し、変換スクリプトで「４．就学援助率」欄の階級値を機械抽出(表記のまま、実数化しない)",
@@ -60,7 +60,8 @@
     "小規模町村では児童生徒数が少なく、少数の認定変動で階級が変わり得ます。"
   ],
   "changelog": [
-    { "date": "2026-07-05", "description": "初版作成(令和5年度分・階級値)" }
+    { "date": "2026-07-05", "description": "初版作成(令和5年度分・階級値)" },
+    { "date": "2026-11-02", "description": "利用規約の表記を、文部科学省の利用規約の改正(2026-08-17、準拠先が公共データ利用規約(第1.0版)に変更)に合わせて更新" }
   ],
   "relatedDatasets": ["shugaku-enjo-r4-todofuken", "shugaku-enjo-keinen", "kodomo-chosa-konkyu-keinen"],
   "status": "published"
