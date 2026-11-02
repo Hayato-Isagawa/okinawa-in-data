@@ -25,9 +25,9 @@
     }
   ],
   "license": {
-    "name": "文部科学省ウェブサイト利用規約(政府標準利用規約準拠・CC BY 互換)",
+    "name": "文部科学省ウェブサイト利用規約(公共データ利用規約(第1.0版)準拠・CC BY 互換)",
     "url": "https://www.mext.go.jp/b_menu/1351168.htm",
-    "confirmedAt": "2026-07-06",
+    "confirmedAt": "2026-11-02",
     "note": "報告書 PDF 内に個別の転載制限の記載がないことを確認済み。"
   },
   "conversion": {
@@ -79,7 +79,8 @@
     {
       "date": "2026-07-06",
       "description": "初版(令和3年度調査の委託分析報告書より)"
-    }
+    },
+    { "date": "2026-11-02", "description": "利用規約の表記を、文部科学省の利用規約の改正(2026-08-17、準拠先が公共データ利用規約(第1.0版)に変更)に合わせて更新" }
   ],
   "relatedDatasets": ["gakuryoku-chosa-r7-todofuken", "kodomo-chosa-konkyu-keinen", "shugaku-enjo-r4-todofuken"],
   "status": "published"

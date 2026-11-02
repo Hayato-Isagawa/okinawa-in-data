@@ -25,9 +25,9 @@
     }
   ],
   "license": {
-    "name": "政府標準利用規約(第2.0版)",
+    "name": "文部科学省ウェブサイト利用規約(公共データ利用規約(第1.0版)準拠・CC BY 互換)",
     "url": "https://www.mext.go.jp/b_menu/1351168.htm",
-    "confirmedAt": "2026-07-05",
+    "confirmedAt": "2026-11-02",
     "note": "文部科学省の利用規約ページで確認。NIER サイトの著作権ページ(nier.go.jp/11_copyright/)が文科省ウェブサイト利用規約へ全面委任しており、同規約の適用ドメインに nier.go.jp が明記されていることを確認(2026-07-06)。数値データは著作権の対象外と同規約に明記。"
   },
   "conversion": {
@@ -73,7 +73,8 @@
     "調査対象・実施状況の詳細(実施校数・児童生徒数など)は一次資料を参照してください。"
   ],
   "changelog": [
-    { "date": "2026-07-05", "description": "初版作成(令和7年度調査分)" }
+    { "date": "2026-07-05", "description": "初版作成(令和7年度調査分)" },
+    { "date": "2026-11-02", "description": "利用規約の表記を、文部科学省の利用規約の改正(2026-08-17、準拠先が公共データ利用規約(第1.0版)に変更)に合わせて更新" }
   ],
   "relatedDatasets": ["kodomo-chosa-konkyu-keinen", "shugaku-enjo-r4-todofuken"],
   "status": "published"
