@@ -142,11 +142,12 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
     I/O の失敗は 500 にして stderr に出す(VRT は status を見ないので、ログが唯一の手がかり)
   - `zizmor.yml` の検査を黙って無効にできる設定 — どれが崩れても job は緑のまま検査だけが効かなくなる。
     zizmor-action に渡すのが `advanced-security: false`・CI 用の空の設定(`rules: {}`)を指す `config:`・
-    `collect: all` の 3 つだけであること、その設定を action の前の step で書くこと、job に `continue-on-error` /
-    `if:` が無いこと、トリガーが `pull_request`・週 1 回の `schedule`・`workflow_dispatch` であること、マージキーを
-    使っていないこと。`uses:` の SHA は Dependabot が上げるので形だけを見る
+    `collect: all` の 3 つだけであること、その設定を action の前の step で書くこと、トリガーが `pull_request`・
+    週 1 回の `schedule`・`workflow_dispatch` であること、マージキーを使っていないこと、そして workflow 全体が
+    決まった形であること(`env` の `ZIZMOR_OFFLINE`・`continue-on-error`・`if`・Checkout の中身も足せない)。
+    `uses:` は Dependabot が上げるので形だけを見る(同じ action の古い SHA への差し替えは通る)
 
-YAML をパースして見る検査(ci-summary・link-check・auto-merge の build.yml 配線と各 workflow のトリガー)は、共通の
+YAML をパースして見る検査(ci-summary・link-check・auto-merge の build.yml 配線と各 workflow のトリガー・zizmor-workflow)は、共通の
 `scripts/__tests__/workflow-yaml.mjs` を使う。**マージキー(`<<:`)は、使っていること自体を
 違反にする** — GitHub Actions は展開しないので、`merge: true` で読むと
 GitHub では効かない値が「ある」と見え、「あること」を求める検査が緩む。`!!merge <<:` と
