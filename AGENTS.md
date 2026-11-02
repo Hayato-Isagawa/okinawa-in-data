@@ -157,8 +157,11 @@ GitHub では効かない値が「ある」と見え、「あること」を求�
 通している。`node --test` は「glob が 0 件」「中身が空」「全件 skip」のどれでも exit 0 で
 終わるので、守っているつもりのガードが no-op に落ちても気づけないため。下限 pass 数を
 割ったら落ちる。**テストを足したら下限も上げること**(`package.json` の数値)。
-`test:lib` は拡張子なしの import を tsx で解決するので、`NODE_OPTIONS='--import tsx'` で
-`assert-test-results.mjs` が起こす `node --test` に渡している。
+`test:lib` は拡張子なしの import を tsx で解決するので、`--import tsx` を `assert-test-results.mjs` の
+引数で渡し、`node --test` のフラグにしている。**`NODE_OPTIONS` で渡さない** — esbuild の worker にまで
+引き継がれ、テストが chdir した後に初めての変換が起きると(chdir より前に読み込むモジュールがすべて
+キャッシュにあり、chdir 先から tsx が見つからないとき)、worker が tsx を cwd から探して落ち、本体は時間制限なしで止まる
+(test:lib が 7 分以上止まった実例がある)。引数なら worker には届かない。
 
 ## ビジュアルリグレッションテスト(VRT)
 

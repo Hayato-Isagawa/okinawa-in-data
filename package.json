@@ -15,7 +15,7 @@
     "check:data": "tsx scripts/validate-data.ts",
     "build:json": "tsx scripts/build-json.ts",
     "test:a11y": "playwright test tests/a11y.spec.ts",
-    "test:lib": "node scripts/assert-test-files.mjs \"{scripts,src}/lib/__tests__/*.test.ts\" && NODE_OPTIONS='--import tsx' node scripts/assert-test-results.mjs 53 \"{scripts,src}/lib/__tests__/*.test.ts\"",
+    "test:lib": "node scripts/assert-test-files.mjs \"{scripts,src}/lib/__tests__/*.test.ts\" && node scripts/assert-test-results.mjs 53 \"{scripts,src}/lib/__tests__/*.test.ts\" --import tsx",
     "test:githooks": "node scripts/assert-test-files.mjs \".githooks/__tests__/*.test.mjs\" && node scripts/assert-test-results.mjs 10 \".githooks/__tests__/*.test.mjs\"",
     "test:workflows": "node scripts/assert-test-files.mjs \"scripts/__tests__/*.test.mjs\" && node scripts/assert-test-results.mjs 211 \"scripts/__tests__/*.test.mjs\"",
     "lint": "oxlint --deny-warnings",

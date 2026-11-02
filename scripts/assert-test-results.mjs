@@ -13,7 +13,11 @@
 // そこで実行結果そのものを検査する。TAP の集計行を読み、
 // pass が下限を割るか、skip / todo が 1 件でもあれば落とす。
 //
-// 使い方: node scripts/assert-test-results.mjs <min-pass> "<glob>"
+// 使い方: node scripts/assert-test-results.mjs <min-pass> "<glob>" [node のフラグ...]
+//
+// glob の後ろは `node --test` の前に置く node のフラグ(test:lib の `--import tsx`)。
+// NODE_OPTIONS で渡すと esbuild の worker にまで引き継がれ、テストが chdir した後に
+// worker が tsx を cwd から探して落ち、本体が時間制限なしで止まる。引数なら worker には届かない。
 
 import { spawnSync } from "node:child_process";
 
@@ -25,17 +29,19 @@ import { spawnSync } from "node:child_process";
 // Linux の pipe への書き込みは同期なので CI では起きない)。
 // exitCode を返して Node に flush させるため、本体を関数にして return で抜ける。
 function main() {
-  const [minPassRaw, pattern] = process.argv.slice(2);
+  const [minPassRaw, pattern, ...nodeArgs] = process.argv.slice(2);
   const minPass = Number(minPassRaw);
 
   if (!Number.isInteger(minPass) || minPass < 1 || !pattern) {
-    console.error('usage: assert-test-results.mjs <min-pass> "<glob>"');
+    console.error(
+      'usage: assert-test-results.mjs <min-pass> "<glob>" [node のフラグ...]'
+    );
     return 2;
   }
 
   const res = spawnSync(
     process.execPath,
-    ["--test", "--test-reporter=tap", pattern],
+    [...nodeArgs, "--test", "--test-reporter=tap", pattern],
     {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "inherit"],

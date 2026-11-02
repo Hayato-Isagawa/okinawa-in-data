@@ -17,6 +17,13 @@ import { test, expect } from "@playwright/test";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const DATA_DIR = path.join(ROOT, "data/datasets");
+// astro.config の `site`。頭を固定しないと /themes/x/datasets/y/ のような将来のページも拾う
+// (site を変えたらここが赤になるので、写しが古びても黙って通ることはない)
+const SITE = "https://okinawa-in-data.org";
+const DATASET_LOC = new RegExp(
+  `<loc>${SITE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/datasets/([^/<]+)/</loc>`,
+  "g"
+);
 
 interface Source {
   publisher: string;
@@ -82,7 +89,7 @@ test.describe("公開範囲", () => {
       .flatMap((f) => [
         ...fs
           .readFileSync(path.join(ROOT, "dist", f), "utf8")
-          .matchAll(/<loc>[^<]*\/datasets\/([^/<]+)\/<\/loc>/g),
+          .matchAll(DATASET_LOC),
       ])
       .map((m) => m[1])
       .sort();
