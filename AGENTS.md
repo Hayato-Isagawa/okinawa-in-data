@@ -90,7 +90,8 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
   `sleep` も)をスタブして走らせる。**写しを置かないので、ワークフロー側を変えるとテスト対象も変わる**
   — 数値や条件をテストに書き写さない。4 本目の `vrt-baseline.test.mjs` は `vrt.yml` を静的に走査する
   (下記)。5 本目の `serve-dist.test.mjs` は `scripts/serve-dist.mjs` を起動してリクエストする。
-  **5 本とも壊れ方が静かで、CI は緑のまま結果だけが変わる**:
+  6 本目の `zizmor-workflow.test.mjs` は `zizmor.yml` を `yaml` でパースして読む。
+  **6 本とも壊れ方が静かで、CI は緑のまま結果だけが変わる**:
   - `dependabot-auto-merge.yml` の待機ロジック — **main への唯一の自動書き込み経路**。
     #83 の job 名変更で 30 分沈黙 → CANCELLED に化け、PR が 2 本溜まるまで
     気づけなかった(#94)
@@ -139,6 +140,11 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
     Content-Type・index.html と 301・root の外の 403 と、NUL を含むパス・読めないファイル・
     読めないディレクトリの配下・長すぎるパスで落ちないことを見る。長すぎるパスは 404、それ以外の
     I/O の失敗は 500 にして stderr に出す(VRT は status を見ないので、ログが唯一の手がかり)
+  - `zizmor.yml` の検査を黙って無効にできる設定 — どれが崩れても job は緑のまま検査だけが効かなくなる。
+    zizmor-action に渡すのが `advanced-security: false`・CI 用の空の設定(`rules: {}`)を指す `config:`・
+    `collect: all` の 3 つだけであること、その設定を action の前の step で書くこと、job に `continue-on-error` /
+    `if:` が無いこと、トリガーが `pull_request`・週 1 回の `schedule`・`workflow_dispatch` であること、マージキーを
+    使っていないこと。`uses:` の SHA は Dependabot が上げるので形だけを見る
 
 YAML をパースして見る検査(ci-summary・link-check・auto-merge の build.yml 配線と各 workflow のトリガー)は、共通の
 `scripts/__tests__/workflow-yaml.mjs` を使う。**マージキー(`<<:`)は、使っていること自体を
