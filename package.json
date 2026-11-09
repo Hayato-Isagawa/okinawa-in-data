@@ -47,7 +47,7 @@
     "linkedom": "^0.18.14",
     "oxfmt": "^0.74.0",
     "oxlint": "^1.89.0",
-    "pagefind": "^1.5.2",
+    "pagefind": "^1.6.0",
     "topojson-client": "^3.1.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
