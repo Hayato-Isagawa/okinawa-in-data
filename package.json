@@ -45,7 +45,7 @@
     "@types/node": "^26.6.5",
     "@types/topojson-client": "^3.1.5",
     "linkedom": "^0.18.15",
-    "oxfmt": "^0.74.0",
+    "oxfmt": "^0.75.0",
     "oxlint": "^1.89.0",
     "pagefind": "^1.6.0",
     "topojson-client": "^3.1.0",
