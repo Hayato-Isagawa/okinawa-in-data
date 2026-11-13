@@ -9,7 +9,7 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "dev": "astro dev",
-    "build": "astro build && pagefind --site dist",
+    "build": "npm -v && astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
