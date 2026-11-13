@@ -42,6 +42,7 @@ jobs:
           # package.json に packageManager があると、setup-node は cache の指定が無くても
           # npm のキャッシュを有効にする。このジョブは npm ci をしないのでキャッシュは要らず、
           # issues: write を持つジョブに、汚染されたキャッシュを読む経路を残さない
+          package-manager-cache: false
 
       # npm audit は package-lock.json だけで解決する。node_modules は要らないので
       # npm ci を挟まない(実測: lockfile のみで既知の advisory を検出できた)。
