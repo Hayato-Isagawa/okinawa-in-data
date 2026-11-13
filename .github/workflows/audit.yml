@@ -39,6 +39,9 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: ".tool-versions"
+          # package.json に packageManager があると、setup-node は cache の指定が無くても
+          # npm のキャッシュを有効にする。このジョブは npm ci をしないのでキャッシュは要らず、
+          # issues: write を持つジョブに、汚染されたキャッシュを読む経路を残さない
 
       # npm audit は package-lock.json だけで解決する。node_modules は要らないので
       # npm ci を挟まない(実測: lockfile のみで既知の advisory を検出できた)。
