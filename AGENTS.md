@@ -10,6 +10,8 @@
 - ホスティング: Cloudflare Workers static assets(wrangler.jsonc。Pages ではない)
 - 可視化: Observable Plot を**ビルド時に静的 SVG 生成**(クライアント JS を増やさない)。チャートには必ず等価なデータテーブルを併設する
 
+**Node の版を上げるときは、Cloudflare 側のビルド変数 `NODE_VERSION` も同じ値に上げる。** Workers Builds は `.tool-versions` を読むが、その版ではビルドしない(2026-11-12 実測: 24.22.2 を指定しても既定の 24.22.1 で走った)。ビルドの版を決めるのは Worker `okinawa-in-data` の `NODE_VERSION` で、本番(`main`)とプレビュー(それ以外のブランチ)の 2 つのトリガーそれぞれに設定する。また `.tool-versions` が出たばかりの版を指していると、Workers Builds のツールのインストール段階でビルドが落ちる(2026-11 の 24.22.3 は通るまで 1 日以上かかった)。`.tool-versions` を上げる PR は、プレビュービルドが通ってからマージする。
+
 ## データ層の鉄則
 
 - `data/` はサイト実装から独立したデータ資産。1データセット = `data/datasets/<id>/`(meta.json + data.csv + data.json + raw/ + notes.md)
