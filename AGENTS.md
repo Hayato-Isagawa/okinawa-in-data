@@ -6,7 +6,7 @@
 
 ## スタック
 
-- Astro 7 (SSG) + React 19 + Tailwind CSS 4 + TypeScript / npm / Node 24 (mise)
+- Astro 7 (SSG) + React 19 + Tailwind CSS 4 + TypeScript / npm / Node 26 (mise)
 - ホスティング: Cloudflare Workers static assets(wrangler.jsonc。Pages ではない)
 - 可視化: Observable Plot を**ビルド時に静的 SVG 生成**(クライアント JS を増やさない)。チャートには必ず等価なデータテーブルを併設する
 
