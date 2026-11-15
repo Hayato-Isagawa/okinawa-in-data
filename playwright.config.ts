@@ -2,8 +2,8 @@ import { defineConfig } from "@playwright/test";
 
 // reuseExistingServer が有効だと、他プロジェクトの dev サーバーが同じポートを
 // 使っていた場合にそのサイトを検査してしまう(2026-08-02 に実際に起き、無関係な
-// 83 件の失敗として現れた)。ポートを差し替えられるようにし、globalSetup で
-// 検査対象が本サイトであることを確認してから走らせる。
+// 83 件の失敗として現れた)。再利用はせず、ポートが埋まっていれば起動の時点で止める。
+// ポートは差し替えられるようにし、globalSetup でも検査対象が本サイトであることを確かめる。
 const port = Number(process.env.PREVIEW_PORT ?? 4176);
 const baseURL = `http://localhost:${port}`;
 
@@ -18,8 +18,10 @@ export default defineConfig({
     baseURL,
   },
   webServer: {
-    command: `npm run preview -- --port ${port}`,
+    // astro preview ではなく scripts/serve-dist.mjs で dist を配る。astro 7 の preview は
+    // エージェントの下では常駐に切り替わり、webServer が「exited early」で落ちる。
+    command: `node scripts/serve-dist.mjs dist ${port}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
   },
 });

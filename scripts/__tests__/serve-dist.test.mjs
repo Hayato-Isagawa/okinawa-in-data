@@ -1,4 +1,4 @@
-// VRT が撮るビルド結果を配る scripts/serve-dist.mjs の挙動を固定する。
+// VRT と E2E が使うビルド結果を配る scripts/serve-dist.mjs の挙動を固定する。
 //
 // CI の VRT は main 側も PR 側も PR のスクリプトで配るので、このサーバーが壊れても
 // 両側が同じように壊れて差分 0 で通る(全部 404 でも page.goto は throw しない)。
@@ -18,6 +18,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "serve-dist-"));
 const root = path.join(tmp, "dist");
 const files = {
   "index.html": "<p>home</p>",
+  "404.html": "<p>missing</p>",
   "about/index.html": "<p>about</p>",
   "a.css": "p{}",
   "a.js": "1",
@@ -131,6 +132,29 @@ test("root の外は返さない", async () => {
 test("無いパスは 404、不正なエンコードは 400", async () => {
   assert.equal((await get("/nope")).status, 404);
   assert.equal((await get("/%ZZ")).status, 400);
+});
+
+test("無いパスには 404.html を status 404 で返す(HEAD は本文なし)", async () => {
+  const res = await get("/nope/");
+  assert.equal(res.status, 404);
+  assert.equal(res.headers.get("content-type"), "text/html; charset=utf-8");
+  assert.equal(await res.text(), "<p>missing</p>");
+  const head = await get("/nope", { method: "HEAD" });
+  assert.equal(head.status, 404);
+  assert.equal(await head.text(), "");
+});
+
+test("404.html が無ければ、無いパスは平文の 404", async () => {
+  const page = path.join(root, "404.html");
+  fs.renameSync(page, `${page}.bak`);
+  try {
+    const res = await get("/nope");
+    assert.equal(res.status, 404);
+    assert.equal(res.headers.get("content-type"), "text/plain; charset=utf-8");
+    assert.equal(await res.text(), "not found");
+  } finally {
+    fs.renameSync(`${page}.bak`, page);
+  }
 });
 
 test("HEAD は本文を返さず、GET / HEAD 以外は 405", async () => {

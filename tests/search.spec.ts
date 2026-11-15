@@ -1,7 +1,7 @@
 /**
  * サイト内検索(Pagefind、ADR 0005)が、本番と同じ CSP の下で動くか。
  *
- * `astro preview` は public/_headers を適用しないので、そこから読んだ CSP を
+ * E2E の配信(scripts/serve-dist.mjs)は public/_headers を適用しないので、そこから読んだ CSP を
  * 同一オリジンの**全レスポンス**に付けて配る。Pagefind は WASM を Worker の中で
  * 動かし、Worker の CSP は Worker スクリプト自身のレスポンスで決まる。HTML に
  * だけ付けると、'wasm-unsafe-eval' を外しても検索は通ってしまう。

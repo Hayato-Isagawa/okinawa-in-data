@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-// VRT(playwright.vrt.config.ts)が撮るビルド結果を localhost で配る静的サーバー。
+// VRT(playwright.vrt.config.ts)と E2E(playwright.config.ts)が使うビルド結果を localhost で配る
+// 静的サーバー。
 //
 // 以前は serve を使っていたが、serve-handler が minimatch 3.1.5 を固定しており、
 // 修正版(11 系)は CJS の export の形が違うので overrides で差し替えられない
 // (serve-handler が minimatch を呼ぶ経路 = 設定の照合・ディレクトリ一覧で TypeError になる)。
-// VRT が要るのは「dist のファイルをそのまま返す」ことだけなので、依存を持たない形で置き換えた。
+// 要るのは「dist のファイルをそのまま返す」ことと、無いパスに 404.html を status 404 で返す
+// ことだけなので、依存を持たない形で置き換えた。
 //
 // 使い方: node scripts/serve-dist.mjs <dir> <port>
 
-import { createReadStream, statSync } from "node:fs";
+import { createReadStream, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
 
@@ -56,10 +58,26 @@ function send(res, status, body) {
   res.end(body);
 }
 
+// 無いパスには、本番と同じく 404.html を status 404 で返す(E2E が中身を見る)。
+// 404.html が無い・読めないときは平文で返す
+function notFound(req, res) {
+  let body;
+  try {
+    body = readFileSync(path.join(root, "404.html"));
+  } catch {
+    return send(res, 404, "not found");
+  }
+  res.writeHead(404, {
+    "Content-Type": TYPES[".html"],
+    "Content-Length": body.length,
+  });
+  res.end(req.method === "HEAD" ? undefined : body);
+}
+
 // 長すぎるパスはファイルとして存在しえないので 404。それ以外の I/O の失敗はサーバー側の
 // 問題なので、VRT が status を見なくても気づけるよう stderr に出して 500 を返す
-function fail(res, error, file) {
-  if (error.code === "ENAMETOOLONG") return send(res, 404, "not found");
+function fail(req, res, error, file) {
+  if (error.code === "ENAMETOOLONG") return notFound(req, res);
   console.error(`[serve-dist] ${error.code ?? error.message}: ${file}`);
   send(res, 500, "internal server error");
 }
@@ -97,15 +115,15 @@ const server = createServer((req, res) => {
     file = path.join(file, "index.html");
     ({ stat, error } = statFile(file));
   }
-  if (error) return fail(res, error, file);
+  if (error) return fail(req, res, error, file);
   if (!stat?.isFile()) {
-    return send(res, 404, "not found");
+    return notFound(req, res);
   }
 
   // 開けたことを確かめてからヘッダを送る(読めないファイルで 200 を送った後に落ちないように)
   const stream = createReadStream(file);
   stream.on("error", (error) => {
-    if (!res.headersSent) return fail(res, error, file);
+    if (!res.headersSent) return fail(req, res, error, file);
     console.error(`[serve-dist] ${error.code ?? error.message}: ${file}`);
     res.destroy();
   });
