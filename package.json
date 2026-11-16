@@ -52,7 +52,7 @@
     "topojson-client": "^3.1.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "wrangler": "^4.152.0",
+    "wrangler": "^4.158.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "yaml": "^2.9.1"
   },
