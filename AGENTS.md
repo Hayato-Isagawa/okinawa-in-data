@@ -49,7 +49,7 @@ astro dev --background
 
 `.github/workflows/e2e.yml` が PR ごとに `npx playwright test` で全部回す。手元では `npm run test:e2e`
 (a11y だけなら `npm run test:a11y`)。**先に `npm run build` が要る** — a11y と search は読み込み時に `dist/` を走査し(無ければ ENOENT で落ちる)、
-external-links はテストの中で `dist/` を走査する。datasets は `data/` から対象を作り、公開範囲のテストは `dist/datasets/`・`dist/data/`・sitemap も走査する。external-links 以外は preview が配る `dist/` をブラウザで開く。spec が読むパスはリポのルートから解決するので、別のディレクトリから `-c playwright.config.ts` で起動しても同じ対象を見る(config を渡さないと webServer・globalSetup・`forbidOnly` が効かない)。
+external-links はテストの中で `dist/` を走査する。datasets は `data/` から対象を作り、公開範囲のテストは `dist/datasets/`・`dist/data/`・sitemap も走査する。external-links 以外は `scripts/serve-dist.mjs` が配る `dist/` をブラウザで開く(同じポートに残っているサーバーは使わず、ポートが埋まっていれば起動の時点で止まる)。spec が読むパスはリポのルートから解決するので、別のディレクトリから `-c playwright.config.ts` で起動しても同じ対象を見る(config を渡さないと webServer・globalSetup・`forbidOnly` が効かない)。
 CI では `test.only` が混ざると落ちる(`forbidOnly`)。
 
 - **`a11y.spec.ts`** — dist の全ページを axe にかける
@@ -73,7 +73,7 @@ CI では `test.only` が混ざると落ちる(`forbidOnly`)。
   innerHTML に入れる断片)を linkedom で DOM にして見る。`<base target>` も見る。
   **0 件で緑にならないよう下限(100 件)を置いている**。実行時に JS が作るリンクは見ない
 - **`search.spec.ts`** — サイト内検索(Pagefind、ADR 0005)が本番と同じ CSP の下で動くか。
-  `astro preview` は `public/_headers` を適用しないので、そこから読んだ CSP を同一オリジンの
+  E2E の配信(`scripts/serve-dist.mjs`)は `public/_headers` を適用しないので、そこから読んだ CSP を同一オリジンの
   **全レスポンス**に付けて配る(Pagefind は WASM を Worker で動かし、Worker の CSP は Worker
   スクリプト自身のレスポンスで決まるため、HTML だけに付けると `'wasm-unsafe-eval'` を外しても通る)。
   索引から外したページ(更新履歴・検索・404)が、それぞれの本文にだけある語の結果に出ないことも
@@ -93,7 +93,7 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
 - **`scripts/lib/__tests__/`・`src/lib/__tests__/`**(`npm run test:lib`) — Excel → CSV の変換ヘルパーと、
   データセットのローダーが meta.json の無いディレクトリを読まないこと
 - **`.githooks/__tests__/`**(`npm run test:githooks`) — pre-commit / pre-push
-- **`scripts/__tests__/`**(`npm run test:workflows`) — ワークフローに埋め込まれた判定ロジックと、VRT が使う配信スクリプト。
+- **`scripts/__tests__/`**(`npm run test:workflows`) — ワークフローに埋め込まれた判定ロジックと、VRT と E2E が使う配信スクリプト。
   auto-merge・link-check・ci-summary の 3 本はワークフローから `run:` ブロックを取り出し、`gh`(auto-merge は
   `sleep` も)をスタブして走らせる。**写しを置かないので、ワークフロー側を変えるとテスト対象も変わる**
   — 数値や条件をテストに書き写さない。4 本目の `vrt-baseline.test.mjs` は `vrt.yml` を静的に走査する
@@ -143,9 +143,9 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
     notify の `run` そのものであることは、字面ではなく `yaml` でパースした結果で見る
     (`"permissions":` や `? permissions` のような等価な書き方を素通りさせない。#148 / #218)。
     規則ごとに発火することは fixture で確かめている
-  - `scripts/serve-dist.mjs`(VRT の webServer) — VRT は main 側も PR 側も PR のスクリプトで配るので、
+  - `scripts/serve-dist.mjs`(VRT と E2E の webServer) — VRT は main 側も PR 側も PR のスクリプトで配るので、
     サーバーが壊れても両側が同じに壊れて差分 0 で通る(全部 404 でも `page.goto` は throw しない)。
-    Content-Type・index.html と 301・root の外の 403 と、NUL を含むパス・読めないファイル・
+    Content-Type・index.html と 301・無いパスへの 404.html(status 404)・root の外の 403 と、NUL を含むパス・読めないファイル・
     読めないディレクトリの配下・長すぎるパスで落ちないことを見る。長すぎるパスは 404、それ以外の
     I/O の失敗は 500 にして stderr に出す(VRT は status を見ないので、ログが唯一の手がかり)
   - `zizmor.yml` の検査を黙って無効にできる設定 — どれが崩れても job は緑のまま検査だけが効かなくなる。
@@ -200,10 +200,9 @@ CI 内で `main` と PR の両方をビルドし、同一環境で撮り比べ�
 - **依存の更新でも起動する**(`package.json` / `package-lock.json`)。astro や tailwind の
   minor は生成される HTML と CSS を変えうるのに、以前は Dependabot PR で誰も見ていなかった。
   ローカルで撮り比べるときは `main` と PR の 2 ビルドを用意し、`VRT_DIST` を差し替えて
-  2 回走らせる。**`CI=1` を付けること** — 手元は `reuseExistingServer: true` なので、
-  ポート 4179 を**別のプロセスが掴んでいる**とそれをそのまま使い、別物を撮って
-  差分 0 で通る(Playwright は run の終わりに自分のサーバーを落とすので、
-  2 回目が 1 回目のを引き継ぐわけではない。危ないのは居座っているプロセスの方)
+  2 回走らせる。`reuseExistingServer` は切ってあるので、ポート 4179 を**別のプロセスが
+  掴んでいる**と起動の時点で止まる(以前は手元だけ再利用が有効で、居座っているプロセスを
+  そのまま使い、別物を撮って差分 0 で通った)
 
 ## セキュリティ
 

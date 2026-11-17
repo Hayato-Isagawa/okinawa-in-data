@@ -5,7 +5,7 @@ import { defineConfig } from "@playwright/test";
 const dist = process.env.VRT_DIST ?? "dist";
 
 // ポートはファミリー各リポで固定する(evi 4173 / watch 4174 / law の VRT 4175 /
-// このリポの a11y preview 4176 / 別の姉妹リポの VRT 4177 / law の e2e 4178)。
+// このリポの E2E 4176 / 別の姉妹リポの VRT 4177 / law の e2e 4178)。
 // 別プロジェクトのサーバーに当たると、別サイトを撮って差分無しで通ってしまう。
 const PORT = 4179;
 
@@ -66,6 +66,7 @@ export default defineConfig({
     // 依存を持たない自前の静的サーバー(serve を外した理由はスクリプト冒頭)
     command: `node scripts/serve-dist.mjs ${dist} ${PORT}`,
     port: PORT,
-    reuseExistingServer: !process.env.CI,
+    // 残っている別のサーバーを使わない(理由は playwright.config.ts)。
+    reuseExistingServer: false,
   },
 });
