@@ -96,7 +96,7 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
 - **`scripts/__tests__/`**(`npm run test:workflows`) — ワークフローに埋め込まれた判定ロジックと、VRT と E2E が使う配信スクリプト。
   auto-merge・link-check・ci-summary の 3 本はワークフローから `run:` ブロックを取り出し、`gh`(auto-merge は
   `sleep` も)をスタブして走らせる。**写しを置かないので、ワークフロー側を変えるとテスト対象も変わる**
-  — 数値や条件をテストに書き写さない。4 本目の `vrt-baseline.test.mjs` は `vrt.yml` を静的に走査する
+  — 数値や条件をテストに書き写さない(例外は ci-summary の印の取得と照合。下記)。4 本目の `vrt-baseline.test.mjs` は `vrt.yml` を静的に走査する
   (下記)。5 本目の `serve-dist.test.mjs` は `scripts/serve-dist.mjs` を起動してリクエストする。
   6 本目の `zizmor-workflow.test.mjs` は `zizmor.yml` を `yaml` でパースして読む。
   **6 本とも壊れ方が静かで、CI は緑のまま結果だけが変わる**:
@@ -138,7 +138,11 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
     判定が崩れて通知が消えても exit 0 のまま。`--jq` のフィルタは**実 jq に通す** —
     `.app.slug == "github-actions"` の絞り込みが無いと Cloudflare の check-run(`workflow_run` を
     起こさない)を待ち続けて通知が消える。`workflows:` の列挙が「`on:` に `pull_request` を持つ
-    workflow の `name:`」と一致することも見る。重複防止の印は github-actions[bot] のコメントからだけ拾う。権限の置き場所・job と step の `if:`・notify の
+    workflow の `name:`」と一致することも見る。重複防止の印は github-actions[bot] のコメントからだけ拾う。
+    印を探す取得と照合の 3 行は、写しを置かない原則の例外として書き写して完全一致で固定する。gh のスタブが
+    記録した呼び出しからも、check-runs の取得と投稿を除くとコメント一覧の取得 1 回(`--jq` は同じ式)だけが
+    残ることを見る(fixture に例を並べるだけでは、fixture に無い項目や組み合わせで絞り込みを緩める・狭める
+    書き換えを塞ぎきれない)。gh を通らない取得(`curl` など)は見えない。権限の置き場所・job と step の `if:`・notify の
     `if:` の式・通知ステップの env の値・`concurrency`(job には置かない)・テストが走らせる本文が
     notify の `run` そのものであることは、字面ではなく `yaml` でパースした結果で見る
     (`"permissions":` や `? permissions` のような等価な書き方を素通りさせない。#148 / #218)。
