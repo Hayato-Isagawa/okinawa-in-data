@@ -96,7 +96,7 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
 - **`scripts/__tests__/`**(`npm run test:workflows`) — ワークフローに埋め込まれた判定ロジックと、VRT と E2E が使う配信スクリプト。
   auto-merge・link-check・ci-summary の 3 本はワークフローから `run:` ブロックを取り出し、`gh`(auto-merge は
   `sleep` も)をスタブして走らせる。**写しを置かないので、ワークフロー側を変えるとテスト対象も変わる**
-  — 数値や条件をテストに書き写さない(例外は ci-summary の印の取得と照合。下記)。4 本目の `vrt-baseline.test.mjs` は `vrt.yml` を静的に走査する
+  — 数値や条件をテストに書き写さない(例外として書き写して固定しているものは、下の各項目に書く。ci-summary の印の取得と照合・workflow 全体など)。4 本目の `vrt-baseline.test.mjs` は `vrt.yml` を静的に走査する
   (下記)。5 本目の `serve-dist.test.mjs` は `scripts/serve-dist.mjs` を起動してリクエストする。
   6 本目の `zizmor-workflow.test.mjs` は `zizmor.yml` を `yaml` でパースして読む。
   **6 本とも壊れ方が静かで、CI は緑のまま結果だけが変わる**:
@@ -142,7 +142,15 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
     印を探す取得と照合の 3 行は、写しを置かない原則の例外として書き写して完全一致で固定する。gh のスタブが
     記録した呼び出しからも、check-runs の取得と投稿を除くとコメント一覧の取得 1 回(`--jq` は同じ式)だけが
     残ることを見る(fixture に例を並べるだけでは、fixture に無い項目や組み合わせで絞り込みを緩める・狭める
-    書き換えを塞ぎきれない)。gh を通らない取得(`curl` など)は見えない。権限の置き場所・job と step の `if:`・notify の
+    書き換えを塞ぎきれない)。ただしこの 2 つは経路を写すだけなので、gh を通らない取得(`curl` など)・
+    回していない条件(コメントの長さ・`GITHUB_EVENT_NAME` など)の分岐に足した照合・固定した 3 行を死んだコードにして
+    別の変数で照合し直す形は塞げない(Hayato-Isagawa/edu-law#401)。ステップの外でも、workflow や job の
+    `env`(`BASH_ENV`・`SHELLOPTS`)・`defaults.run.shell`・`on.workflow_run` の `types` / `branches`・`needs` で
+    待たせる別の job などで、ステップを変えずに通知を黙って止められる。そこで同じく写しを置き、パースした
+    workflow 全体を `zizmor-workflow.test.mjs` と同じ形で固定する。run だけは
+    `scripts/__tests__/fixtures/ci-summary/notify-run.sh`(写し)と 1 文字ずつ比べ、テストが走らせる本文も
+    同じ写しと比べる。これで上の形はどれも赤になる。**`ci-summary.yml` を変えるとき(`workflows:` の列挙に
+    足すときも)はテストの期待値を直し、run を変えたら fixture もコピーで直す**。権限の置き場所・job と step の `if:`・notify の
     `if:` の式・通知ステップの env の値・`concurrency`(job には置かない)・テストが走らせる本文が
     notify の `run` そのものであることは、字面ではなく `yaml` でパースした結果で見る
     (`"permissions":` や `? permissions` のような等価な書き方を素通りさせない。#148 / #218)。

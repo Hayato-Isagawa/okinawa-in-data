@@ -4,7 +4,8 @@
 // 崩れて通知が消えても workflow は exit 0 のまま、PR の check 一覧にも出ない
 // (run は既定ブランチの sha に紐づく)。気づく手段は「通知が来なかった」しかない。
 //
-// 写しを置かず、**ワークフローに埋まっている本体**を取り出して走らせる。gh はスタブに
+// 走らせるのは写しではなく、**ワークフローに埋まっている本体**を取り出したもの(写しで固定している
+// 例外は、それぞれのテストに理由を書く)。gh はスタブに
 // 差し替え、`--jq` のフィルタは実 jq に通す — `.app.slug == "github-actions"` の絞り込みが
 // 無いと、Cloudflare Workers Builds の check-run(workflow_run を起こさない)を待ち続けて
 // 再判定の機会が無いまま通知が消える。フィルタを素通りさせると、その退行を検出できない。
@@ -28,6 +29,12 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WORKFLOWS_DIR = path.join(HERE, "..", "..", ".github", "workflows");
 const WORKFLOW = path.join(WORKFLOWS_DIR, "ci-summary.yml");
 const yaml = () => fs.readFileSync(WORKFLOW, "utf8");
+const NOTIFY_RUN_FIXTURE = path.join(
+  HERE,
+  "fixtures",
+  "ci-summary",
+  "notify-run.sh"
+);
 
 /**
  * 権限と if の規則に反している箇所を返す(例: `job notify permissions` / `step notify[0] if`)。
@@ -69,7 +76,7 @@ function violations(src) {
 }
 
 // 通知ステップの run が読む値。SELF が空だと `grep -v -F ""` が全行を落として無音で終わるので、
-// キーだけでなく値も固定する。余分なキーは見ない
+// キーだけでなく値も固定する。wiring() は余分なキーを見ない(余分なキーは workflow 全体の固定のテストが拾う)
 const ENV = {
   GH_TOKEN: "${{ github.token }}",
   GH_REPO: "${{ github.repository }}",
@@ -442,7 +449,8 @@ test("印を探す取得と照合は完全一致で固定する(字面と、gh �
   // 字面を残したまま別の変数で 2 回目の照合を足す形や、gh を関数で包んで --jq を差し替える形は、
   // 上では止まらない。スタブが記録した gh の呼び出しから check-runs の取得と投稿を除くと、
   // コメント一覧の取得 1 回(--jq は上の式)だけが残ることを見る。パスで絞らないので、別のパスや
-  // graphql から取る形もここで赤になる。gh を通らない取得(curl など)はここでも見えない
+  // graphql から取る形もここで赤になる。gh を通らない取得(curl など)はここでも見えないが、
+  // 下の workflow 全体の固定で赤になる
   const r = runStep();
   assert.equal(r.code, 0, r.out);
   const checkRuns = `api --paginate repos/example/repo/commits/${SHA}/check-runs --jq `;
@@ -452,6 +460,70 @@ test("印を探す取得と照合は完全一致で固定する(字面と、gh �
   assert.deepEqual(others, [
     `api --paginate repos/example/repo/issues/42/comments --jq ${jq}`,
   ]);
+});
+
+test("workflow 全体が決まった形(run は fixture の写しと完全一致)", () => {
+  // 上の検査は経路を写すだけなので、回していない条件(コメントの長さ・GITHUB_EVENT_NAME など)の
+  // 分岐に足した照合や、固定した 3 行を死んだコードにして別の変数で照合し直す形を塞げない
+  // (Hayato-Isagawa/edu-law#401)。ステップの外でも、workflow や job の env(BASH_ENV・SHELLOPTS)・
+  // defaults.run.shell・on.workflow_run の types / branches・needs で待たせる別の job などで、
+  // ステップを変えずに通知を黙って止められる。写しを置かない原則の例外として、パースした workflow
+  // 全体を zizmor-workflow.test.mjs と同じ形で固定し、run は fixture の写しと 1 文字ずつ比べる。
+  // テストが走らせる本文も同じ写しと比べる。ci-summary.yml を変えるとき(workflows: の列挙に足す
+  // ときも)はこの期待値を直し、run を変えたら fixture もコピーで直す
+  assert.doesNotMatch(
+    yaml().replace(/\r\n/g, "\n"),
+    /[\r\u0085\u2028\u2029]/,
+    "行区切りに使われうる文字がある"
+  );
+  // yaml は merge: false でも `!!merge <<:` を展開するので、パース結果を比べるだけでは素通りする
+  assert.deepEqual(mergeKeyPaths(yaml()), [], "マージキーを使っている");
+  const expected = fs.readFileSync(NOTIFY_RUN_FIXTURE, "utf8");
+  assert.deepEqual(parseWorkflow(yaml()), {
+    name: "CI summary",
+    on: {
+      workflow_run: {
+        workflows: [
+          "Build",
+          "E2E Tests",
+          "VRT",
+          "Security Audit",
+          "Dependabot auto-merge",
+          "zizmor",
+        ],
+        types: ["completed"],
+      },
+    },
+    permissions: { checks: "read", "pull-requests": "write" },
+    concurrency: {
+      group: "ci-summary-${{ github.event.workflow_run.head_sha }}",
+      "cancel-in-progress": false,
+    },
+    jobs: {
+      notify: {
+        if:
+          "github.event.workflow_run.event == 'pull_request' && " +
+          "github.event.workflow_run.triggering_actor.login != 'dependabot[bot]'",
+        "runs-on": "ubuntu-latest",
+        "timeout-minutes": 5,
+        steps: [
+          {
+            name: "Comment on the PR when every Actions check on the commit has succeeded",
+            env: {
+              GH_TOKEN: "${{ github.token }}",
+              GH_REPO: "${{ github.repository }}",
+              SHA: "${{ github.event.workflow_run.head_sha }}",
+              PR_FROM_EVENT:
+                "${{ github.event.workflow_run.pull_requests[0].number }}",
+              SELF: "${{ github.job }}",
+            },
+            run: expected,
+          },
+        ],
+      },
+    },
+  });
+  assert.equal(extractRunBlock(WORKFLOW), expected, "テストが走らせる本文");
 });
 
 test("別の sha のマーカーしか無ければ投稿する(再 push は別扱い)", () => {
