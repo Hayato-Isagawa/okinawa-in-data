@@ -107,15 +107,15 @@ jobs:
       # 変わる(それぞれが守るものは AGENTS.md「テスト」節)。例:
       #   - dependabot-auto-merge.yml の待機ロジック。main への唯一の自動書き込み
       #     経路なので、判定を 1 つ間違えると赤い PR が誰にも見られずに本番へ入る。
-      #     #83 の job 名変更では 30 分沈黙 -> CANCELLED に化け、CI が緑のまま
-      #     PR が 2 本溜まるまで気づけなかった(#94)。
+      #     2026-08-09 に a11y.yml を e2e.yml に置き換えて job 名が変わったときは、30 分沈黙
+      #     -> CANCELLED に化け、CI が緑のまま PR が 2 本溜まるまで気づけなかった(2026-08-11 に修正)。
       #   - link-check.yml の通知分岐。open な Issue があると検出を捨てていたため、
       #     2026-08-17 に見つかった 404 が 2 日間どこにも出なかった。
       #
       # `if:` はフックテストと同じ理由で付ける。前段のデータ検証が落ちただけで
       # この検査が一度も走らない状態にしない。
       # フックテストと違い node_modules に依存する。ci-summary・link-check・auto-merge のテストが
-      # `yaml`(devDependency)でワークフローをパースするため(#148 / #218)。`npm ci` が落ちた回はこのステップも
+      # `yaml`(devDependency)でワークフローをパースするため。`npm ci` が落ちた回はこのステップも
       # ERR_MODULE_NOT_FOUND で赤になるが、一次の失敗は `npm ci` 側に出ている。
       - name: Workflow tests
         if: ${{ !cancelled() }}

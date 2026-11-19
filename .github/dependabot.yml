@@ -28,7 +28,7 @@ updates:
         update-types: ["version-update:semver-major"]
       # typescript の major 更新は `@astrojs/check` の peer dependency
       # (typescript@^5.0.0 || ^6.0.0) と衝突し、npm ci が失敗する。
-      # 実際 TypeScript 7.0.2 の PR (#68) はインストール段階で落ちた。
+      # 実際 2026-08-04 に TypeScript 7.0.2 へ上げる PR はインストール段階で落ちた。
       # `@astrojs/check` が TypeScript 7 に対応した時点で、この ignore を削除する
       # (姉妹リポ edu-evidence / edu-watch / edu-law と同じ方針)。
       - dependency-name: "typescript"

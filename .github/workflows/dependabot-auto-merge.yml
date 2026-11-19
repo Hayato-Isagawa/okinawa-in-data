@@ -47,9 +47,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # **待つ check を列挙しない。** 列挙は古くなる。実際 #83 で a11y.yml を
-          # e2e.yml に差し替えたとき、ここが "Playwright a11y" のまま残り、8/9 以降の
-          # Dependabot PR は 30 分沈黙してから CANCELLED になっていた（#94 で修正）。
+          # **待つ check を列挙しない。** 列挙は古くなる。実際 2026-08-09 に a11y.yml を
+          # e2e.yml に差し替えたとき、ここが "Playwright a11y" のまま残り、それ以降の
+          # Dependabot PR は 30 分沈黙してから CANCELLED になっていた（2026-08-11 に修正）。
           # 列挙を増やすほど同じ壊れ方の面積が増えるので、判定を反転させる:
           #
           #   ANCHORS   … paths フィルタが無く必ず走る check。現れなければ異常
@@ -70,7 +70,7 @@ jobs:
           # 通してしまう。前方一致は「後半が可変で、かつ確実に対象外」のものだけ。
           #
           # かつて "Dependabot" も除外していたが、Dependabot PR の head には
-          # そんな check は現れない（#88 / #95 / #89 の 3 本で実測）。main への
+          # そんな check は現れない（2026-08-10〜11 の Dependabot PR 3 本で実測）。main への
           # push で見えたものを PR にも在ると誤認していた。存在しない名前の
           # 除外は穴を広げるだけなので外した。
           IGNORE_EXACT=("auto-merge")          # 自分自身。待つと自己デッドロックする
