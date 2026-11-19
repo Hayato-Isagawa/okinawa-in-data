@@ -98,7 +98,7 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
   `sleep` も)をスタブして走らせる。**写しを置かないので、ワークフロー側を変えるとテスト対象も変わる**
   — 数値や条件をテストに書き写さない(例外として書き写して固定しているものは、下の各項目に書く。ci-summary の印の取得と照合・workflow 全体など)。4 本目の `vrt-baseline.test.mjs` は `vrt.yml` を静的に走査する
   (下記)。5 本目の `serve-dist.test.mjs` は `scripts/serve-dist.mjs` を起動してリクエストする。
-  6 本目の `zizmor-workflow.test.mjs` は `zizmor.yml` を `yaml` でパースして読む。
+  6 本目の `zizmor-workflow.test.mjs` は `zizmor.yml` を `yaml` でパースして読む(全部の workflow に当てる `ambiguousYaml` の判定も、ここに置いている)。
   **6 本とも壊れ方が静かで、CI は緑のまま結果だけが変わる**:
   - `dependabot-auto-merge.yml` の待機ロジック — **main への唯一の自動書き込み経路**。
     #83 の job 名変更で 30 分沈黙 → CANCELLED に化け、PR が 2 本溜まるまで
@@ -173,6 +173,26 @@ YAML をパースして見る検査(ci-summary・link-check・auto-merge の bui
 GitHub では効かない値が「ある」と見え、「あること」を求める検査が緩む。`!!merge <<:` と
 `%YAML 1.1` の下の `<<:` は `merge: false` でも yaml が展開するので、マージキーは
 展開後の値ではなく文書の木で探している。
+
+共通ファイルには、手元の yaml と GitHub の runner で読みが食い違いうる書き方を拾う **`ambiguousYaml`** もある
+(2026-11 時点で姉妹リポと同じ中身)。拾うのは、行区切りに使われうる単独の CR・U+0085・U+2028・U+2029、タブ・LF・CR
+以外の制御文字(C0・DEL・C1。行区切りとして読まれる U+0085 を除くと、読みが食い違うのは NUL で、ほかは workflow で使わないので一緒に落とす)、yaml の警告(未知のタグ・
+未知のディレクティブなど)、明示したタグ、`%YAML` のディレクティブ、`!!` 以外のハンドルを宣言するか `!!` の接頭辞を
+差し替える `%TAG`(`!!` を既定と同じ `tag:yaml.org,2002:` で宣言し直す形は拾わない)、マップや列をキーにした形(`[x]: 1`)、
+文字列でないキー(null・数値・真偽値。runner はキーを .NET の書式で文字列にしてから重複を判定するので、`null:` と `"":`
+のような組が食い違う)、エイリアスをキーにした形(yaml はエイリアスで書いたキー(`&k t: 99` と `*k : 5`)の重複を検出
+せず後に書いた値で読み、runner はアンカーを拒むか、読み直したうえで重複として拒む)、文字列のキーの重複(runner は大文字小文字を区別
+せずに重複を判定するので、大文字小文字をそろえて比べる)。どれも yaml はエラーにせず読むので、同じ値に読めればパース結果で
+比べる全体の固定(ci-summary・zizmor)を素通りする(Hayato-Isagawa/edu-evidence#868。このリポでも
+`runs-on: !foo ubuntu-latest` が素通りした)。yaml のエラー(yaml が検出するキーの重複など)も拾うが、こちらは
+`parseWorkflow` が例外を投げるので、全部の workflow を読む auto-merge・ci-summary のテストでも赤になる。
+GitHub 側で読みが変わって挙動が変わるかは、actions/runner と YamlDotNet 5.3.0 のソースを読んで確かめただけで、
+実行はしていない。
+**判定は `.github/workflows/` の全部の workflow に当てる**(テストが読む workflow だけに当てると漏れる。以前は行区切りの
+文字を ci-summary と zizmor の 2 本でしか見ていなかった)。判定自体が no-op に落ちていないことは、書き方ごとの fixture で
+確かめる。マージキーの判定(`mergeKeyPaths`)は、auto-merge・ci-summary・link-check のテストの fixture でも条件を外すと赤に
+なるが、判定そのものの書き方ごとの発火も fixture にまとめて確かめる(`!!merge` のタグの条件だけは、yaml 2.9.1 では Symbol の条件と重なって単独では固定できない)。3 本とも
+`zizmor-workflow.test.mjs` の末尾にある。
 
 `test:lib`・`test:githooks`・`test:workflows` は `assert-test-files.mjs` / `assert-test-results.mjs` を
 通している。`node --test` は「glob が 0 件」「中身が空」「全件 skip」のどれでも exit 0 で
