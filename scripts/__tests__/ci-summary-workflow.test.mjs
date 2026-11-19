@@ -41,7 +41,7 @@ const NOTIFY_RUN_FIXTURE = path.join(
  * 権限と if の規則に反している箇所を返す(例: `job notify permissions` / `step notify[0] if`)。
  *
  * 字面ではなくパース結果で見る。字面だと `"permissions":` / `? permissions` / フロー形のような
- * YAML として等価な書き方も、step の if も、notify より前に置いた別の job も素通りする(#148)。
+ * YAML として等価な書き方も、step の if も、notify より前に置いた別の job も素通りする。
  * edu-law の同じテスト(Hayato-Isagawa/edu-law#273 / #336 / #340)からの移植。
  *
  * マージキー(`<<:`)は、使っていること自体を違反にする(workflow-yaml.mjs)。
@@ -89,7 +89,7 @@ const ENV = {
 /**
  * 通知ステップの配線(run の所在・env の値・直列化)に反している箇所を返す。
  * `violations()` と同じくパース結果で見て、マージキーは使っていること自体を違反にする。
- * `!!merge <<:` で書くと yaml は展開して値が「ある」と見えるので、単体でも必ず拾う(#224)。
+ * `!!merge <<:` で書くと yaml は展開して値が「ある」と見えるので、単体でも必ず拾う。
  *
  * job に concurrency を置くと、workflow 直下の group に加えてもう 1 つ group がかかる。
  * 既定の queue: single は待っている run を cancel し、cancel-in-progress も効くので、
@@ -632,7 +632,7 @@ test("job の if: に起動元の conclusion を置かず、step には if: を�
   );
 });
 
-// ---- 判定そのものの fixture(#148 で素通りしていた書き方)----
+// ---- 判定そのものの fixture(以前素通りしていた書き方)----
 
 const FIXTURE = `on:
   workflow_run:
@@ -814,7 +814,7 @@ test("fixture: concurrency をマージキーで書くと、無いものとし�
 });
 
 test("fixture: concurrency を !!merge で書くと、展開されても配線の側で拾う", () => {
-  // yaml は !!merge を merge: false でも展開するので、値は揃って見える(#224)
+  // yaml は !!merge を merge: false でも展開するので、値は揃って見える
   const src = real(
     "concurrency:\n  group: ci-summary-${{ github.event.workflow_run.head_sha }}\n  cancel-in-progress: false\n",
     "concurrency:\n  !!merge <<: {group: 'ci-summary-${{ github.event.workflow_run.head_sha }}', cancel-in-progress: false}\n"
@@ -845,7 +845,7 @@ test("fixture: notify に run を持つステップをもう 1 つ足すと拾�
  * workflow 1 本について、PR で起動するならその name を、しないなら null を返す。
  * トリガーはパースした `on` から読む(triggerNames)。`if:` 式や ci-summary 自身の
  * `workflow_run.event == 'pull_request'` は拾わない。name か on: が読めなければ落とす —
- * 黙って null にすると、その workflow が列挙の照合から外れて緑のまま通る(#229)
+ * 黙って null にすると、その workflow が列挙の照合から外れて緑のまま通る
  */
 function prWorkflowName(src, label) {
   // マージキーは GitHub が展開しないのに yaml が展開する形(`!!merge`)があり、読みが食い違う
@@ -863,7 +863,7 @@ function prWorkflowName(src, label) {
 test("on: は workflow_run だけで、workflows: の列挙は PR で起動する workflow の name と過不足なく一致する", () => {
   // PR 起動の workflow を足したのにここへ足し忘れると、その完了では再判定が走らない。
   // 列挙の側もパース結果で読む。生の文字列を split すると、引用符付きの name だけが
-  // 片側で外れて食い違う(#229)
+  // 片側で外れて食い違う
   const expected = fs
     .readdirSync(WORKFLOWS_DIR)
     .filter((n) => /\.ya?ml$/.test(n) && n !== "ci-summary.yml")

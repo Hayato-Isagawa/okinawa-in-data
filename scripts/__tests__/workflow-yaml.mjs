@@ -1,4 +1,4 @@
-// ワークフローのテストが YAML をパースして見るときの共通部分(#217 / #218)。
+// ワークフローのテストが YAML をパースして見るときの共通部分。
 // `*.test.mjs` ではないので、node --test の対象にはならない。
 
 import assert from "node:assert/strict";
@@ -27,7 +27,7 @@ const isMergeKey = (key) =>
 /**
  * マージキーを使っている位置を返す(例: `jobs.notify`)。
  * 展開された後の値では `!!merge` や `%YAML 1.1` の形が見えないので、文書の木で探す。
- * キーをエイリアスで書いた形(`&k <<` を置いて `*k :`)も、参照先を解決して拾う(#224)。
+ * キーをエイリアスで書いた形(`&k <<` を置いて `*k :`)も、参照先を解決して拾う。
  * yaml はこの形を展開しないが、値が `<<` の下に隠れて「無いこと」を求める検査が素通りする。
  */
 export function mergeKeyPaths(src) {
@@ -75,7 +75,7 @@ export const stepsNamed = (doc, name) =>
  * `on:` のトリガー名を返す。1 行形(`on: pull_request`)・列(`on: [push, pull_request]`)・
  * マップ形のどれでも読み、`on:` の中に列 0 のコメントがあっても読める。読めない形は null —
  * 空の `on:`、`%YAML 1.1` の下(キーの `on` が真偽値 true として読まれ、`on` が無くなる)、
- * `true:` と書いた形など。呼ぶ側は null を「起動しない」と読まずに落とすこと(#229)
+ * `true:` と書いた形など。呼ぶ側は null を「起動しない」と読まずに落とすこと
  */
 export function triggerNames(on) {
   if (typeof on === "string" && on.trim()) return [on.trim()];

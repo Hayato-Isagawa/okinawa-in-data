@@ -4,10 +4,10 @@
 // アーティファクトに残り、job は success で終わる。消えるのは通知だけなので、
 // CI を見ている限り何も起きていないように見える。
 //
-// 実際に起きた: 2026-08-17 の run(31984959824)は `web.archive.org/save/` の 404 を
-// 検出していたが、当時 #90 が open だったため「既存 Issue があるので作らない」の
-// 分岐に入り exit 0。この検出は 2 日後に #90 を閉じるまでどこにも出ず、握り潰す
-// 状態自体は #90 が open だった 9 日間ずっと有効だった。気づいたのは run の
+// 実際に起きた: 2026-08-17 の run は `web.archive.org/save/` の 404 を検出していたが、
+// 当時 link-check の Issue(2026-08-10 の検出分)が open だったため「既存 Issue があるので
+// 作らない」の分岐に入り exit 0。この検出は 2 日後にその Issue を閉じるまでどこにも出ず、
+// 握り潰す状態自体はその Issue が open だった 9 日間ずっと有効だった。気づいたのは run の
 // アーティファクトまで降りたからで、Issue 一覧を見ている限り分からなかった。
 //
 // auto-merge-workflow.test.mjs と同じ方式で、写しではなく**ワークフローに埋まっている
@@ -553,8 +553,8 @@ const yaml = () => fs.readFileSync(WORKFLOW, "utf8");
  * 階層違いで並ぶので、深さを見ないと「どこかに 1 行あれば緑」になる。実際 `^ +issues: write$`
  * は、job 側を read に落としてワークフロー全体に write を足すと素通りした(実効権限は
  * job 側＝read なので、本番では通知だけが 403 で消える)。インデントを固定しても、
- * `"continue-on-error":` / `? continue-on-error` / フロー形のような等価な書き方は素通りする
- * (#218)。マージキーは、使っていること自体を違反にする(workflow-yaml.mjs)。
+ * `"continue-on-error":` / `? continue-on-error` / フロー形のような等価な書き方は素通りする。
+ * マージキーは、使っていること自体を違反にする(workflow-yaml.mjs)。
  */
 function linkCheckViolations(src) {
   const doc = parseWorkflow(src);
@@ -804,7 +804,7 @@ test("lychee の outcome が env で渡っている", () => {
 });
 
 // 通知ステップを黙らせる違反(通知ステップか、それを含む job の continue-on-error)。
-// lychee の continue-on-error は「あること」を求める別の規則なので含めない(#224)
+// lychee の continue-on-error は「あること」を求める別の規則なので含めない
 const silencesReport = (v) =>
   v === "report continue-on-error" || /^job \S+ continue-on-error$/.test(v);
 
@@ -916,7 +916,7 @@ for (const [label, lines] of [
 
 test("fixture: エイリアスで書いた << キーで continue-on-error を隠しても拾う", () => {
   // `&k <<` を置いて `*k :` と書くと、yaml は展開しないが値が `<<` の下に隠れ、
-  // 通知ステップに continue-on-error が「無い」ように見える(#224)
+  // 通知ステップに continue-on-error が「無い」ように見える
   const src = replaceOnce(
     real(LYCHEE_HEAD, `${LYCHEE_HEAD}        x-key: &k <<\n`),
     REPORT_HEAD,
@@ -928,7 +928,7 @@ test("fixture: エイリアスで書いた << キーで continue-on-error を隠
 });
 
 test("fixture: << 以外を指すエイリアスのキーは、マージキーとして拾わない", () => {
-  // エイリアスのキーを一律に違反にする後退を止める(#224)
+  // エイリアスのキーを一律に違反にする後退を止める
   const src = replaceOnce(
     real(LYCHEE_HEAD, `${LYCHEE_HEAD}        x-key: &k env-note\n`),
     REPORT_HEAD,

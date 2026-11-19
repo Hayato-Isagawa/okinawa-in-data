@@ -4,9 +4,9 @@
 // required の check(Build site と Playwright E2E)だけなので、判定を 1 つ間違えると、
 // VRT などが赤い依存更新が誰にも見られずに main へ入り、そのまま本番へデプロイされる。
 //
-// それでいて、壊れても**静かに**壊れる。実際 #83 で a11y.yml を e2e.yml に
-// 置き換えたとき、待つ check の名前が古いまま残り、8/9 以降の Dependabot PR は
-// 30 分沈黙してから CANCELLED になっていた(#94 で修正)。CI は緑のまま、
+// それでいて、壊れても**静かに**壊れる。実際 2026-08-09 に a11y.yml を e2e.yml に
+// 置き換えたとき、待つ check の名前が古いまま残り、それ以降の Dependabot PR は
+// 30 分沈黙してから CANCELLED になっていた(2026-08-11 に修正)。CI は緑のまま、
 // 気づいたのは PR が 2 本溜まってからだった。
 //
 // シェルスクリプトなので、写しではなく**ワークフローに埋まっている本体**を
@@ -65,7 +65,7 @@ function shellArray(name) {
 
 /**
  * ワークフロー 1 本から「pull_request で無条件に走るか」と job 名の一覧を読む。
- * パース結果で読む(#229)。字面だと `pull_request: # c` や、`on:` の中の列 0 のコメントの
+ * パース結果で読む。字面だと `pull_request: # c` や、`on:` の中の列 0 のコメントの
  * 後ろにある `paths:` が見えず、その workflow の job が照合から外れうる。マージキーは
  * GitHub が展開しないのに yaml が展開する形(`!!merge`)があり、読みが食い違うので落とす。
  *
@@ -233,7 +233,7 @@ function runLoop(responses, { anchors } = {}) {
   });
 
   // gh のスタブ。api は連番の応答を順に返し、pr merge は実際にはマージせず印を出す。
-  // **渡された引数を全部記録する。** #83 と #94 の事故はどちらも「見に行く先 /
+  // **渡された引数を全部記録する。** 2026-08-09 の事故は「見に行く先 /
   // 待つ対象が実態からずれる」型だった。exit code と MERGED の有無しか見ないと、
   // 参照する SHA が変わってもマージ方法が変わっても素通りする。
   fs.writeFileSync(
@@ -310,7 +310,7 @@ const ANCHORS_OK = [
 
 // --- 名前が実態とつながっているか ----------------------------------------
 //
-// #83 の事故は「a11y.yml を e2e.yml に置き換えて job 名が変わったのに、
+// 2026-08-09 の事故は「a11y.yml を e2e.yml に置き換えて job 名が変わったのに、
 // 待つ側の名前が古いまま残った」という**別ファイル間のずれ**だった。
 // 待機ロジックをいくら試しても、名前が実在するかは分からない。ここで結ぶ。
 
@@ -343,7 +343,7 @@ test("ANCHORS の名前は、PR で無条件に走るワークフローのもの
 test("ループ予算は job の timeout より短い", () => {
   // **これが崩れると、事故の本体が戻る。** 予算と timeout-minutes が同値だと job が
   // 先に CANCELLED になり、末尾の「待っても完了しなかった」が一度も出力されない
-  // ＝ 30 分沈黙するだけになる（#94 で直したのはまさにここ）。予算を延ばすときに
+  // ＝ 30 分沈黙するだけになる（2026-08-11 に直したのはまさにここ）。予算を延ばすときに
   // timeout を上げ忘れると再発する。
   //
   // **間隔も写さない。** MAX だけ読んで 20 を写すと、sleep を伸ばしたときに予算だけが
@@ -438,7 +438,7 @@ const BUILD_YML = path.join(WORKFLOWS, "build.yml");
 
 // build.yml で配線を見る検査のステップ。値は「前段の失敗でも走る(`if: ${{ !cancelled() }}`)」
 // ことまで求めるか。Library unit tests は前段(データ検証)が落ちたら走らない置き方なので求めない。
-// Workflow tests の `if:` は「この検査自身が PR の CI に配線されている」が見ている(#224)
+// Workflow tests の `if:` は「この検査自身が PR の CI に配線されている」が見ている
 const BUILD_STEPS = {
   lint: true,
   "format:check": true,
@@ -453,9 +453,9 @@ const BUILD_STEPS = {
  * continue-on-error を持たないこと(BUILD_STEPS で true のものは前段の失敗でも走ることも)。
  * continue-on-error はステップに付くと赤が job に、job に付くと job の赤が run に伝わらない。
  *
- * パース結果で見る(#218)。字面だと `"continue-on-error":` のような等価な書き方が素通りする。
+ * パース結果で見る。字面だと `"continue-on-error":` のような等価な書き方が素通りする。
  * マージキーは、使っていること自体を違反にする(workflow-yaml.mjs)。検査ステップの中にあれば
- * そのステップの違反(`test:lib merge key`)として出し、どのテストが赤くなるかを取り違えない(#224)。
+ * そのステップの違反(`test:lib merge key`)として出し、どのテストが赤くなるかを取り違えない。
  */
 function buildViolations(src) {
   const doc = parseWorkflow(src);
@@ -576,7 +576,7 @@ test("fixture: if: をマージキーで入れると、無いものとして拾�
 });
 
 test("fixture: テストのステップに入れたマージキーは、そのステップの違反として出る", () => {
-  // lint の口のテストではなく、テストのステップの口のテストを赤くする(#224)
+  // lint の口のテストではなく、テストのステップの口のテストを赤くする
   const run = "        run: npm run test:workflows\n";
   const src = build(run, `${run}        <<: {continue-on-error: true}\n`);
   assert.deepEqual(buildViolations(src), ["test:workflows merge key"]);
@@ -665,7 +665,7 @@ test("錨がまだ実行中なら待ち、完了してからマージする", ()
 });
 
 test("錨の名前がずれていたら、待ち続けずに猶予で落ちる", () => {
-  // job 名を変えたのにワークフロー側を直し忘れた状態。#83 -> #94 で実際に起きた。
+  // job 名を変えたのにワークフロー側を直し忘れた状態。2026-08-09 に実際に起きた。
   const r = runLoop([
     checkRuns({ name: "Build site" }, { name: "Playwright a11y" }),
   ]);
