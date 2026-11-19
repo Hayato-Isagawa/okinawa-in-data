@@ -42,3 +42,5 @@
 - [0003. VRT のベースラインを「main のコード × PR のコンテンツ」で撮り、判定を `threshold: 0` にする](0003-content-neutral-vrt-baseline-and-exact-threshold.md)
 - [0004. lint と整形に oxlint / oxfmt を採用する(edu-evidence ADR 0037 ミラー)](0004-oxlint-and-oxfmt.md)
 - [0005. サイト内検索に Pagefind を採用し、CSP に 'wasm-unsafe-eval' を足す](0005-pagefind-site-search-and-wasm-csp.md)
+- [0006. build.yml と e2e.yml は PR でだけ回し、main への push では回さない](0006-ci-on-pull-requests-only.md)
+- [0007. 本文を再配布できないデータセットは生テキストを入れず、取り下げは meta.json のリネームで行う](0007-raw-text-and-dataset-withdrawal.md)

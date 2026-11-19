@@ -39,7 +39,7 @@ interface Meta {
 }
 
 // meta.json を持つものだけがサイトに出る。取り下げるデータセットは
-// meta.json.hold にリネームして止める。
+// meta.json.hold にリネームして止める(ADR 0007)。
 const entries = fs
   .readdirSync(DATA_DIR, { withFileTypes: true })
   .filter((e) => e.isDirectory())

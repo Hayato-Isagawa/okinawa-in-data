@@ -38,7 +38,7 @@ data/datasets/gakureki-okinawa-shichoson/raw/*.xlsx
 data/datasets/roudoryoku-okinawa-shichoson/raw/*.xlsx
 # SES 委託分析の報告書 PDF(mext.go.jp から再取得可能。照合は raw/*.txt を使用)
 data/datasets/ses-gakuryoku-hogosha-chosa/raw/*.pdf
-# 本文を再配布できない、または再配布できるか確認できていない出典の生テキスト(理由と取得先は各 raw/README.md)
+# 本文を再配布できない、または再配布できるか確認できていない出典の生テキスト(理由と取得先は各 raw/README.md。ADR 0007)
 data/datasets/ses-gakuryoku-hogosha-chosa/raw/*.txt
 data/datasets/kodomo-chosa-konkyu-keinen/raw/*.txt
 # 学校保健統計の年度別 Excel・公表 PDF(e-Stat 直リンクから再取得可能。

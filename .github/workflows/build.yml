@@ -8,10 +8,9 @@ name: Build
 # 順序は「速い順・データ層優先」。CLAUDE.md が「メタデータは Zod スキーマが単一
 # ソース」と定めているとおり、data/ の破損はサイト実装の型エラーより重い。
 
-# **main への push では回さない。** マージ後の再検証は PR で見たものと同じ内容で、
-# ここが捕まえた失敗は実測 0 件だった(e2e.yml に理由の全文がある)。デプロイの
-# 健全性は Workers Builds が main で見ている。npm キャッシュは e2e.yml の週次
-# schedule が main で作る。
+# **main への push では回さない(理由と反対意見は ADR 0006)。** push[main] でここが
+# 捕まえた失敗は実測 0 件だった。デプロイの健全性は Workers Builds が main で見ている。
+# npm キャッシュは e2e.yml の週次 schedule が main で作る。
 on:
   pull_request:
     branches: [main]
