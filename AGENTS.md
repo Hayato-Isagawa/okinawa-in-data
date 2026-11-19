@@ -10,7 +10,7 @@
 - ホスティング: Cloudflare Workers static assets(wrangler.jsonc。Pages ではない)
 - 可視化: Observable Plot を**ビルド時に静的 SVG 生成**(クライアント JS を増やさない)。チャートには必ず等価なデータテーブルを併設する
 
-**Node の版を上げるときは、Cloudflare 側のビルド変数 `NODE_VERSION` も同じ値に上げる。** Workers Builds は `.tool-versions` を読むが、その版ではビルドしない(2026-11-12 実測: 24.22.2 を指定しても既定の 24.22.1 で走った)。ビルドの版を決めるのは Worker `okinawa-in-data` の `NODE_VERSION` で、`.node-version` より優先される(2026-11-13 実測: `.node-version` に 26.13.1 を置いても `NODE_VERSION` の 24.22.3 で走った)。ダッシュボードのビルド変数は、本番(`main`)とプレビュー(それ以外のブランチ)の 2 つのトリガーに同じ値をまとめて保存する。出たばかりの版は、Workers Builds のツールのインストール段階でビルドが落ちる(2026-11 の 24.22.3 は通るまで 1 日以上かかった)。Workers Builds の npm は `package.json` の `packageManager` でしか変わらず、無ければ既定の 10.9.2 になる。新しい Node に同梱の npm の版(nodejs.org の `dist/index.json` の `npm` 欄)に合わせる。このため次の順で上げる。
+**Node の版を上げるときは、Cloudflare 側のビルド変数 `NODE_VERSION` も同じ値に上げる。**(姉妹リポでの決定の記録: Hayato-Isagawa/edu-evidence の ADR 0046 / 0047)Workers Builds は `.tool-versions` を読むが、その版ではビルドしない(2026-11-12 実測: 24.22.2 を指定しても既定の 24.22.1 で走った)。ビルドの版を決めるのは Worker `okinawa-in-data` の `NODE_VERSION` で、`.node-version` より優先される(2026-11-13 実測: `.node-version` に 26.13.1 を置いても `NODE_VERSION` の 24.22.3 で走った)。ダッシュボードのビルド変数は、本番(`main`)とプレビュー(それ以外のブランチ)の 2 つのトリガーに同じ値をまとめて保存する。出たばかりの版は、Workers Builds のツールのインストール段階でビルドが落ちる(2026-11 の 24.22.3 は通るまで 1 日以上かかった)。Workers Builds の npm は `package.json` の `packageManager` でしか変わらず、無ければ既定の 10.9.2 になる。新しい Node に同梱の npm の版(nodejs.org の `dist/index.json` の `npm` 欄)に合わせる。このため次の順で上げる。
 
 1. ダッシュボードで `NODE_VERSION` を新しい版にする(本番とプレビューの両方に入る)
 2. `.tool-versions` と、`package.json` の `packageManager` を上げる PR を出し、プレビュービルドのログに `Installing nodejs <新しい版>` が出て、`Detected the following tools from environment:` に `npm@<同梱の版>` が出て、成功するのを確かめる。ツールのインストール段階で落ちたら、`NODE_VERSION` を元の版に戻し、時間を置いてやり直す
@@ -25,7 +25,7 @@
 - **数値の転記は一次資料と逐語照合するまで `status: "published"` にしない**。取得は `curl` + `pdftotext -layout`、WebFetch は概要把握のみ(逐語確認に使わない)
 - `raw/` には pdftotext の生テキストを監査証跡として保存。変換の判断(セル結合の解釈・欠損の扱い)は notes.md に記録。
   出典の規約で本文を再配布できない、または再配布できるか確認できていないもの(`kodomo-chosa-konkyu-keinen`・`ses-gakuryoku-hogosha-chosa`)は生テキストをリポに入れず、
-  `raw/README.md` に理由と原本の取得先を書く(`npm run check:data` は published の `raw/` が空でないことを求める)
+  `raw/README.md` に理由と原本の取得先を書く(`npm run check:data` は published の `raw/` が空でないことを求める。ADR 0007)
 - `data.json` は `npm run build:json` で data.csv から生成する。手編集しない
 
 ## 開発
@@ -41,7 +41,7 @@ astro dev --background
 - clone 後に 1 回 `npm run prepare` で `.githooks/` を有効にする(`.npmrc` の `ignore-scripts=true` で `npm install` / `npm ci` は `prepare` を走らせない。README「セットアップ」)
 - コミット前チェック: `npm run lint`(oxlint)+ `npm run format:check`(oxfmt。.astro / .md / .yml / .css / data/datasets / src/data/geo は対象外。ADR 0004)+ `npm run check`(astro check)+ `npm run check:data` + `npm run build`
 - 見た目に効く変更(`src/layouts` / `components` / `styles` / `pages` / `lib` / `data`)は `npm run vrt` も回す。
-  **依存の更新も見た目に効く**ので `package.json` / `package-lock.json` も VRT の起動条件に入れてある
+  **依存の更新も見た目に効く**ので `package.json` / `package-lock.json` も VRT の起動条件に入れてある(ADR 0003)
 - コミットはユーザーの明示指示または承認を得てから行う
 - ユーザー向けの変化がある PR では changelog ページを同時更新する(公開後の運用)
 
@@ -61,7 +61,7 @@ CI では `test.only` が混ざると落ちる(`forbidOnly`)。
     情報が欠けているのではなく前提が崩れている)
   - **図があるページには表もある**(「チャートには必ず等価なデータテーブルを併設する」)
   - **meta.json を持たないデータセットはページ・配信ファイル・sitemap に出ない**(取り下げは
-    `meta.json.hold` へのリネームで止める)。`dist/datasets/` と `dist/data/` のディレクトリ、
+    `meta.json.hold` へのリネームで止める。ADR 0007)。`dist/datasets/` と `dist/data/` のディレクトリ、
     sitemap のデータセット URL のそれぞれが、meta.json を持つ id の集合と一致するかで見る。
     meta.json があるのに欠けたものと余計なものはいつでも落ちるが、**取り下げたものが外れているかを
     ここで見られるのは、取り下げ中のデータセットが実在するときだけ**。ローダーの除外そのものは
@@ -82,9 +82,10 @@ CI では `test.only` が混ざると落ちる(`forbidOnly`)。
   外れると全市町村ページが結果に出る語でも引く。データセットとテーマのページの表(`DataTable.astro`)の
   `data-pagefind-ignore` の外れは見ていない
 
-**CI は PR でだけ回る。`main` への push では回さない**(2026-09-01)。マージ後の再検証は
-PR で見たものと同じ内容で、実測でも push[main] だけが捕まえた失敗は 0 件だった。
-Actions の無料枠が月末に尽きて private 全リポの CI が 10 日間止まった事故を受けている。
+**CI は PR でだけ回る。`main` への push では回さない**(2026-09-01。ADR 0006)。実測で push[main] だけが
+捕まえた失敗は 0 件だった。2026-08-21 に Actions の月の枠が尽きて private 全リポの CI が 10 日間止まった
+事故を受けている。マージ後の `main` では Workers Builds がビルドし、E2E は下の週 1 回の run で回るが、lint・整形・型・
+`test:*` は回らない(反対意見と、公開後に枠の制約が当てはまらなくなったことは ADR 0006)。
 **代わりに `e2e.yml` が週 1 で `main` を回す** — PR が作った Playwright キャッシュは他の PR から
 見えず、`refs/heads/main` の run が作ったものだけが全 PR から引けるため。
 
@@ -229,7 +230,7 @@ CI 内で `main` と PR の両方をビルドし、同一環境で撮り比べ�
   未満の色差は比率を下げても数えられないため(edu-law の実測)
 - このリポは**テーマ切替も hydration も無く、チャートと地図はビルド時の静的 SVG**(ADR 0001)
   なので、撮るたびに変わる要素が構造的に無い
-- **依存の更新でも起動する**(`package.json` / `package-lock.json`)。astro や tailwind の
+- **依存の更新でも起動する**(`package.json` / `package-lock.json`。ADR 0003)。astro や tailwind の
   minor は生成される HTML と CSS を変えうるのに、以前は Dependabot PR で誰も見ていなかった。
   ローカルで撮り比べるときは `main` と PR の 2 ビルドを用意し、`VRT_DIST` を差し替えて
   2 回走らせる。`reuseExistingServer` は切ってあるので、ポート 4179 を**別のプロセスが
