@@ -19,6 +19,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import {
+  ambiguousYaml,
   mergeKeyPaths,
   parseWorkflow,
   replaceOnce,
@@ -471,11 +472,7 @@ test("workflow 全体が決まった形(run は fixture の写しと完全一致
   // 全体を zizmor-workflow.test.mjs と同じ形で固定し、run は fixture の写しと 1 文字ずつ比べる。
   // テストが走らせる本文も同じ写しと比べる。ci-summary.yml を変えるとき(workflows: の列挙に足す
   // ときも)はこの期待値を直し、run を変えたら fixture もコピーで直す
-  assert.doesNotMatch(
-    yaml().replace(/\r\n/g, "\n"),
-    /[\r\u0085\u2028\u2029]/,
-    "行区切りに使われうる文字がある"
-  );
+  assert.deepEqual(ambiguousYaml(yaml()), []);
   // yaml は merge: false でも `!!merge <<:` を展開するので、パース結果を比べるだけでは素通りする
   assert.deepEqual(mergeKeyPaths(yaml()), [], "マージキーを使っている");
   const expected = fs.readFileSync(NOTIFY_RUN_FIXTURE, "utf8");
