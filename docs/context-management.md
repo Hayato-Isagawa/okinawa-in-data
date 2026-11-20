@@ -258,7 +258,7 @@ active.md がセッション履歴で肥大化すると、セッション開始�
 ```markdown
 # NNNN. タイトル
 
-日付: YYYY-MM-DD
+日付: YYYY-MM-DD\
 状態: 採用 / 撤回 / 上書き(00NN で上書き、等)
 
 ## 背景
@@ -284,6 +284,8 @@ active.md がセッション履歴で肥大化すると、セッション開始�
 
 何が起きたら見直すか。
 ```
+
+`日付:` の行末の `\` は、GitHub で `日付:` と `状態:` を別の行に描画するための改行(素の行のままだと 1 つの段落につながる)。ADR 0002〜0007 には無いが、ADR は原則改変しないので直さない。
 
 ADR は **不変** が原則。決定が覆ったら新規 ADR を起こし、旧 ADR の「状態」を `撤回(00NN で上書き)` にする。
 
@@ -335,4 +337,4 @@ ADR は **不変** が原則。決定が覆ったら新規 ADR を起こし、�
 
 ## 参考
 
-- 姉妹サイト EduEvidence JP / EduLaw JP / EduWatch JP の `docs/context-management.md` と運用テンプレートを共通化している(active.md 6 サブ節・ADR 運用・compaction 対策)。ただし ADR の頭書きは、このリポの既存の ADR に合わせて素の行の `日付:` / `状態:` にしていて、姉妹と形が違う
+- 姉妹サイト EduEvidence JP / EduLaw JP / EduWatch JP の `docs/context-management.md` と運用テンプレートを共通化している(active.md 6 サブ節・ADR 運用・compaction 対策)。ただし ADR の頭書きは、箇条書きにせず `日付:` / `状態:` を行に並べ、`日付:` の行末に `\` を置く形にしていて、姉妹と形が違う
