@@ -881,7 +881,7 @@ test("fixture: lychee の id をマージキーで入れると、無いものと
     "      - name: Run lychee\n        <<: {id: lychee}\n"
   );
   assert.deepEqual(linkCheckViolations(src), [
-    "merge key jobs.lychee.steps[5]",
+    "merge key jobs.lychee.steps[4]",
     "lychee id",
   ]);
 });
@@ -897,7 +897,7 @@ for (const [label, build] of [
       real(LYCHEE_HEAD, "      - name: Run lychee\n        <<: {id: lychee}\n")
     );
     assert.deepEqual(linkCheckViolations(src), [
-      "merge key jobs.lychee.steps[5]",
+      "merge key jobs.lychee.steps[4]",
     ]);
   });
 }
@@ -923,7 +923,7 @@ test("fixture: エイリアスで書いた << キーで continue-on-error を隠
     `${REPORT_HEAD}        *k : {continue-on-error: true}\n`
   );
   assert.deepEqual(linkCheckViolations(src), [
-    "merge key jobs.lychee.steps[7]",
+    "merge key jobs.lychee.steps[6]",
   ]);
 });
 
