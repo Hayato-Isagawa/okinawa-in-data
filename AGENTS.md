@@ -92,7 +92,8 @@ CI では `test.only` が混ざると落ちる(`forbidOnly`)。
 Playwright ではないテストが 3 つある。いずれも `npm run check:all` と `build.yml` に入っている。
 
 - **`scripts/lib/__tests__/`・`src/lib/__tests__/`**(`npm run test:lib`) — Excel → CSV の変換ヘルパーと、
-  データセットのローダーが meta.json の無いディレクトリを読まないこと
+  データセットのローダーが meta.json の無いディレクトリを読まないこと、`check:data` が meta.json の無い
+  (取り下げ中・準備中の)データセットを指す relatedDatasets をエラーにすること
 - **`.githooks/__tests__/`**(`npm run test:githooks`) — pre-commit / pre-push
 - **`scripts/__tests__/`**(`npm run test:workflows`) — ワークフローに埋め込まれた判定ロジックと、VRT と E2E が使う配信スクリプト。
   auto-merge・link-check・ci-summary の 3 本はワークフローから `run:` ブロックを取り出し、`gh`(auto-merge は
