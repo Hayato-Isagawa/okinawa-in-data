@@ -49,14 +49,9 @@ jobs:
       - name: Build site
         run: npm run build
 
-      - name: Restore lychee cache
-        id: lychee-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .lycheecache
-          key: lychee-${{ github.run_id }}
-          restore-keys: lychee-
-
+      # **lychee のキャッシュは置かない。** issues: write を持つジョブにキャッシュを読む経路を残さない
+      # (npm と同じ)。lychee は 24 時間(--max-cache-age の既定 1d)より古い結果を捨てるので、週 1 回の
+      # schedule では前の週のキャッシュがどのみち使われず、置いても効くのは 24 時間以内の回し直しだけ。
       # **job の timeout-minutes より短い制限をステップに置く。** job の制限に当たると
       # GitHub は job を取り消すので、通知ステップの暗黙の success() が偽になり Issue が
       # 立たない。ステップの制限なら runner は Failed として扱い、continue-on-error が
@@ -74,8 +69,6 @@ jobs:
           # 許容するのは姉妹リポと同じ判断(誤検知で毎週赤いと本当の切れを見落とす)。
           args: >-
             --no-progress
-            --cache
-            --max-cache-age 1d
             --root-dir ${{ github.workspace }}/dist
             --accept 200,201,202,203,204,206,301,302,303,307,308,403,429,503
             --timeout 30
