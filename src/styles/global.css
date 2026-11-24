@@ -28,7 +28,7 @@
 
 html {
   scroll-behavior: smooth;
-  /* sticky ヘッダー(約 57px)が、ページ内リンクの着地点を隠さないように */
+  /* sticky ヘッダー(1280px 幅で約 57px、768px 以下で 65px)が、ページ内リンクの着地点を隠さないように */
   scroll-padding-top: 5rem;
 }
 
@@ -132,18 +132,33 @@ footer :focus-visible,
 }
 
 /* 本文・出典のリンクは、色だけに頼らず平常時も下線で示す(ADR 0008)。
-   ナビ・パンくず・見出し・カードの題名は対象外。.term-link(用語の印)は点線のまま。 */
+   ナビ・パンくず・見出し・カードの題名は対象外。.term-link(用語の印)は点線のまま。
+   ホバーとフォーカスでは、平常時の薄い線(border)を消してから、濃い線を左端から引く。
+   どちらも border の箱の下端に置くので、フォントが変わっても位置がずれない。
+   薄さは背景と 3:1 を割らない範囲で決めている。 */
 main :is(p, figcaption, dd, blockquote) .link-underline,
 main li:not(nav li) > .link-underline {
   color: var(--color-accent);
-  background-image: none;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 70%, transparent);
+  background-origin: border-box;
+  background-size: 0% 2px;
+  background-position: left bottom;
+  transition:
+    border-color 0.15s ease 0.2s,
+    background-size 0.25s ease;
 }
-main :is(p, figcaption, dd, blockquote) .link-underline:hover,
-main li:not(nav li) > .link-underline:hover {
-  text-decoration-thickness: 2px;
+main :is(p, figcaption, dd, blockquote) .link-underline:is(:hover, :focus-visible),
+main li:not(nav li) > .link-underline:is(:hover, :focus-visible) {
+  border-color: transparent;
+  background-size: 100% 2px;
+  transition:
+    border-color 0.1s ease,
+    background-size 0.25s ease 0.1s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .link-underline {
+    transition: none !important;
+  }
 }
 
 /* プライマリボタン */

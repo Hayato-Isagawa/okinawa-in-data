@@ -68,6 +68,10 @@ CI では `test.only` が混ざると落ちる(`forbidOnly`)。
     `src/lib/__tests__/` が一時ディレクトリで見ている(以前は取り下げた実例を 1 件ずつ 404 で引き、
     実例が 1 件以上あることも求めていたので、唯一の実例を戻したとき(`data/datasets/kodomo-chosa-konkyu-keinen/notes.md`「公開再開」)に落ちた)
 - **`navigation.spec.ts`** — 主要導線と 404
+- **`interactions.spec.ts`** — 操作と見た目の規則。地図の切替で遅い応答が後から選んだ指標を上書きしないことと
+  応答が返らないときの戻り、モバイルメニューを Tab で抜けたら閉じること、ページ内リンクの着地点がヘッダーに
+  隠れないこと、本文・出典のリンクの下線と色(ADR 0008。
+  ホバーの線の引き直しと、付けない場所も)、CSV ボタンの白文字の比、出典表記のコピーの成否、印刷で表が切れないこと
 - **`external-links.spec.ts`** — 別の窓で開くリンク(`target` が `_self` / `_parent` / `_top` 以外)が
   すべて `rel="noopener noreferrer"` を持つか。dist の全 HTML と `maps/*.svg`(MapExplorer が
   innerHTML に入れる断片)を linkedom で DOM にして見る。`<base target>` も見る。
