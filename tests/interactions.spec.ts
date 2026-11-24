@@ -103,15 +103,50 @@ test.describe("ページ内リンクの着地", () => {
 });
 
 test.describe("本文のリンク", () => {
-  test("本文・出典のリンクは平常時も下線が付く", async ({ page }) => {
-    await page.goto(DATASET);
-    const links = page.locator("main p .link-underline");
-    expect(await links.count()).toBeGreaterThan(3);
-    for (const line of await links.evaluateAll((els) =>
-      els.map((el) => getComputedStyle(el).textDecorationLine)
-    )) {
-      expect(line).toContain("underline");
-    }
+  for (const path of [
+    DATASET,
+    "/about/",
+    "/glossary/",
+    "/themes/education-poverty/",
+    "/datasets/kodomo-chosa-konkyu-keinen/",
+  ]) {
+    test(`本文・出典のリンクは地の文と色が違い、平常時も下線が付く: ${path}`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+      const links = await page
+        .locator("main p .link-underline")
+        .evaluateAll((els) =>
+          els.map((el) => ({
+            text: el.textContent!.trim().slice(0, 20),
+            line: getComputedStyle(el).textDecorationLine,
+            color: getComputedStyle(el).color,
+            around: getComputedStyle(el.parentElement!).color,
+          }))
+        );
+      expect(links.length).toBeGreaterThan(0);
+      for (const link of links) {
+        expect(link.line, link.text).toContain("underline");
+        expect(link.color, link.text).not.toBe(link.around);
+      }
+    });
+  }
+
+  // 色を直接書いていないリンクは、公開中のページには今のところ出ない(検証中のデータの注記だけ)
+  test("色の指定が無い本文リンクもアクセント色になる", async ({ page }) => {
+    await page.goto("/about/");
+    const { color, accent } = await page.evaluate(() => {
+      const p = document.createElement("p");
+      p.innerHTML = '<a href="/" class="link-underline">リンク</a><i></i>';
+      document.querySelector("main")!.append(p);
+      const probe = p.querySelector("i")!;
+      probe.style.color = "var(--color-accent)";
+      return {
+        color: getComputedStyle(p.querySelector("a")!).color,
+        accent: getComputedStyle(probe).color,
+      };
+    });
+    expect(color).toBe(accent);
   });
 
   test("見出し・パンくず・ナビのリンクには付けない", async ({ page }) => {

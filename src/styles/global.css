@@ -135,6 +135,7 @@ footer :focus-visible,
    ナビ・パンくず・見出し・カードの題名は対象外。.term-link(用語の印)は点線のまま。 */
 main :is(p, figcaption, dd, blockquote) .link-underline,
 main li:not(nav li) > .link-underline {
+  color: var(--color-accent);
   background-image: none;
   text-decoration: underline;
   text-decoration-thickness: 1px;
