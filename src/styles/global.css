@@ -28,6 +28,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* sticky ヘッダー(約 57px)が、ページ内リンクの着地点を隠さないように */
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -129,9 +131,23 @@ footer :focus-visible,
   background-size: 100% 1px;
 }
 
-/* プライマリボタン(海グラデ塗り) */
+/* 本文・出典のリンクは、色だけに頼らず平常時も下線で示す(ADR 0008)。
+   ナビ・パンくず・見出し・カードの題名は対象外。.term-link(用語の印)は点線のまま。 */
+main :is(p, figcaption, dd, blockquote) .link-underline,
+main li:not(nav li) > .link-underline {
+  background-image: none;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+main :is(p, figcaption, dd, blockquote) .link-underline:hover,
+main li:not(nav li) > .link-underline:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* プライマリボタン */
 .btn-ocean {
-  background: var(--grad-ocean);
+  background: var(--color-ocean-deep);
   color: #ffffff;
   border-radius: 9999px;
   padding: 0.65rem 1.5rem;
@@ -189,6 +205,10 @@ footer :focus-visible,
 .map-figure svg {
   max-width: 100%;
   height: auto;
+}
+
+#map-stage[aria-busy="true"] {
+  opacity: 0.5;
 }
 
 /* 市町村ページのロケーター(海色下地の SVG をミニマップとして枠で囲う) */
@@ -403,5 +423,41 @@ tr[data-row-role="total"] > * {
   .mobile-menu[inert] {
     opacity: 0;
     transform: translateY(-0.4rem);
+  }
+}
+
+/* 印刷。画面では表を枠の中でスクロールさせるが、紙では続きが読めないので枠を外す。
+   列の多い表は、見出しの折り返しと文字の縮小で A4 縦に収める。 */
+@media print {
+  body > header {
+    position: static;
+  }
+  .table-scroll {
+    max-height: none;
+    overflow: visible;
+    background-image: none;
+  }
+  .table-scroll thead th {
+    position: static;
+  }
+  .table-scroll table {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .table-scroll :is(th, td) {
+    padding: 2px 3px;
+    white-space: normal;
+  }
+  /* 数値と行見出し(地名など)は途中で折らない */
+  .table-scroll td.num,
+  .table-scroll tbody th {
+    white-space: nowrap;
+  }
+  .table-scroll td > span {
+    min-width: 0;
+    max-width: none;
+  }
+  .table-scroll tr {
+    break-inside: avoid;
   }
 }

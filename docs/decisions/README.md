@@ -45,3 +45,4 @@
 - [0005. サイト内検索に Pagefind を採用し、CSP に 'wasm-unsafe-eval' を足す](0005-pagefind-site-search-and-wasm-csp.md)
 - [0006. build.yml と e2e.yml は PR でだけ回し、main への push では回さない](0006-ci-on-pull-requests-only.md)
 - [0007. 本文を再配布できないデータセットは生テキストを入れず、取り下げは meta.json のリネームで行う](0007-raw-text-and-dataset-withdrawal.md)
+- [0008. 本文と出典のリンクは平常時も下線で示す](0008-underline-body-links.md)

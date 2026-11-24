@@ -94,6 +94,7 @@ const citationText = `出典: ${citation}をもとに「データでみる沖縄
     >
       出典表記をコピー
     </button>
+    <span id="citation-copy-status" role="status" class="ml-2 text-sm"></span>
   </div>
 </section>
 
@@ -102,14 +103,21 @@ const citationText = `出典: ${citation}をもとに「データでみる沖縄
   // JS 無効環境では select-all の段落をそのまま手動コピーできる(漸進的強化)。
   const button = document.getElementById("citation-copy");
   const text = document.getElementById("citation-text");
-  if (button && text && navigator.clipboard) {
+  const status = document.getElementById("citation-copy-status");
+  if (button && text && status && navigator.clipboard) {
     button.classList.remove("hidden");
+    let timer: ReturnType<typeof setTimeout>;
     button.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(text.textContent?.trim() ?? "");
-      button.textContent = "コピーしました ✓";
-      setTimeout(() => {
-        button.textContent = "出典表記をコピー";
-      }, 2000);
+      clearTimeout(timer);
+      try {
+        await navigator.clipboard.writeText(text.textContent?.trim() ?? "");
+        status.textContent = "コピーしました ✓";
+      } catch {
+        status.textContent = "コピーできませんでした。上の文を選んでコピーしてください";
+      }
+      timer = setTimeout(() => {
+        status.textContent = "";
+      }, 4000);
     });
   }
 </script>

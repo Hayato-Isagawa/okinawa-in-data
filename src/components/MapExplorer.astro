@@ -135,26 +135,33 @@ const registryJson = escapeLd(registry);
         select.appendChild(option);
       }
     };
+    // 何番目の要求か。遅れて届いた応答が、後から選んだ指標の地図を上書きしないように見る
+    let latest = 0;
     const show = async (key: string) => {
       const entry = registry.find((r) => r.key === key);
       if (!entry) return;
+      const id = ++latest;
       if (!cache.has(key)) {
         stage.setAttribute("aria-busy", "true");
         try {
-          const res = await fetch(`/maps/${key}.svg`);
+          const res = await fetch(`/maps/${key}.svg`, {
+            signal: AbortSignal.timeout(15_000),
+          });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           cache.set(key, await res.text());
         } catch {
+          if (id !== latest) return;
+          stage.removeAttribute("aria-busy");
           errorLine.hidden = false;
           currentTab = current.tab;
           styleTabs();
           fillSelect();
           select.value = current.key;
           return;
-        } finally {
-          stage.removeAttribute("aria-busy");
         }
       }
+      if (id !== latest) return;
+      stage.removeAttribute("aria-busy");
       errorLine.hidden = true;
       // role="img"/aria-label は断片側(renderIndicatorSvg)で必要な図にだけ付与済み
       stage.innerHTML = cache.get(key)!;
