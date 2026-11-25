@@ -51,6 +51,52 @@ test.describe("地図の切替", () => {
   });
 });
 
+for (const beacon of ["返る", "返らない"] as const) {
+  for (const tab of ["県内", "全国"] as const) {
+    test(`「戻る」と再読み込みで、選んだ指標と地図に戻る(${tab}、計測の応答が${beacon})`, async ({
+      page,
+    }) => {
+      await page.goto("/");
+      const select = page.locator("#indicator-select");
+      // ブラウザ任せの復元は、値だけが変わって地図が追いつかない
+      await expect(select).toHaveAttribute("autocomplete", "off");
+      const detail = page.locator("#map-detail-link");
+      const registry = JSON.parse(
+        (await page.locator("#indicator-registry").textContent()) ?? "[]"
+      ) as { key: string; tab: string; datasetId: string }[];
+      const national = registry.find((r) => r.tab !== registry[0].tab)!.tab;
+      if (tab === "全国") {
+        await page.locator(`[data-tab="${national}"]`).click();
+      }
+      const picked = registry.filter(
+        (r) => r.tab === (tab === "全国" ? national : registry[0].tab)
+      )[2];
+      expect(picked.datasetId).not.toBe(registry[0].datasetId);
+      await select.selectOption(picked.key);
+      const href = `/datasets/${picked.datasetId}/`;
+      await expect(detail).toHaveAttribute("href", href);
+      await detail.click();
+      await page.waitForURL(`**${href}`);
+
+      // load は計測の応答を待つ。返らない間も、選択欄と地図がそろうこと
+      if (beacon === "返らない") {
+        await page.route("https://static.cloudflareinsights.com/**", () => {});
+      }
+      for (const move of ["goBack", "reload"] as const) {
+        await page[move]({ waitUntil: "commit" });
+        await expect(select).toHaveValue(picked.key);
+        await expect(detail).toHaveAttribute("href", href);
+        await page.waitForTimeout(500);
+        await expect(select).toHaveValue(picked.key);
+        await expect(detail).toHaveAttribute("href", href);
+        await expect(
+          page.locator(`[data-tab="${picked.tab}"]`)
+        ).toHaveAttribute("aria-pressed", "true");
+      }
+    });
+  }
+}
+
 test("地図の応答が 15 秒返らなければ、失敗と言って元の指標に戻す", async ({
   page,
 }) => {
@@ -286,16 +332,18 @@ test.describe("出典表記のコピー", () => {
 
 test.describe("印刷", () => {
   test("ヘッダーと表の見出しを紙の途中に重ねない", async ({ page }) => {
-    await page.goto(DATASET);
+    await page.goto("/datasets/futoko-ijime-todofuken/");
     const read = () =>
       page.evaluate(() =>
-        ["body > header", ".table-scroll thead th"].map(
-          (s) => getComputedStyle(document.querySelector(s)!).position
-        )
+        [
+          "body > header",
+          ".table-scroll thead th",
+          ".table-scroll tbody th",
+        ].map((s) => getComputedStyle(document.querySelector(s)!).position)
       );
-    expect(await read()).toEqual(["sticky", "sticky"]);
+    expect(await read()).toEqual(["sticky", "sticky", "sticky"]);
     await page.emulateMedia({ media: "print" });
-    expect(await read()).toEqual(["static", "static"]);
+    expect(await read()).toEqual(["static", "static", "static"]);
   });
 
   test("表が途中で切れない", async ({ page }) => {
@@ -451,3 +499,327 @@ for (const theme of ["light"] as const) {
     });
   }
 }
+
+test.describe("強制カラー", () => {
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`地図の凡例の色と、選ばれているタブが区別できる(${colorScheme})`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ forcedColors: "active", colorScheme });
+      await page.goto("/");
+      const swatches = await page
+        .locator("#map-stage div > span > span")
+        .evaluateAll((els) =>
+          els.map((el) => getComputedStyle(el).backgroundColor)
+        );
+      expect(swatches.length).toBeGreaterThan(2);
+      expect(new Set(swatches).size).toBe(swatches.length);
+      // 透けている背景は、地の色として比べる
+      const tabs = await page.locator("[data-tab]").evaluateAll((els) =>
+        els.map((el) => {
+          const color = getComputedStyle(el).backgroundColor;
+          const probe = document.createElement("span");
+          probe.style.backgroundColor = "Canvas";
+          document.body.append(probe);
+          const canvas = getComputedStyle(probe).backgroundColor;
+          probe.remove();
+          return color.endsWith(", 0)") ? canvas : color;
+        })
+      );
+      expect(tabs).toHaveLength(2);
+      const luminance = (color: string) => {
+        const [r, g, b] = color
+          .match(/[\d.]+/g)!
+          .slice(0, 3)
+          .map((v) => {
+            const c = Number(v) / 255;
+            return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+          });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      const [high, low] = tabs.map(luminance).sort((a, b) => b - a);
+      expect((high + 0.05) / (low + 0.05)).toBeGreaterThanOrEqual(3);
+    });
+  }
+
+  test("ヘッダーとメニューの現在地が、色以外でも分かる", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.goto("/datasets/");
+    for (const nav of ["メインナビゲーション", "モバイルナビゲーション"]) {
+      const lines = await page
+        .locator(`nav[aria-label="${nav}"] a`)
+        .evaluateAll((els) =>
+          els.map((el) => [
+            el.hasAttribute("aria-current"),
+            getComputedStyle(el).textDecorationLine,
+          ])
+        );
+      expect(lines.length).toBeGreaterThan(3);
+      for (const [current, line] of lines) {
+        expect(line).toBe(current ? "underline" : "none");
+      }
+    }
+  });
+});
+
+test("トップの地図の出典リンクにも、平常時の下線が付く", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#map-detail-link")).toHaveCSS(
+    "border-bottom-width",
+    "1px"
+  );
+});
+
+test("指標の選択欄は 16px 以上(iOS で拡大されない)", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const size = await page
+    .locator("#indicator-select")
+    .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(size).toBeGreaterThanOrEqual(16);
+});
+
+test("計測の応答が返らなくても、地図の操作が出る", async ({ page }) => {
+  await page.route("https://static.cloudflareinsights.com/**", () => {});
+  await page.goto("/", { waitUntil: "commit" });
+  await expect(page.locator("[data-explorer-controls]")).toBeVisible({
+    timeout: 5000,
+  });
+});
+
+test("トップの背景は動かない", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const hero = page.locator(".hero-ocean").first();
+  await expect(hero).toHaveCSS("animation-name", "none");
+  await expect(hero).toHaveCSS("background-size", /^auto/);
+});
+
+test.describe("ヘッダーの現在地", () => {
+  for (const [path, href, value] of [
+    ["/datasets/", "/datasets/", "page"],
+    [DATASET, "/datasets/", "true"],
+    ["/about/", "/about/", "page"],
+    ["/", null, null],
+  ] as const) {
+    test(`${path} では ${href ?? "どの項目も"} ${value ?? "印を付けない"}`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+      for (const nav of ["メインナビゲーション", "モバイルナビゲーション"]) {
+        const current = await page
+          .locator(`nav[aria-label="${nav}"] [aria-current]`)
+          .evaluateAll((els) =>
+            els.map((el) => [
+              el.getAttribute("href"),
+              el.getAttribute("aria-current"),
+            ])
+          );
+        expect(current).toEqual(href === null ? [] : [[href, value]]);
+      }
+      // 色だけで示さない
+      const sizes = await page
+        .locator('nav[aria-label="メインナビゲーション"] a')
+        .evaluateAll((els) =>
+          els.map((el) => [
+            el.hasAttribute("aria-current"),
+            getComputedStyle(el).backgroundSize,
+          ])
+        );
+      const marks = await page
+        .locator('nav[aria-label="モバイルナビゲーション"] a')
+        .evaluateAll((els) =>
+          els.map((el) => [
+            el.hasAttribute("aria-current"),
+            getComputedStyle(el).boxShadow !== "none",
+          ])
+        );
+      expect(marks.length).toBeGreaterThan(3);
+      for (const [current, mark] of marks) expect(mark).toBe(current);
+      expect(sizes.length).toBeGreaterThan(3);
+      for (const [current, size] of sizes) {
+        expect(size).toMatch(current ? /^100% 2px$/ : /^0(%|px) 1px$/);
+      }
+    });
+  }
+});
+
+test.describe("データセットのカード", () => {
+  test("カードのどこを押しても詳細へ、テーマの札はテーマへ移る", async ({
+    page,
+  }) => {
+    await page.goto("/datasets/");
+    const card = page.locator("article.card-lift").filter({
+      has: page.locator('a[href^="/themes/"]'),
+    });
+    const href = await card.first().locator("h2 a, h3 a").getAttribute("href");
+    // 説明文の上。リンクの ::after が覆うので、要素ではなく座標を押す
+    const text = card.first().locator("p").first();
+    await text.scrollIntoViewIfNeeded();
+    const box = (await text.boundingBox())!;
+    await page.mouse.click(box.x + 20, box.y + 10);
+    await page.waitForURL(`**${href}`);
+
+    await page.goto("/datasets/");
+    const tag = card.first().locator('a[href^="/themes/"]').first();
+    const theme = await tag.getAttribute("href");
+    await tag.click();
+    await page.waitForURL(`**${theme}`);
+  });
+
+  test("どのカードも、押せる範囲が自分の中に収まる", async ({ page }) => {
+    await page.goto("/datasets/");
+    const bad = await page.locator("article.card-lift").evaluateAll((cards) =>
+      cards
+        .filter((card) => {
+          card.scrollIntoView({ block: "center", behavior: "instant" });
+          const box = card.getBoundingClientRect();
+          const link = card.querySelector("h2 a, h3 a");
+          return [
+            [box.left + 6, box.bottom - 6],
+            [box.right - 6, box.bottom - 6],
+            [box.right - 6, box.top + 6],
+          ].some(([x, y]) => document.elementFromPoint(x, y) !== link);
+        })
+        .map((card) => card.textContent!.trim().slice(0, 30))
+    );
+    expect(await page.locator("article.card-lift").count()).toBeGreaterThan(5);
+    expect(bad).toEqual([]);
+  });
+
+  test("フォーカスの輪郭は、カード全体に付く", async ({ page }) => {
+    await page.goto("/datasets/");
+    const link = page
+      .locator("article.card-lift")
+      .first()
+      .locator("h2 a, h3 a");
+    await link.focus();
+    const outline = await link.evaluate((el) => [
+      getComputedStyle(el).outlineStyle,
+      getComputedStyle(el, "::after").outlineStyle,
+      getComputedStyle(el, "::after").outlineWidth,
+    ]);
+    expect(outline).toEqual(["none", "solid", "2px"]);
+  });
+});
+
+test.describe("横に長い表", () => {
+  const WIDE = "/datasets/futoko-ijime-todofuken/";
+  const scrolled = (page: import("@playwright/test").Page, path: string) =>
+    page.goto(path).then(() =>
+      page.locator(".table-scroll").evaluate((box) => {
+        box.scrollIntoView({ block: "center", behavior: "instant" });
+        box.scrollLeft = 120;
+        box.scrollTop = 80;
+        const edge = box.getBoundingClientRect().left + box.clientLeft;
+        const at = (selector: string) =>
+          Math.round(
+            box.querySelector(selector)!.getBoundingClientRect().left - edge
+          );
+        const first = box.querySelector("thead th")!.getBoundingClientRect();
+        return {
+          scrollable: box.scrollLeft,
+          row: at("tbody tr:nth-child(5) th"),
+          corner: at("thead th"),
+          cornerOnTop:
+            document.elementFromPoint(
+              first.left + 4,
+              first.top + first.height / 2
+            ) === box.querySelector("thead th"),
+          headOverRow: [...box.querySelectorAll("tbody th")].every(
+            (th) =>
+              Number(getComputedStyle(th).zIndex) <
+              Number(
+                getComputedStyle(box.querySelector("thead th:nth-child(2)")!)
+                  .zIndex
+              )
+          ),
+        };
+      })
+    );
+
+  test("横にスクロールしても、行見出しと左上の見出しが残る", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const state = await scrolled(page, WIDE);
+    expect(state.scrollable).toBe(120);
+    expect(state.row).toBe(0);
+    expect(state.corner).toBe(0);
+    expect(state.cornerOnTop).toBe(true);
+    expect(state.headOverRow).toBe(true);
+  });
+
+  test("行見出しは下の数値を透かさず、右に罫線を持つ", async ({ page }) => {
+    await page.goto(WIDE);
+    const rows = await page
+      .locator(".table-scroll tbody tr:not([data-row-role]) th")
+      .evaluateAll((els) =>
+        els.map((el) => {
+          const style = getComputedStyle(el);
+          return `${style.backgroundColor} ${style.borderRightWidth}`;
+        })
+      );
+    expect(rows.length).toBeGreaterThan(10);
+    expect(new Set(rows)).toEqual(new Set(["rgb(255, 255, 255) 1px"]));
+    // 固定したセルの罫線は、つなげたままだと置いていかれる
+    await expect(page.locator(".table-scroll table")).toHaveCSS(
+      "border-collapse",
+      "separate"
+    );
+  });
+
+  test("固定するのは 8 列から", async ({ page }) => {
+    for (const [path, wide] of [
+      ["/datasets/gakko-hoken-keinen/", 1],
+      ["/datasets/seikatsu-shukan-r7-todofuken/", 0],
+    ] as const) {
+      await page.goto(path);
+      const columns = await page.locator(".table-scroll thead th").count();
+      expect(columns).toBe(wide ? 8 : 7);
+      await expect(page.locator(".table-scroll[data-wide]")).toHaveCount(wide);
+    }
+  });
+
+  test("印刷では、固定のための見た目を付けない", async ({ page }) => {
+    await page.emulateMedia({ media: "print" });
+    await page.goto(WIDE);
+    const head = page.locator(".table-scroll tbody th").first();
+    await expect(head).toHaveCSS("position", "static");
+    await expect(head).toHaveCSS("border-right-width", "0px");
+    await expect(page.locator(".table-scroll table")).toHaveCSS(
+      "border-collapse",
+      "collapse"
+    );
+  });
+
+  test("列の少ない表では固定しない", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await page.goto("/datasets/kodomo-chosa-konkyu-keinen/");
+    await expect(page.locator(".table-scroll tbody th").first()).toHaveCSS(
+      "position",
+      "static"
+    );
+  });
+
+  test("固定しても、沖縄県と全国の行の背景は変わらない", async ({ page }) => {
+    let checked = 0;
+    for (const path of [
+      "/datasets/futoko-ijime-todofuken/",
+      "/datasets/katei-zosho-r7-todofuken/",
+    ]) {
+      await page.goto(path);
+      const rows = await page
+        .locator(".table-scroll[data-wide] tr[data-row-role]")
+        .evaluateAll((trs) =>
+          trs.map((tr) => [
+            getComputedStyle(tr.querySelector("th")!).backgroundColor,
+            getComputedStyle(tr.querySelector("td")!).backgroundColor,
+          ])
+        );
+      checked += rows.length;
+      for (const [head, cell] of rows) expect(head).toBe(cell);
+    }
+    expect(checked).toBeGreaterThan(1);
+  });
+});

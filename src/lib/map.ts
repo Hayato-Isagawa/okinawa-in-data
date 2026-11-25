@@ -184,7 +184,7 @@ function legendHtml(
   const items = classOrder
     .map(
       (c, i) =>
-        `<span style="white-space:nowrap;"><span style="display:inline-block; width:0.9em; height:0.9em; background:${escapeAttr(colors[i])}; border:1px solid #dde4e5; margin-right:0.3em; vertical-align:-0.1em;"></span>${escapeAttr(c)}</span>`
+        `<span style="white-space:nowrap;"><span style="display:inline-block; width:0.9em; height:0.9em; background:${escapeAttr(colors[i])}; border:1px solid #dde4e5; forced-color-adjust:none; margin-right:0.3em; vertical-align:-0.1em;"></span>${escapeAttr(c)}</span>`
     )
     .join("");
   // note は flex-basis:100% で凡例の下の行に折り返す(「0%未満」など出典由来の表記の説明用)

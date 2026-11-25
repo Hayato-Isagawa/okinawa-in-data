@@ -131,6 +131,14 @@ footer :focus-visible,
   background-size: 100% 1px;
 }
 
+/* ヘッダーの現在地。色だけでは分かりにくいので線も出す */
+body > header .link-underline[aria-current] {
+  background-size: 100% 2px;
+}
+.mobile-menu [aria-current] {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
 /* 本文・出典のリンクは、色だけに頼らず平常時も下線で示す(ADR 0008)。
    ナビ・パンくず・見出し・カードの題名は対象外。.term-link(用語の印)は点線のまま。
    ホバーとフォーカスでは、平常時の薄い線(border)を消してから、濃い線を左端から引く。
@@ -211,6 +219,22 @@ main li:not(nav li) > .link-underline:is(:hover, :focus-visible) {
   box-shadow: var(--shadow-lift);
 }
 
+/* 題名のリンクの押せる範囲を、カード全体に広げる。
+   カードの中のほかのリンクは z-index で上に出す(DatasetCard.astro) */
+.card-link::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 1rem;
+}
+.card-link:focus-visible {
+  outline: none;
+}
+.card-link:focus-visible::after {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 /* 地図のマイクロインタラクション */
 .map-figure svg path:hover {
   fill-opacity: 0.75;
@@ -239,7 +263,7 @@ main li:not(nav li) > .link-underline:is(:hover, :focus-visible) {
 
 /* 列数の多い表は枠内で横スクロールする。隠れた列があることを端の影で示す。
    カバー(local)は中身と一緒に動き、影(scroll)は枠に固定されるため、
-   スクロール余地がある側だけに影が残る。JS は使わない。
+   スクロール余地がある側だけに影が残る(行見出しを固定した表では、左の影は見出しの下に隠れる)。JS は使わない。
    .card の background ショートハンドを上書きするため、必ずその後に置く。 */
 .table-scroll {
   background-image:
@@ -259,6 +283,32 @@ main li:not(nav li) > .link-underline:is(:hover, :focus-visible) {
     0.85rem 100%,
     0.85rem 100%;
   background-attachment: local, local, scroll, scroll;
+}
+
+/* 列の多い表では、横にスクロールしても行見出しを残す。
+   border-collapse のままだと、固定したセルの罫線が置いていかれるので分ける。
+   印刷では付けない。背景は下の行の強調(tr[data-row-role])に負けるよう :where で書く */
+@media screen {
+  .table-scroll[data-wide] table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  :where(.table-scroll[data-wide] tbody th) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--color-card);
+  }
+  .table-scroll[data-wide] :is(thead th:first-child, tbody th) {
+    border-right: 1px solid var(--color-line);
+  }
+  .table-scroll[data-wide] thead th {
+    z-index: 2;
+  }
+  .table-scroll[data-wide] thead th:first-child {
+    left: 0;
+    z-index: 3;
+  }
 }
 
 /* 47都道府県を並べた表で、沖縄県(主役)と全国・合計(比較基準)の行が
@@ -304,29 +354,6 @@ tr[data-row-role="total"] > * {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-/* ヒーローのグラデーションを波のようにゆっくり漂わせる(動きを好まない設定では静止) */
-@media (prefers-reduced-motion: no-preference) {
-  .hero-ocean {
-    background-size:
-      150% 150%,
-      150% 150%,
-      220% 220%;
-    background-position:
-      0% 0%,
-      100% 100%,
-      0% 0%;
-    animation: ocean-drift 28s ease-in-out infinite alternate;
-  }
-  @keyframes ocean-drift {
-    to {
-      background-position:
-        60% 40%,
-        40% 60%,
-        100% 100%;
-    }
-  }
 }
 
 /* 登場アニメーション(スタッガー) */
@@ -377,6 +404,19 @@ tr[data-row-role="total"] > * {
     to {
       stroke-dashoffset: 0;
     }
+  }
+}
+
+/* 強制カラーでは背景色と背景画像が消える。選ばれているタブと現在地が分かるように残す */
+@media (forced-colors: active) {
+  [data-tab][aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight !important;
+    color: HighlightText !important;
+  }
+  body > header [aria-current] {
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
 }
 
