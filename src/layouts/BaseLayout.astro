@@ -331,6 +331,12 @@ const currentPath = Astro.url.pathname;
           }
           setOpen(false);
         });
+        // Tab でメニューの外へ出たら閉じる(開いたままだと、被さったメニューの裏へフォーカスが入る)
+        menu.addEventListener("focusout", (e) => {
+          const to = e.relatedTarget;
+          if (!isOpen() || !(to instanceof Node)) return;
+          if (!menu.contains(to) && !toggle.contains(to)) setOpen(false);
+        });
         // デスクトップ幅(メニュー非表示)へ広げたら開いた状態を残さない
         window
           .matchMedia("(min-width: 1024px)")
