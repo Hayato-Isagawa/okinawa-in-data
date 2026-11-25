@@ -49,7 +49,7 @@ astro dev --background
 
 `.github/workflows/e2e.yml` が PR ごとに `npx playwright test` で全部回す。手元では `npm run test:e2e`
 (a11y だけなら `npm run test:a11y`)。**先に `npm run build` が要る** — a11y と search は読み込み時に `dist/` を走査し(無ければ ENOENT で落ちる)、
-external-links はテストの中で `dist/` を走査する。datasets は `data/` から対象を作り、公開範囲のテストは `dist/datasets/`・`dist/data/`・sitemap も走査する。external-links 以外は `scripts/serve-dist.mjs` が配る `dist/` をブラウザで開く(同じポートに残っているサーバーは使わず、ポートが埋まっていれば起動の時点で止まる)。spec が読むパスはリポのルートから解決するので、別のディレクトリから `-c playwright.config.ts` で起動しても同じ対象を見る(config を渡さないと webServer・globalSetup・`forbidOnly` が効かない)。
+external-links はテストの中で `dist/` を走査し、headers は `dist/_headers` を読む。datasets は `data/` から対象を作り、公開範囲のテストは `dist/datasets/`・`dist/data/`・sitemap も走査する。external-links と headers 以外は `scripts/serve-dist.mjs` が配る `dist/` をブラウザで開く(同じポートに残っているサーバーは使わず、ポートが埋まっていれば起動の時点で止まる)。spec が読むパスはリポのルートから解決するので、別のディレクトリから `-c playwright.config.ts` で起動しても同じ対象を見る(config を渡さないと webServer・globalSetup・`forbidOnly` が効かない)。
 CI では `test.only` が混ざると落ちる(`forbidOnly`)。
 
 - **`a11y.spec.ts`** — dist の全ページを axe にかける

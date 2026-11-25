@@ -7,7 +7,7 @@ name: E2E Tests
 # ローカルでしか回っていなかった。全ページの axe 検査は手で回すには重く、
 # 実際に放置されていた。
 #
-# external-links.spec.ts は dist/ のファイルを直接読み、それ以外は scripts/serve-dist.mjs が配る dist/ をブラウザで開くので、
+# external-links.spec.ts と headers.spec.ts は dist/ のファイルを直接読み、それ以外は scripts/serve-dist.mjs が配る dist/ をブラウザで開くので、
 # build を先に済ませる必要がある。
 # a11y.spec.ts と search.spec.ts は読み込み時に dist/ を走査し、dist/ が無ければどちらも ENOENT で落ちる。
 # dist/ が空なら search は dist/area の走査が ENOENT で落ち、a11y は 0 件になる(単独で回すと
