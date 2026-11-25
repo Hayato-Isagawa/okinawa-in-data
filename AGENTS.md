@@ -72,6 +72,7 @@ CI では `test.only` が混ざると落ちる(`forbidOnly`)。
   応答が返らないときの戻り、モバイルメニューを Tab で抜けたら閉じること、ページ内リンクの着地点がヘッダーに
   隠れないこと、本文・出典のリンクの下線と色(ADR 0008。
   ホバーの線の引き直しと、付けない場所も)、CSV ボタンの白文字の比、出典表記のコピーの成否、印刷で表が切れないこと
+- **`headers.spec.ts`** — `_headers` の CSP に `frame-ancestors 'none'` と `form-action 'self'` があるか(`dist/_headers` を読む)
 - **`external-links.spec.ts`** — 別の窓で開くリンク(`target` が `_self` / `_parent` / `_top` 以外)が
   すべて `rel="noopener noreferrer"` を持つか。dist の全 HTML と `maps/*.svg`(MapExplorer が
   innerHTML に入れる断片)を linkedom で DOM にして見る。`<base target>` も見る。
