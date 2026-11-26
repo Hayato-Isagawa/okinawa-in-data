@@ -73,7 +73,8 @@ CI では `test.only` が混ざると落ちる(`forbidOnly`)。
   ヘッダーの現在地、カードの押せる範囲、列の多い表の行見出しの固定、強制カラーでの凡例とタブ、計測の応答が
   返らないときの操作、ページ内リンクの着地点がヘッダーに
   隠れないこと、本文・出典のリンクの下線と色(ADR 0008。
-  ホバーの線の引き直しと、付けない場所も)、CSV ボタンの白文字の比、出典表記のコピーの成否、印刷で表が切れないこと
+  ホバーの線の引き直しと、付けない場所も)、CSV ボタンの白文字の比、出典表記のコピーの成否、印刷で表が切れないこと、
+  390px の画面での図の文字と凡例の大きさ、狭い画面で開いてから印刷したときの折れ線
 - **`headers.spec.ts`** — `_headers` の CSP に `frame-ancestors 'none'` と `form-action 'self'` があるか(`dist/_headers` を読む)
 - **`external-links.spec.ts`** — 別の窓で開くリンク(`target` が `_self` / `_parent` / `_top` 以外)が
   すべて `rel="noopener noreferrer"` を持つか。dist の全 HTML と `maps/*.svg`(MapExplorer が
@@ -100,7 +101,8 @@ Playwright ではないテストが 3 つある。いずれも `npm run check:al
 
 - **`scripts/lib/__tests__/`・`src/lib/__tests__/`**(`npm run test:lib`) — Excel → CSV の変換ヘルパーと、
   データセットのローダーが meta.json の無いディレクトリを読まないこと、`check:data` が meta.json の無い
-  (取り下げ中・準備中の)データセットを指す relatedDatasets をエラーにすること
+  (取り下げ中・準備中の)データセットを指す relatedDatasets をエラーにすること、折れ線の系列の色と点の形
+  (沖縄と全国の色の固定、白との 3:1、凡例に色と形の両方が出ること)
 - **`.githooks/__tests__/`**(`npm run test:githooks`) — pre-commit / pre-push
 - **`scripts/__tests__/`**(`npm run test:workflows`) — ワークフローに埋め込まれた判定ロジックと、VRT と E2E が使う配信スクリプト。
   auto-merge・link-check・ci-summary の 3 本はワークフローから `run:` ブロックを取り出し、`gh`(auto-merge は

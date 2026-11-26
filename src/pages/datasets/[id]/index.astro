@@ -15,8 +15,10 @@ import {
   formatDatasetUpdatedAt,
 } from "../../../lib/datasets";
 import {
+  NARROW_CHART_WIDTH,
   renderLineChartSvg,
   renderBarRankingSvg,
+  responsiveChartHtml,
   competitionRank,
   isTied,
 } from "../../../lib/chart";
@@ -107,15 +109,19 @@ const chartUnit = numericCandidates[0]?.unit;
 const numericColumns = numericCandidates
   .filter((c) => c.unit === chartUnit)
   .map((c) => c.name);
+const lineParams = {
+  header,
+  rows,
+  xColumn: csvFile.columns[0].name,
+  yColumns: numericColumns,
+  yLabel: csvFile.columns.find((c) => c.unit)?.unit,
+};
 const chartSvg =
   numericColumns.length > 0 && rows.length >= 2 && rows.length <= 12
-    ? renderLineChartSvg({
-        header,
-        rows,
-        xColumn: csvFile.columns[0].name,
-        yColumns: numericColumns,
-        yLabel: csvFile.columns.find((c) => c.unit)?.unit,
-      })
+    ? responsiveChartHtml(
+        renderLineChartSvg(lineParams),
+        renderLineChartSvg({ ...lineParams, width: NARROW_CHART_WIDTH }),
+      )
     : null;
 
 // 都道府県コロプレス地図(meta.map で列を明示指定したデータセットのみ)
@@ -163,7 +169,7 @@ if (meta.map) {
       .filter((r) => prefSet.has(r[0]) && r[colIdx] !== "")
       .map((r) => ({ name: r[0], value: Number(r[colIdx]), display: r[colIdx] }));
     const referenceRow = findReferenceRow(rows);
-    rankingSvg = renderBarRankingSvg({
+    const rankingParams = {
       entries,
       highlight: "沖縄県",
       valueLabel: mapLabel,
@@ -174,7 +180,11 @@ if (meta.map) {
             value: Number(referenceRow[colIdx]),
           }
         : undefined,
-    });
+    };
+    rankingSvg = responsiveChartHtml(
+      renderBarRankingSvg(rankingParams),
+      renderBarRankingSvg({ ...rankingParams, width: NARROW_CHART_WIDTH }),
+    );
     // 表示されるのは値の降順で上位10本。順位の表記は競技方式(同値は同順位)で、
     // グラフの棒ラベル・FV の読み取り行と揃える
     const okinawa = entries.find((e) => e.name === "沖縄県");
