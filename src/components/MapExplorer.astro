@@ -51,7 +51,8 @@ const registryJson = escapeLd(registry);
       <label class="text-sm font-semibold" for="indicator-select">指標</label>
       <select
         id="indicator-select"
-        class="rounded-lg border px-3 py-2 text-sm"
+        autocomplete="off"
+        class="rounded-lg border px-3 py-2 text-base"
         style="border-color: var(--color-line); background: var(--color-card); max-width: calc(100vw - 4.5rem);"
       ></select>
     </div>
@@ -78,14 +79,16 @@ const registryJson = escapeLd(registry);
       出典: {initialEntry.publisher}(一次資料)
       {initialEntry.draft && <span class="ml-1 rounded border px-1.5 py-0.5 text-xs" style="border-color: var(--color-line);">検証中</span>}
     </p>
-    <a
-      id="map-detail-link"
-      href={`/datasets/${initialEntry.datasetId}/`}
-      class="link-underline text-sm font-bold"
-      style="color: var(--color-accent);"
-    >
-      出典・表・ダウンロード →
-    </a>
+    <p class="text-sm font-bold">
+      <a
+        id="map-detail-link"
+        href={`/datasets/${initialEntry.datasetId}/`}
+        class="link-underline"
+        style="color: var(--color-accent);"
+      >
+        出典・表・ダウンロード →
+      </a>
+    </p>
   </div>
 
   <script is:inline type="application/json" id="indicator-registry" set:html={registryJson} />
@@ -177,6 +180,7 @@ const registryJson = escapeLd(registry);
       }
       detailLink.href = `/datasets/${entry.datasetId}/`;
       current = entry;
+      history.replaceState({ ...history.state, indicator: entry.key }, "");
     };
 
     for (const tab of tabs) {
@@ -189,7 +193,15 @@ const registryJson = escapeLd(registry);
       });
     }
     select.addEventListener("change", () => void show(select.value));
+    // 「戻る」と再読み込みでは、選んでいた指標に戻す。ブラウザ任せの復元は、選択欄の値だけが
+    // 変わって地図が追いつかないので止めてある(autocomplete="off")
+    const restored = registry.find((r) => r.key === history.state?.indicator);
+    if (restored) currentTab = restored.tab;
     styleTabs();
     fillSelect();
+    if (restored && restored.key !== current.key) {
+      select.value = restored.key;
+      void show(restored.key);
+    }
   }
 </script>

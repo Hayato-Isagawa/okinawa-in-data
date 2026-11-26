@@ -18,14 +18,14 @@ const temporalText =
     : `${meta.temporal.coverageStart}〜${meta.temporal.coverageEnd}`;
 ---
 
-<article class="card card-lift p-5">
+<article class="card card-lift relative p-5">
   <div class="flex flex-wrap items-center gap-2">
     {
       meta.themes.map((theme) =>
         THEME_PAGES[theme] ? (
           <a
             href={THEME_PAGES[theme]}
-            class="rounded-full px-2.5 py-0.5 text-xs font-bold text-white no-underline"
+            class="relative z-10 rounded-full px-2.5 py-0.5 text-xs font-bold text-white no-underline"
             style="background: var(--color-ocean-deep);"
           >
             {THEME_LABELS[theme]}
@@ -49,7 +49,7 @@ const temporalText =
     }
   </div>
   <Heading class="mt-2 text-lg font-bold">
-    <a href={`/datasets/${meta.id}/`} class="link-underline">
+    <a href={`/datasets/${meta.id}/`} class="link-underline card-link">
       {meta.title}
     </a>
   </Heading>

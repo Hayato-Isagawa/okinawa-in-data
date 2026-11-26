@@ -42,6 +42,7 @@ const rowRole = (label: string) => {
   tabindex="0"
   role="region"
   aria-label={caption}
+  data-wide={columns.length >= 8 ? "" : undefined}
   data-pagefind-ignore
 >
   <table class="w-full border-collapse text-sm">
