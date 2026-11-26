@@ -4,7 +4,13 @@ import DatasetCard from "../../components/DatasetCard.astro";
 import ChartFigure from "../../components/ChartFigure.astro";
 import DataTable from "../../components/DataTable.astro";
 import { getAllDatasets, getDatasetRows } from "../../lib/datasets";
-import { renderPlotSvg, renderLineChartSvg } from "../../lib/chart";
+import {
+  NARROW_CHART_WIDTH,
+  renderPlotSvg,
+  renderLineChartSvg,
+  responsiveChartHtml,
+  seriesStyles,
+} from "../../lib/chart";
 import * as Plot from "@observablehq/plot";
 
 const datasets = getAllDatasets().filter(
@@ -25,29 +31,56 @@ const comparePoints = gakute.rows
       正答率: Number(r[i + 1]),
     })),
   );
-const gakuteSvg = renderPlotSvg({
-  width: 640,
-  height: 340,
-  marginLeft: 48,
-  style: { fontSize: "13px", background: "transparent" },
-  fx: { label: null },
-  x: { axis: null, type: "band" },
-  y: { label: "平均正答率(%)", grid: true, domain: [0, 80] },
-  color: {
-    legend: true,
-    domain: compareTargets,
-    range: ["#94a3b8", "#0e7490"],
-  },
-  marks: [
-    Plot.barY(comparePoints, {
-      fx: "教科",
-      x: "区分",
-      y: "正答率",
-      fill: "区分",
-    }),
-    Plot.ruleY([0]),
-  ],
-});
+// 沖縄と全国の色は折れ線と同じ(chart.ts の seriesStyles)
+const compareColor = {
+  legend: true,
+  domain: compareTargets,
+  range: seriesStyles(compareTargets).colors,
+};
+const gakuteSvg = responsiveChartHtml(
+  renderPlotSvg({
+    width: 640,
+    height: 340,
+    marginLeft: 48,
+    style: { fontSize: "13px", background: "transparent" },
+    fx: { label: null },
+    x: { axis: null, type: "band" },
+    y: { label: "平均正答率(%)", grid: true, domain: [0, 80] },
+    color: compareColor,
+    marks: [
+      Plot.barY(comparePoints, {
+        fx: "教科",
+        x: "区分",
+        y: "正答率",
+        fill: "区分",
+      }),
+      Plot.ruleY([0]),
+    ],
+  }),
+  // 狭い幅では教科名 6 つが横に並ばないので、教科ごとの横棒にする
+  renderPlotSvg({
+    width: NARROW_CHART_WIDTH,
+    height: 380,
+    marginLeft: 84,
+    marginRight: 16,
+    marginBottom: 44,
+    style: { fontSize: "13px", background: "transparent" },
+    fy: { label: null, axis: "left" },
+    y: { axis: null, type: "band" },
+    x: { label: "平均正答率(%)", grid: true, domain: [0, 80] },
+    color: compareColor,
+    marks: [
+      Plot.axisX({ labelOffset: 36 }),
+      Plot.barX(comparePoints, {
+        fy: "教科",
+        y: "区分",
+        x: "正答率",
+        fill: "区分",
+      }),
+      Plot.ruleX([0]),
+    ],
+  }),
+);
 const gakuteTableRows = compareTargets.map((target) => {
   const row = gakute.rows.find((r) => r[0] === target)!;
   return row;
@@ -56,13 +89,17 @@ const gakuteTableRows = compareTargets.map((target) => {
 // --- 可視化2: 就学援助率の推移 (shugaku-enjo-keinen) ---
 const ENJO_ID = "shugaku-enjo-keinen";
 const enjo = getDatasetRows(ENJO_ID);
-const enjoSvg = renderLineChartSvg({
+const enjoParams = {
   header: enjo.header,
   rows: enjo.rows,
   xColumn: "年度",
   yColumns: ["沖縄県", "全国"],
   yLabel: "就学援助率(%)",
-});
+};
+const enjoSvg = responsiveChartHtml(
+  renderLineChartSvg(enjoParams),
+  renderLineChartSvg({ ...enjoParams, width: NARROW_CHART_WIDTH }),
+);
 
 const stringCol = (name: string, description: string) => ({
   name,

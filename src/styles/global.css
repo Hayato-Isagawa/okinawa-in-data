@@ -393,8 +393,31 @@ tr[data-row-role="total"] > * {
   }
 }
 
-/* 折れ線の描画アニメーション(chart.ts の draw-line マークのみ対象) */
-@media (prefers-reduced-motion: no-preference) {
+/* 図の出し分け(chart.ts の responsiveChartHtml)。置き場所が 540px 未満なら狭い幅用の図にする。
+   540px は、幅 640 の図を縮めたときに図の文字(13px)が 11px を割る境目 */
+.chart-switch {
+  container-type: inline-size;
+}
+.chart-narrow {
+  display: none;
+}
+@container (width < 540px) {
+  .chart-wide {
+    display: none;
+  }
+  .chart-narrow {
+    display: block;
+  }
+}
+/* 凡例は HTML なので図と一緒に縮まない。Plot の既定(10px、詳細度 0 の :where)を図の文字にそろえる */
+.chart-switch [class*="-swatches"] {
+  font-size: 13px;
+}
+
+/* 折れ線の描画アニメーション(chart.ts の draw-line マークのみ対象)。
+   印刷では、画面で隠れていた方の図(狭い幅で見ていたときの幅 640 の図)が印刷の時点で
+   現れて線が描きかけのまま残るので、画面だけに付ける */
+@media screen and (prefers-reduced-motion: no-preference) {
   .draw-line path {
     stroke-dasharray: 1600;
     stroke-dashoffset: 1600;

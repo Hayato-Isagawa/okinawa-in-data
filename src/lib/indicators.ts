@@ -7,7 +7,12 @@ import { getDataset, getDatasetRows } from "./datasets";
 import { areaHrefByName } from "./areas";
 import { municipalTooltipBaseInfo } from "./profile";
 import { renderPrefectureMapSvg, renderOkinawaMunicipalityMapSvg } from "./map";
-import { decimalsOf, renderLineChartSvg } from "./chart";
+import {
+  NARROW_CHART_WIDTH,
+  decimalsOf,
+  renderLineChartSvg,
+  responsiveChartHtml,
+} from "./chart";
 import { REFERENCE_ROW_NAMES, refLabel } from "./lead";
 import { PREFECTURES } from "../../scripts/lib/prefectures";
 
@@ -394,13 +399,17 @@ export function renderIndicatorSvg(indicator: Indicator): string {
     const trendUnit = trendCsv.columns.find(
       (c) => c.name === trend.yColumns[0]
     )?.unit;
-    const lineSvg = renderLineChartSvg({
+    const lineParams = {
       header: tHeader,
       rows: tRows,
       xColumn: trend.xColumn,
       yColumns: trend.yColumns,
       yLabel: trendUnit,
-    });
+    };
+    const lineSvg = responsiveChartHtml(
+      renderLineChartSvg(lineParams),
+      renderLineChartSvg({ ...lineParams, width: NARROW_CHART_WIDTH })
+    );
     const draftBadge =
       trendMeta.status === "draft"
         ? ' <span class="ml-1 rounded border px-1.5 py-0.5 text-xs" style="border-color: var(--color-line);">検証中</span>'

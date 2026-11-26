@@ -823,3 +823,70 @@ test.describe("横に長い表", () => {
     expect(checked).toBeGreaterThan(1);
   });
 });
+
+test.describe("図の文字", () => {
+  test("390px の画面でも、図の文字は 11px 以上、凡例は 13px", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    let checked = 0;
+    let legends = 0;
+    for (const path of [
+      "/themes/education-poverty/",
+      "/datasets/jido-fuyo-teate-keinen/",
+      "/datasets/shugaku-enjo-r4-todofuken/",
+    ]) {
+      await page.goto(path);
+      const charts = await page.locator(".chart-switch").evaluateAll((els) =>
+        els.map((el) => {
+          const svg = [...el.querySelectorAll("svg")].find(
+            (s) => s.viewBox.baseVal.width > 100 && s.clientWidth > 0
+          )!;
+          const scale = svg.clientWidth / svg.viewBox.baseVal.width;
+          const text = svg.querySelector("text")!;
+          const legend = [...el.querySelectorAll("[class*='-swatches']")].find(
+            (l) => (l as HTMLElement).offsetWidth > 0
+          );
+          return {
+            font: parseFloat(getComputedStyle(text).fontSize) * scale,
+            legend: legend
+              ? parseFloat(getComputedStyle(legend).fontSize)
+              : null,
+          };
+        })
+      );
+      for (const { font, legend } of charts) {
+        expect(font, path).toBeGreaterThanOrEqual(11);
+        if (legend !== null) {
+          expect(legend, path).toBeGreaterThanOrEqual(13);
+          legends += 1;
+        }
+      }
+      checked += charts.length;
+    }
+    expect(checked).toBeGreaterThanOrEqual(4);
+    // 凡例はテーマページの 2 図と児童扶養手当の図にある。凡例の部品が見つからなく
+    // なったとき(Plot のクラス名が変わったときなど)に、検査が空回りして通らないようにする
+    expect(legends).toBeGreaterThanOrEqual(3);
+  });
+
+  test("狭い画面で開いてから印刷しても、折れ線が描きかけにならない", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/themes/education-poverty/");
+    await page.emulateMedia({ media: "print", reducedMotion: "no-preference" });
+    // A4 縦の印字幅(余白 1cm)。画面で隠れていた幅 640 の図が現れる
+    await page.setViewportSize({ width: 718, height: 1000 });
+    const lines = await page
+      .locator(".draw-line path")
+      .evaluateAll((paths) =>
+        paths
+          .filter((p) => p.getBoundingClientRect().width > 0)
+          .map((p) => getComputedStyle(p).strokeDasharray)
+      );
+    expect(lines.length).toBeGreaterThan(0);
+    for (const dash of lines) expect(dash).toBe("none");
+  });
+});
