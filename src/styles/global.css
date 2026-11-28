@@ -432,10 +432,17 @@ tr[data-row-role="total"] > * {
 
 /* 強制カラーでは背景色と背景画像が消える。選ばれているタブと現在地が分かるように残す */
 @media (forced-colors: active) {
+  /* forced-color-adjust: none を外すと、文字の後ろに地の色の板が敷かれて、HighlightText の
+     文字が読めなくなる。そのかわり輪郭は自動ではシステムの色にならないので、指定する。ほかの
+     要素の輪郭は Highlight になるが、ここは塗りが Highlight なので、塗りと見分けられる
+     CanvasText にする */
   [data-tab][aria-pressed="true"] {
     forced-color-adjust: none;
     background: Highlight !important;
     color: HighlightText !important;
+  }
+  [data-tab][aria-pressed="true"]:focus-visible {
+    outline-color: CanvasText;
   }
   body > header [aria-current] {
     text-decoration: underline;
