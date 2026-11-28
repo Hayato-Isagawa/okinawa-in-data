@@ -757,10 +757,10 @@ test.describe("ヘッダーの現在地", () => {
   }
 });
 
-test("トップは、地図を左右に広げる幅の手前(1024〜1119px)でもはみ出さず、1120px から広げる", async ({
+test("トップは、768〜1119px では地図を広げずにはみ出さず、1120px から広げる", async ({
   page,
 }) => {
-  for (const width of [1024, 1060, 1100, 1119, 1120, 1280]) {
+  for (const width of [768, 1000, 1023, 1024, 1060, 1100, 1119, 1120, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     const m = await page.evaluate(() => {
