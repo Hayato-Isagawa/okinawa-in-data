@@ -505,7 +505,12 @@ test.describe("強制カラー", () => {
     test(`地図の凡例の色と、選ばれているタブが区別できる(${colorScheme})`, async ({
       page,
     }) => {
-      await page.emulateMedia({ forcedColors: "active", colorScheme });
+      // 地図のカードが現れる動きの途中だと、下のスクリーンショットが別の場所を撮る
+      await page.emulateMedia({
+        forcedColors: "active",
+        colorScheme,
+        reducedMotion: "reduce",
+      });
       await page.goto("/");
       const swatches = await page
         .locator("#map-stage div > span > span")
@@ -539,6 +544,114 @@ test.describe("強制カラー", () => {
       };
       const [high, low] = tabs.map(luminance).sort((a, b) => b - a);
       expect((high + 0.05) / (low + 0.05)).toBeGreaterThanOrEqual(3);
+
+      // 選ばれているタブの文字は読めて(forced-color-adjust: none を外すと、文字の後ろに
+      // 地の色の板が敷かれて HighlightText の文字が消える)、フォーカスの輪郭はシステムの色
+      const selected = page.locator('[data-tab][aria-pressed="true"]');
+      await selected.focus();
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
+      const look = await selected.evaluate((el) => {
+        const system = (name: string) => {
+          const probe = document.createElement("span");
+          probe.style.color = name;
+          document.body.append(probe);
+          const value = getComputedStyle(probe).color;
+          probe.remove();
+          return value;
+        };
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const text = range.getBoundingClientRect();
+        const box = el.getBoundingClientRect();
+        return {
+          focused: el.matches(":focus-visible"),
+          outline: getComputedStyle(el).outlineColor,
+          outlineStyle: getComputedStyle(el).outlineStyle,
+          outlineWidth: parseFloat(getComputedStyle(el).outlineWidth),
+          canvasText: system("CanvasText"),
+          highlight: system("Highlight"),
+          canvas: system("Canvas"),
+          text: {
+            x: text.left - box.left,
+            y: text.top - box.top,
+            width: text.width,
+            height: text.height,
+          },
+        };
+      });
+      expect(look.focused).toBe(true);
+      expect(look.outline).toBe(look.canvasText);
+      expect(look.outlineStyle).not.toBe("none");
+      expect(look.outlineWidth).toBeGreaterThanOrEqual(2);
+      // 文字の矩形の中に、地の色(Highlight)の画素と文字の画素が両方あり、
+      // 地の色と最もかけ離れた画素が 4.5:1 以上(文字の色を Highlight にすると 1.5:1 前後)
+      const shot = (await selected.screenshot()).toString("base64");
+      const share = await page.evaluate(
+        async ({ shot, text, highlight, canvasColor }) => {
+          const image = new Image();
+          image.src = `data:image/png;base64,${shot}`;
+          await image.decode();
+          const canvas = document.createElement("canvas");
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const context = canvas.getContext("2d")!;
+          context.drawImage(image, 0, 0);
+          const at = (x: number, y: number) =>
+            context.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+          const ground = at(4, image.height / 2);
+          // 撮った地の色が、Canvas の上に重ねた Highlight であること(撮る場所の取り違えを防ぐ)
+          const [h, c] = [highlight, canvasColor].map((v) =>
+            (v.match(/[\d.]+/g) ?? []).map(Number)
+          );
+          const alpha = h[3] ?? 1;
+          const groundGap = [0, 1, 2].reduce(
+            (sum, i) =>
+              sum + Math.abs(ground[i] - (h[i] * alpha + c[i] * (1 - alpha))),
+            0
+          );
+          const area = context.getImageData(
+            Math.round(text.x),
+            Math.round(text.y),
+            Math.round(text.width),
+            Math.round(text.height)
+          ).data;
+          const luminance = (p: ArrayLike<number>, i: number) =>
+            [0.2126, 0.7152, 0.0722].reduce((sum, weight, c) => {
+              const v = p[i + c] / 255;
+              return (
+                sum +
+                weight *
+                  (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+              );
+            }, 0);
+          const groundLuminance = luminance(ground, 0);
+          let near = 0;
+          let contrast = 1;
+          for (let i = 0; i < area.length; i += 4) {
+            const d = [0, 1, 2].reduce(
+              (sum, c) => sum + Math.abs(area[i + c] - ground[c]),
+              0
+            );
+            if (d < 40) near++;
+            const [a, b] = [luminance(area, i), groundLuminance].sort(
+              (x, y) => y - x
+            );
+            contrast = Math.max(contrast, (a + 0.05) / (b + 0.05));
+          }
+          return { groundGap, share: near / (area.length / 4), contrast };
+        },
+        {
+          shot,
+          text: look.text,
+          highlight: look.highlight,
+          canvasColor: look.canvas,
+        }
+      );
+      expect(share.groundGap).toBeLessThan(12);
+      expect(share.share).toBeGreaterThan(0.2);
+      expect(share.share).toBeLessThan(0.95);
+      expect(share.contrast).toBeGreaterThanOrEqual(4.5);
     });
   }
 
@@ -644,6 +757,21 @@ test.describe("ヘッダーの現在地", () => {
   }
 });
 
+test("トップは、地図を左右に広げる幅の手前(1024〜1119px)でも横にはみ出さない", async ({
+  page,
+}) => {
+  for (const width of [1024, 1060, 1100, 1119, 1120, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - innerWidth
+      ),
+      `${width}px`
+    ).toBeLessThanOrEqual(0);
+  }
+});
+
 test.describe("データセットのカード", () => {
   test("カードのどこを押しても詳細へ、テーマの札はテーマへ移る", async ({
     page,
@@ -700,6 +828,13 @@ test.describe("データセットのカード", () => {
       getComputedStyle(el, "::after").outlineWidth,
     ]);
     expect(outline).toEqual(["none", "solid", "2px"]);
+    // 輪郭はカードの角丸に沿う
+    const radii = await link.evaluate((el) => [
+      getComputedStyle(el, "::after").borderRadius,
+      getComputedStyle(el.closest("article")!).borderRadius,
+    ]);
+    expect(radii[0]).not.toBe("0px");
+    expect(radii[0]).toBe(radii[1]);
   });
 });
 
