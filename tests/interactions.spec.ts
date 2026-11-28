@@ -757,18 +757,40 @@ test.describe("ヘッダーの現在地", () => {
   }
 });
 
-test("トップは、地図を左右に広げる幅の手前(1024〜1119px)でも横にはみ出さない", async ({
+test("トップは、地図を左右に広げる幅の手前(1024〜1119px)でもはみ出さず、1120px から広げる", async ({
   page,
 }) => {
   for (const width of [1024, 1060, 1100, 1119, 1120, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth - innerWidth
-      ),
-      `${width}px`
-    ).toBeLessThanOrEqual(0);
+    const m = await page.evaluate(() => {
+      const card = document.querySelector(
+        'section[aria-labelledby="explorer-heading"]'
+      )!;
+      const wrap = card.parentElement!;
+      const main = document.querySelector("main")!;
+      const s = getComputedStyle(main);
+      const mr = main.getBoundingClientRect();
+      const contentLeft = mr.left + parseFloat(s.paddingLeft);
+      const contentRight = mr.right - parseFloat(s.paddingRight);
+      const r = card.getBoundingClientRect();
+      const w = wrap.getBoundingClientRect();
+      return {
+        overflow: document.documentElement.scrollWidth - innerWidth,
+        left: r.left,
+        right: innerWidth - r.right,
+        spreadLeft: contentLeft - w.left,
+        spreadRight: w.right - contentRight,
+      };
+    });
+    // scrollWidth は右へのはみ出ししか数えないので、地図の左右の端も見る
+    expect(m.overflow, `${width}px`).toBeLessThanOrEqual(0);
+    expect(m.left, `${width}px の左端`).toBeGreaterThanOrEqual(0);
+    expect(m.right, `${width}px の右端`).toBeGreaterThanOrEqual(0);
+    // 地図を本文より左右 48px ずつ広げるのは 1120px(70rem)から
+    const spread = width >= 1120 ? 48 : 0;
+    expect(m.spreadLeft, `${width}px の左の広げ幅`).toBeCloseTo(spread, 1);
+    expect(m.spreadRight, `${width}px の右の広げ幅`).toBeCloseTo(spread, 1);
   }
 });
 
